@@ -1,0 +1,99 @@
+.TH hermes 8 2013-Aug "linux" "heatherly custom tools manual"
+
+.SH NAME
+hermes-diactoros \- integrity assurance for executables and libraries
+
+.SH IMAGERY (see HERITAGE at bottom for more)
+divine, cunning, and winged emissary between the gods and mortal men
+
+.SH SUMMARY
+hermes-diactoros (messenger) is a fullsome, responsive, and technical executable and
+library integrity monitoring system which tracks all executable code to assure
+a current, unsuborned, and authentic system.
+
+.SH SYNOPSIS
+
+.B hermes [OPTIONS]
+.nf
+primary production version
+
+.B hermes_debug [URGENTS] [OPTIONS]
+.nf
+performs all production actions, but with debugging and tracing
+
+.SH SCOPE REASONING and DECISION
+
+.B situation (s).  
+working computer systems are a fantastic, massive, and dizzying mix of
+operating system, services, drivers, daemons, programs, environments, scripts,
+and shared libraries.
+
+.B complication (c).  
+any working system can be subverted by altering programs, unauthorized patching,
+misdirecting command requests, virus insertions, or causing different code
+to execute.
+
+.B problem (p).  
+given the complexity of and continuous changes to an average system, it is an
+impossible task to prevent or forstall these attacks without targeted tools,
+vigilence, and clear rules.
+
+.B my solution (m).  
+no one solution is enough.  this is about layers of protection.  hermes will
+specifically target file integrity monitoring for executables and libraries,
+including custom code.
+
+.B benefits/expectations (b)...
+   -- rapid identification of executable alteration
+   -- reduce opportunity for malicious system alteration
+   -- reduce exposure window if a malicious change happens
+   -- reduce chances that the alteration spreads to other systems
+   -- make integrity monitoring a lights-out activity
+   -- verify the latest, most secure source code is used
+
+.B objectives accepted (a)...
+   -- keep a baseline of authoritative file statistics
+   -- audit current system status regularly to identify changes
+   -- report back the findings from those audits
+   -- allow for updating baseline, log only, immediate notification
+   -- compare files based on a crytographic hash of the contents
+   -- extend the comparison to permissions and attributes also
+   -- idenfity the source of each executable on the system
+   -- monitor executable sources for version updates
+   -- report back versioning information from the review
+   -- coordinate with portage updates to avoid false warnings
+
+.B objectives rejected (r)...
+   -- no general purpose scripting to address additional needs
+   -- no ticketing system for change tracking
+   -- no non-gentoo-linux systems (enough said)
+   -- no non-heatherly systems (why would i care)
+   -- no user or group alteration (user management is separate)
+   -- no auto software updating (package management is separate)
+
+.SH OPTIONS
+
+.SH BACKSTORY
+
+.SH HERITAGE
+.B background.  
+hermes-diactoros (messenger) is the olympian god of transitions and
+boundaries; moving freely between the worlds of mortals and olympus
+while acting as the emissary, herald, and messenger of the gods.  he is
+the god of commerce, roads, and trade as well as the protector of
+travelers, herdsmen, theives, poets, athletes, and fighters.
+
+.B parentage.  
+hermes was born of zeus and maia, the daughter of the titan atlas.
+
+.B why.  
+the program ensures proper and correct transitions of execution from
+kernel-space code (gods) to user-space programs (mortals).
+
+.SH AUTHOR
+heatherly
+
+.SH COLOPHON
+this page is part of a documentation package meant to make the use of the
+heatherly tools easier and faster
+
