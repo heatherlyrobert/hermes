@@ -496,7 +496,7 @@ PROG_conf          (void)
       switch (x_verb[0]) {
       case 'a' : rc = AREA_push (x_field [0]);                      break;
       case 'd' : rc = LOC_push  (x_field [0], 'c', x_field [2]);    break;
-      case 'p' : rc = PKG_push  (x_field [0], 'c', x_field [2]);    break;
+      case 'p' : rc = PKG_push  (x_field [0], 'c', x_field [1][0], x_field [2]);    break;
       default  : break;
       }
       /*---(done)------------------------*/

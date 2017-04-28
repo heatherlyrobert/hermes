@@ -206,8 +206,8 @@
 
 
 /* rapidly evolving version number to aid with visual change confirmation     */
-#define     VER_NUM   "0.6d"
-#define     VER_TXT   "added package status for world file and portage dir"
+#define     VER_NUM   "0.6e"
+#define     VER_TXT   "added package priority and area package count"
 
 
 /*---(struct typedefs)-------------------*/
@@ -543,7 +543,7 @@ char        PKG_valid          (int     a_pkg);
 char        PKG_purge          (void);
 char        PKG_index          (void);
 /*---updates-----------*/
-int         PKG_push           (char  *a_name, char  a_type, char *a_desc);
+int         PKG_push           (char  *a_name, char  a_type, char a_priority, char *a_desc);
 int         PKG_find           (char  *a_name);
 char        AREA_wipe          (int    a_curr);
 char        PKG_wipe           (int    a_curr);

@@ -22,7 +22,8 @@ static void      o___AREAS___________________o (void) {;}
 typedef     struct cAREA  tAREA;
 struct      cAREA {
    char        name        [STR_REG];  /* unique name                         */
-   int         npackages;              /* number of packages                  */
+   int         npackages;              /* number of packages in area          */
+   int         ncommands;              /* number of commands in area          */
 };
 tAREA       s_areas       [AREA_MAX];    /* area data structure                 */
 int         s_narea;                     /* area count                          */
@@ -33,6 +34,7 @@ AREA_wipe          (int a_curr)
    /*---(database fields)-------------*/
    s_areas [a_curr].name [0]       = '\0';
    s_areas [a_curr].npackages      = 0;
+   s_areas [a_curr].ncommands      = 0;
    /*---(complete)-----------------------*/
    return 0;
 }
@@ -118,6 +120,13 @@ AREA_list          (void)
    }
    printf ("\n\n");
    /*---(complete)-----------------------*/
+   return 0;
+}
+
+char             /* [------] increment packages ------------------------------*/
+AREA_addpkg        (int a_area)
+{
+   ++s_areas [a_area].npackages;
    return 0;
 }
 
@@ -258,7 +267,7 @@ PKG_index          (void)
 static void      o___UPDATES_________________o (void) {;}
 
 int              /* [------] append a package --------------------------------*/
-PKG_push           (char  *a_full, char  a_source, char *a_desc)
+PKG_push           (char  *a_full, char  a_source, char a_priority, char *a_desc)
 {
    DEBUG_PACKAGES   printf ("   appending package: ");
    /*---(locals)-----------+-----------+-*/
@@ -354,6 +363,11 @@ PKG_push           (char  *a_full, char  a_source, char *a_desc)
       }
    }
    closedir (dir);
+   /*---(priority)-----------------------*/
+   if (a_source == 'c') {
+      if (a_priority == '\0')  pkgs [found].priority = ' ';
+      else                     pkgs [found].priority = a_priority;
+   }
    /*---(focus)--------------------------*/
    if (  pkgs [found].len == my.focus_len &&
          strcmp (pkgs [found].full, my.focus) == 0) {
@@ -368,6 +382,7 @@ PKG_push           (char  *a_full, char  a_source, char *a_desc)
    if (a_source == 'w')   pkgs [found].world  = 'y';
    /*---(update)-------------------------*/
    DEBUG_PACKAGES   printf ("added as %d with source=%c, done\n", found, a_source);
+   AREA_addpkg (pkgs [found].area);
    ++npkg;
    /*---(complete)-----------------------*/
    return found;
@@ -552,7 +567,7 @@ PKG_list           (void)
       if (pkgs [curr].ncmd < 1)      strcpy  (s, "  -");
       else                           sprintf (s, "%3d", pkgs [curr].ncmd);
       x_area = pkgs [curr].area;
-      if (x_area <  0)               sprintf  (t, "%s",     "-");
+      if (x_area <  0)               sprintf  (t, "%s",     "99.unassigned");
       else                           sprintf  (t, "%02d.%s", x_area, s_areas [x_area].name);
       printf ("  %4d %4d  %c %c %c %c  %-20.20s   %-30.30s   %3.3s    %c     %c    %-40.40s\n",
             i, curr, pkgs [curr].source, pkgs [curr].portage ,
@@ -624,7 +639,7 @@ PKG_world          (void)
       }
       /*---(save)---------------------*/
       DEBUG_WORLD  yLOG_note    ("accepted");
-      PKG_push (x_recd, 'w', "");
+      PKG_push (x_recd, 'w', ' ', "");
       /*---(done----------------------*/
    }
    /*---(close the file)-----------------*/
@@ -715,7 +730,7 @@ PKG_readdb         (void)
       rcc = parse_flag  (NULL, &r, valid_src, &c);
       if (rcc < 0)   continue;
       /*---(append)----------------------*/
-      rci = PKG_push (s, c, "");
+      rci = PKG_push (s, c, ' ', "");
       if (rci < 0) {
          DEBUG_DATABASE   printf ("can not append %s, type %c, SKIPPING\n", s, c);
          continue;
