@@ -206,8 +206,8 @@
 
 
 /* rapidly evolving version number to aid with visual change confirmation     */
-#define     VER_NUM   "0.6a"
-#define     VER_TXT   "updated reading areas from config file"
+#define     VER_NUM   "0.6b"
+#define     VER_TXT   "added hard link to /etc/hermes.conf for git backup"
 
 
 /*---(struct typedefs)-------------------*/
