@@ -338,7 +338,8 @@ PKG_push           (char  *a_full, char  a_source, char a_priority, char *a_desc
          DEBUG_PACKAGES   printf ("can not parse name part, SKIPPING\n");
          return rce;
       }
-      strncpy (pkgs [found].name, p  , LPNAME);
+      strncpy (pkgs [found].name, p       , LPNAME);
+      strncpy (pkgs [found].desc, a_desc  , LPNAME);
    } else {
       strncpy (pkgs [found].cat , "-", LPCAT );
       strncpy (pkgs [found].name, "-", LPNAME);
@@ -421,6 +422,7 @@ PKG_wipe           (int a_curr)
    pkgs [a_curr].portage        = '-';
    pkgs [a_curr].world          = '-';
    pkgs [a_curr].full [0]       = '\0';
+   pkgs [a_curr].desc [0]       = '\0';
    pkgs [a_curr].area           = -1;
    pkgs [a_curr].priority       = '-';
    pkgs [a_curr].update         = '-';
@@ -523,8 +525,8 @@ PKG_header         (int a_page)
 {
    printf ("\n\n");
    printf ("HERMES-DIACTOROS -- ebuild package report, page %3d                                                                                              %4d of %4d slots used\n\n", a_page, npkg, PKG_MAX);
-   printf ("  seq# indx  s p w a  cat                    name                             cmd   pri   upd   area           \n");
-   printf ("  ---- ----  - - - -  --------------------   ------------------------------   ---   ---   ---   -----------------------------------\n");
+   printf ("  seq# indx  s p w a  cat                  name                           desc                                       cmd   pri   upd   area           \n");
+   printf ("  ---- ----  - - - -  -------------------- ------------------------------ ----------------------------------------   ---   ---   ---   -----------------------------------\n");
    return 0;
 }
 
@@ -532,7 +534,7 @@ char             /* [------] display the package inventory -------------------*/
 PKG_footer         (void)
 {
    printf ("\n");
-   printf ("  ---- ----  - - - -  --------------------   ------------------------------   ---   ---   ---   -----------------------------------\n");
+   printf ("  ---- ----  - - - -  -------------------- ------------------------------ ----------------------------------------   ---   ---   ---   -----------------------------------\n");
    printf ("  source   = where the package comes from, c=conf file, w=world-ebuild, +=pre-loaded, #=local, -=unknown\n");
    printf ("  command  = number of actual commands installed/updated by this package\n");
    printf ("  priority = \n");
@@ -569,10 +571,10 @@ PKG_list           (void)
       x_area = pkgs [curr].area;
       if (x_area <  0)               sprintf  (t, "%s",     "99.unassigned");
       else                           sprintf  (t, "%02d.%s", x_area, s_areas [x_area].name);
-      printf ("  %4d %4d  %c %c %c %c  %-20.20s   %-30.30s   %3.3s    %c     %c    %-40.40s\n",
+      printf ("  %4d %4d  %c %c %c %c  %-20.20s %-30.30s %-40.40s   %3.3s    %c     %c    %-40.40s\n",
             i, curr, pkgs [curr].source, pkgs [curr].portage ,
             pkgs [curr].world , pkgs [curr].active,
-            pkgs [curr].cat     , pkgs [curr].name    ,
+            pkgs [curr].cat     , pkgs [curr].name    , pkgs [curr].desc    ,
             s                      ,
             pkgs [curr].priority, pkgs [curr].update  ,
             t);

@@ -206,8 +206,8 @@
 
 
 /* rapidly evolving version number to aid with visual change confirmation     */
-#define     VER_NUM   "0.6e"
-#define     VER_TXT   "added package priority and area package count"
+#define     VER_NUM   "0.6f"
+#define     VER_TXT   "pull through package description from config file"
 
 
 /*---(struct typedefs)-------------------*/
@@ -279,6 +279,7 @@ struct      cPKG {
    char        portage;                /* is it in the portage directory      */
    char        world;                  /* is it in the world file             */
    char        full        [LPFULL];
+   char        desc        [LPFULL];   /* package description                 */
    int         area;                   /* index for area in data structure    */
    char        priority;
    char        update;
