@@ -21,7 +21,8 @@ STRIP   = @grep -v -e " DEBUG_" -e " yLOG_"
 
 
 #*---(MAIN)---------------------------*#
-all                : hermes hermes_strip hermes_unit
+#all                : hermes hermes_strip hermes_unit
+all                : hermes hermes_strip
 
 
 

@@ -483,6 +483,7 @@ PROG_conf          (void)
       sprintf (x_temp, " %s ", p);
       if (strstr (x_verbs, p) == NULL)      continue;
       strcpy (x_verb, p);
+      DEBUG_TOPS  printf ("      verb   ::%s::\n", x_verb);
       /*---(get fields)------------------*/
       for (i = 0; i < 20; ++i) {
          p = strtok_r (NULL  , q, &r);
@@ -495,6 +496,7 @@ PROG_conf          (void)
       switch (x_verb[0]) {
       case 'a' : rc = AREA_push (x_field [0]);                      break;
       case 'd' : rc = LOC_push  (x_field [0], 'c', x_field [2]);    break;
+      case 'p' : rc = PKG_push  (x_field [0], 'c', x_field [2]);    break;
       default  : break;
       }
       /*---(done)------------------------*/

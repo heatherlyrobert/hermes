@@ -4,7 +4,7 @@
 tPKG        pkgs        [PKG_MAX];        /* main package data structure         */
 int         ipkg        [PKG_MAX];        /* index for packages                  */
 int         npkg        = 0;
-static char valid_src   [10] = "-w+#";   /* valid source types                */
+static char valid_src   [10] = "-cw+#";   /* valid source types                */
 
 
 
@@ -258,7 +258,7 @@ PKG_index          (void)
 static void      o___UPDATES_________________o (void) {;}
 
 int              /* [------] append a package --------------------------------*/
-PKG_push           (char  *a_name, char  a_source)
+PKG_push           (char  *a_full, char  a_source, char *a_desc)
 {
    DEBUG_PACKAGES   printf ("   appending package: ");
    /*---(locals)-----------+-----------+-*/
@@ -278,17 +278,17 @@ PKG_push           (char  *a_name, char  a_source)
       return rce;
    }
    --rce;     /* null name --------------*/
-   if (a_name   == NULL) {
+   if (a_full   == NULL) {
       DEBUG_PACKAGES   printf ("package name is null, SKIPPING\n");
       return rce;
    }
    --rce;     /* bad name ---------------*/
-   found = PKG_find     (a_name);
+   found = PKG_find     (a_full);
    if (found < -1) {
       DEBUG_PACKAGES   printf ("bad name or length, SKIPPING\n");
       return rce;
    }
-   DEBUG_PACKAGES   printf ("%s, ", a_name);
+   DEBUG_PACKAGES   printf ("%s, ", a_full);
    --rce;     /* already appended -------*/
    if (found >= 0) {
       DEBUG_PACKAGES   printf ("already exists as %d, done\n", found);
@@ -302,7 +302,7 @@ PKG_push           (char  *a_name, char  a_source)
       DEBUG_PACKAGES   printf ("can't understand source type (%c vs %s), SKIPPING\n", a_source, valid_src);
       return rce;
    }
-   len = strlen (a_name);
+   len = strlen (a_full);
    --rce;     /* name too long ----------*/
    if (len >= STR_REG) {
       DEBUG_LOCATIONS   printf ("name too long (%d vs. %d)\n", len, STR_REG);
@@ -313,28 +313,11 @@ PKG_push           (char  *a_name, char  a_source)
       DEBUG_LOCATIONS   printf ("name too short (%d vs. %d)\n", len, 10);
       return rce;
    }
-   /*---(test against real location)-----*/
-   if (a_source == 'w' || a_source == '+') {
-      sprintf (s, "/usr/portage/%s", a_name);
-   } else {
-      strcpy  (s, a_name);
-   }
-   dir = opendir(s);
-   --rce;     /* not a real package -----*/
-   if (dir == NULL) {
-      dir = opendir (a_name);
-      if (dir == NULL) {
-         DEBUG_CMDS   printf ("skipping (%s), not portage or local package\n", s);
-         return rce;
-      }
-      a_source = '#';
-   }
-   closedir (dir);
    /*---(append)-------------------------*/
    if (found == -1)  found = npkg;
-   strncpy (pkgs [found].full, a_name, LPFULL);
-   strcpy  (s, a_name);
-   if (a_source == 'w' || a_source == '+') {
+   strncpy (pkgs [found].full, a_full, LPFULL);
+   strcpy  (s, a_full);
+   if (a_source == 'c' || a_source == 'w' || a_source == '+') {
       p = strtok_r  (s, q, &r);
       --rce;     /* ---------------------*/
       if (p == NULL)  {
@@ -355,6 +338,23 @@ PKG_push           (char  *a_name, char  a_source)
    }
    pkgs [found].len     = len;
    pkgs [found].source  = a_source;
+   /*---(test against real location)-----*/
+   if (a_source == 'w' || a_source == '+') {
+      sprintf (s, "/usr/portage/%s/%s", pkgs [found].cat, pkgs [found].name);
+   } else {
+      strcpy  (s, a_full);
+   }
+   dir = opendir(s);
+   --rce;     /* not a real package -----*/
+   if (dir == NULL) {
+      dir = opendir (a_full);
+      if (dir == NULL) {
+         DEBUG_PACKAGES   printf ("skipping (%s), not portage or local package\n", s);
+         return rce;
+      }
+      a_source = '#';
+   }
+   closedir (dir);
    /*---(focus)--------------------------*/
    if (  pkgs [found].len == my.focus_len &&
          strcmp (pkgs [found].full, my.focus) == 0) {
@@ -362,6 +362,10 @@ PKG_push           (char  *a_name, char  a_source)
    }
    /*---(index)--------------------------*/
    ipkg [found]        = found;
+   /*---(point to area)------------------*/
+   if (a_source == 'c' && s_narea > 0) {
+      pkgs [found].area = s_narea - 1;
+   }
    /*---(update)-------------------------*/
    DEBUG_PACKAGES   printf ("added as %d with source=%c, done\n", found, a_source);
    ++npkg;
@@ -400,7 +404,7 @@ PKG_wipe           (int a_curr)
    pkgs [a_curr].active         = my.def_pkg;
    pkgs [a_curr].source         = '-';
    pkgs [a_curr].full [0]       = '\0';
-   pkgs [a_curr].area           = 0;
+   pkgs [a_curr].area           = -1;
    pkgs [a_curr].priority       = '-';
    pkgs [a_curr].update         = '-';
    /*---(working fields)--------------*/
@@ -512,7 +516,7 @@ PKG_footer         (void)
 {
    printf ("\n");
    printf ("  ---- ----  - -  --------------------   ----------------------------------------   ------------------------------------------------------------   ---   ---   ---   ---   -----------------------------------\n");
-   printf ("  source   = where the package comes from, w=world-ebuild, +=pre-loaded, #=local, -=unknown\n");
+   printf ("  source   = where the package comes from, c=conf file, w=world-ebuild, +=pre-loaded, #=local, -=unknown\n");
    printf ("  command  = number of actual commands installed/updated by this package\n");
    printf ("  priority = \n");
    printf ("  updated  = \n");
@@ -546,8 +550,8 @@ PKG_list           (void)
       if (pkgs [curr].ncmd < 1)      strcpy  (s, "  -");
       else                           sprintf (s, "%3d", pkgs [curr].ncmd);
       x_area = pkgs [curr].area;
-      if (x_area <  0)               strcpy  (t, "-");
-      else                           strcpy  (t, s_areas [x_area].name);
+      if (x_area <  0)               sprintf  (t, "%s",     "-");
+      else                           sprintf  (t, "%02d.%s", x_area, s_areas [x_area].name);
       printf ("  %4d %4d  %c %c  %-20.20s   %-40.40s   %-60.60s   %3d   %3.3s    %c     %c    %-40.40s\n",
             i, curr, pkgs [curr].source, pkgs [curr].active,
             pkgs [curr].cat     , pkgs [curr].name    ,
@@ -618,7 +622,7 @@ PKG_world          (void)
       }
       /*---(save)---------------------*/
       DEBUG_WORLD  yLOG_note    ("accepted");
-      PKG_push (x_recd, 'w');
+      PKG_push (x_recd, 'w', "");
       /*---(done----------------------*/
    }
    /*---(close the file)-----------------*/
@@ -709,7 +713,7 @@ PKG_readdb         (void)
       rcc = parse_flag  (NULL, &r, valid_src, &c);
       if (rcc < 0)   continue;
       /*---(append)----------------------*/
-      rci = PKG_push (s, c);
+      rci = PKG_push (s, c, "");
       if (rci < 0) {
          DEBUG_DATABASE   printf ("can not append %s, type %c, SKIPPING\n", s, c);
          continue;

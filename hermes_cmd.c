@@ -1260,7 +1260,7 @@ CMD_package        (void)
          if (recd[0] == ' ' )  continue;
          found = PKG_find (recd);
          if (found == -1) {
-            found = PKG_push (recd, '+');
+            found = PKG_push (recd, '+', "");
             DEBUG_CMDS   printf ("++++  %-4d = %-45.45s", found, recd);
          } else {
             DEBUG_CMDS   printf ("   +  %-4d = %-45.45s", found, recd);
@@ -1491,7 +1491,7 @@ CMD_readdb         (void)
          rci = PKG_find (s);
          DEBUG_DATABASE   printf ("%4d ", rci);
          if (rci < 0)  {
-            rci = PKG_push (s, '+');
+            rci = PKG_push (s, '+', "");
             DEBUG_DATABASE   printf ("+ %c %4d ", cmds [ncmd].source, rci);
             DEBUG_DATABASE   printf ("%-25.25s ", pkgs [rci].full);
          } else {
