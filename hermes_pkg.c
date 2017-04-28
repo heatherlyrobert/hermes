@@ -292,9 +292,7 @@ PKG_push           (char  *a_full, char  a_source, char *a_desc)
    --rce;     /* already appended -------*/
    if (found >= 0) {
       DEBUG_PACKAGES   printf ("already exists as %d, done\n", found);
-      if (pkgs [found].source != 'w' && a_source == 'w')  {
-         pkgs [found].source = 'w';
-      }
+      if (a_source == 'w')   pkgs [found].world  = 'y';
       return found;
    }
    --rce;     /* bad source type --------*/
@@ -339,20 +337,21 @@ PKG_push           (char  *a_full, char  a_source, char *a_desc)
    pkgs [found].len     = len;
    pkgs [found].source  = a_source;
    /*---(test against real location)-----*/
-   if (a_source == 'w' || a_source == '+') {
+   if (a_source == 'c' || a_source == 'w' || a_source == '+') {
       sprintf (s, "/usr/portage/%s/%s", pkgs [found].cat, pkgs [found].name);
    } else {
       strcpy  (s, a_full);
    }
    dir = opendir(s);
    --rce;     /* not a real package -----*/
+   pkgs [found].portage = 'y';
    if (dir == NULL) {
       dir = opendir (a_full);
       if (dir == NULL) {
          DEBUG_PACKAGES   printf ("skipping (%s), not portage or local package\n", s);
-         return rce;
+         pkgs [found].portage = '-';
+         /*> return rce;                                                              <*/
       }
-      a_source = '#';
    }
    closedir (dir);
    /*---(focus)--------------------------*/
@@ -366,6 +365,7 @@ PKG_push           (char  *a_full, char  a_source, char *a_desc)
    if (a_source == 'c' && s_narea > 0) {
       pkgs [found].area = s_narea - 1;
    }
+   if (a_source == 'w')   pkgs [found].world  = 'y';
    /*---(update)-------------------------*/
    DEBUG_PACKAGES   printf ("added as %d with source=%c, done\n", found, a_source);
    ++npkg;
@@ -403,6 +403,8 @@ PKG_wipe           (int a_curr)
    /*---(database fields)-------------*/
    pkgs [a_curr].active         = my.def_pkg;
    pkgs [a_curr].source         = '-';
+   pkgs [a_curr].portage        = '-';
+   pkgs [a_curr].world          = '-';
    pkgs [a_curr].full [0]       = '\0';
    pkgs [a_curr].area           = -1;
    pkgs [a_curr].priority       = '-';
@@ -506,8 +508,8 @@ PKG_header         (int a_page)
 {
    printf ("\n\n");
    printf ("HERMES-DIACTOROS -- ebuild package report, page %3d                                                                                              %4d of %4d slots used\n\n", a_page, npkg, PKG_MAX);
-   printf ("  seq# indx  s a  cat                    name                                       full                                                           len   cmd   pri   upd   area           \n");
-   printf ("  ---- ----  - -  --------------------   ----------------------------------------   ------------------------------------------------------------   ---   ---   ---   ---   -----------------------------------\n");
+   printf ("  seq# indx  s p w a  cat                    name                             cmd   pri   upd   area           \n");
+   printf ("  ---- ----  - - - -  --------------------   ------------------------------   ---   ---   ---   -----------------------------------\n");
    return 0;
 }
 
@@ -515,7 +517,7 @@ char             /* [------] display the package inventory -------------------*/
 PKG_footer         (void)
 {
    printf ("\n");
-   printf ("  ---- ----  - -  --------------------   ----------------------------------------   ------------------------------------------------------------   ---   ---   ---   ---   -----------------------------------\n");
+   printf ("  ---- ----  - - - -  --------------------   ------------------------------   ---   ---   ---   -----------------------------------\n");
    printf ("  source   = where the package comes from, c=conf file, w=world-ebuild, +=pre-loaded, #=local, -=unknown\n");
    printf ("  command  = number of actual commands installed/updated by this package\n");
    printf ("  priority = \n");
@@ -552,10 +554,10 @@ PKG_list           (void)
       x_area = pkgs [curr].area;
       if (x_area <  0)               sprintf  (t, "%s",     "-");
       else                           sprintf  (t, "%02d.%s", x_area, s_areas [x_area].name);
-      printf ("  %4d %4d  %c %c  %-20.20s   %-40.40s   %-60.60s   %3d   %3.3s    %c     %c    %-40.40s\n",
-            i, curr, pkgs [curr].source, pkgs [curr].active,
+      printf ("  %4d %4d  %c %c %c %c  %-20.20s   %-30.30s   %3.3s    %c     %c    %-40.40s\n",
+            i, curr, pkgs [curr].source, pkgs [curr].portage ,
+            pkgs [curr].world , pkgs [curr].active,
             pkgs [curr].cat     , pkgs [curr].name    ,
-            pkgs [curr].full    , pkgs [curr].len     ,
             s                      ,
             pkgs [curr].priority, pkgs [curr].update  ,
             t);

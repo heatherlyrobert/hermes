@@ -206,8 +206,8 @@
 
 
 /* rapidly evolving version number to aid with visual change confirmation     */
-#define     VER_NUM   "0.6c"
-#define     VER_TXT   "linked packages back to new areas"
+#define     VER_NUM   "0.6d"
+#define     VER_TXT   "added package status for world file and portage dir"
 
 
 /*---(struct typedefs)-------------------*/
@@ -276,6 +276,8 @@ struct      cPKG {
    /*---(database fields)----------------*/
    char        active;                 /* verify commands in the package      */
    char        source;                 /* what method created this entry      */
+   char        portage;                /* is it in the portage directory      */
+   char        world;                  /* is it in the world file             */
    char        full        [LPFULL];
    int         area;                   /* index for area in data structure    */
    char        priority;
