@@ -464,14 +464,14 @@ PKG_link           (int a_pkg, int a_cmd)
       return rcc;
    }
    --rce;  /*=== command already linked =*/
-   if (cmds [a_cmd].i_pkg >= 0) {
-      DEBUG_PACKAGES   printf ("command already linked to package (%d), SKIPPING\n", cmds [a_cmd].i_pkg);
+   if (s_cmds [a_cmd].i_pkg >= 0) {
+      DEBUG_PACKAGES   printf ("command already linked to package (%d), SKIPPING\n", s_cmds [a_cmd].i_pkg);
       return rce;
    }
    /*---(link)---------------------------*/
-   cmds [a_cmd].i_pkg = a_pkg;
+   s_cmds [a_cmd].i_pkg = a_pkg;
    ++pkgs [a_pkg].ncmd;
-   DEBUG_PACKAGES   printf ("linked %s to %s, done\n", cmds [a_cmd].name, pkgs [a_pkg].full);
+   DEBUG_PACKAGES   printf ("linked %s to %s, done\n", s_cmds [a_cmd].name, pkgs [a_pkg].full);
    /*---(complete)-----------------------*/
    return 0;
 }
@@ -498,7 +498,7 @@ PKG_unlink         (int a_cmd)
       DEBUG_PACKAGES   printf ("command index too high, SKIPPING\n");
       return -4;
    }
-   x_pkg = cmds [a_cmd].i_pkg;
+   x_pkg = s_cmds [a_cmd].i_pkg;
    // location index
    rcc = PKG_valid (x_pkg);
    if (rcc < 0)  {
@@ -506,9 +506,9 @@ PKG_unlink         (int a_cmd)
       return rcc;
    }
    /*---(link)---------------------------*/
-   cmds [a_cmd].i_pkg = -1;
+   s_cmds [a_cmd].i_pkg = -1;
    --pkgs [x_pkg].ncmd;
-   DEBUG_PACKAGES   printf ("unlinked %s from %s, done\n", cmds [a_cmd].name, pkgs [x_pkg].full);
+   DEBUG_PACKAGES   printf ("unlinked %s from %s, done\n", s_cmds [a_cmd].name, pkgs [x_pkg].full);
    /*---(complete)-----------------------*/
    return 0;
 }
@@ -543,11 +543,14 @@ PKG_footer         (void)
 }
 
 char             /* [------] display the package inventory -------------------*/
-PKG_list           (void)
+PKG_list           (char a_order)
 {
    /*---(locals)-----------+-----------+-*/
    int         i           = 0;             /* iterator -- package            */
+   int         j           = 0;             /* iterator -- package            */
    int         curr        = 0;             /* current package                */
+   int         x_seq       = 0;
+   int         x_index     = 0;
    char        s           [200];           /* generic string                 */
    char        t           [200];           /* generic string                 */
    int         x_page      = 1;
@@ -555,7 +558,18 @@ PKG_list           (void)
    int         x_area      = -1;
    /*---(output)-------------------------*/
    for (i = 0; i < npkg; ++i) {
-      curr = ipkg [i];
+      switch (a_order) {
+      case  's' :
+         x_seq    = i;
+         for (j = 0; j < npkg; ++j)  if (ipkg[j] == i)  x_index = j;
+         break;
+      case  'i' :
+      default   :
+         x_index  = i;
+         x_seq    = ipkg [i];
+         break;
+      }
+      curr     = x_seq;
       if (i % 45 == 0) {
          if (i > 0) PKG_footer ();
          PKG_header (x_page);
@@ -572,7 +586,7 @@ PKG_list           (void)
       if (x_area <  0)               sprintf  (t, "%s",     "99.unassigned");
       else                           sprintf  (t, "%02d.%s", x_area, s_areas [x_area].name);
       printf ("  %4d %4d  %c %c %c %c  %-20.20s %-30.30s %-40.40s   %3.3s    %c     %c    %-40.40s\n",
-            i, curr, pkgs [curr].source, pkgs [curr].portage ,
+            x_seq, x_index, pkgs [curr].source, pkgs [curr].portage ,
             pkgs [curr].world , pkgs [curr].active,
             pkgs [curr].cat     , pkgs [curr].name    , pkgs [curr].desc    ,
             s                      ,

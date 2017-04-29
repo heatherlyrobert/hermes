@@ -206,8 +206,8 @@
 
 
 /* rapidly evolving version number to aid with visual change confirmation     */
-#define     VER_NUM   "0.6f"
-#define     VER_TXT   "pull through package description from config file"
+#define     VER_NUM   "0.6g"
+#define     VER_TXT   "fixed package indexing and reporting"
 
 
 /*---(struct typedefs)-------------------*/
@@ -339,7 +339,7 @@ struct      cCOMMAND {
    int         ftoolong;
    /*---(done)------------------------*/
 };
-extern      tCMD        cmds        [CMD_MAX];   /* command data structure    */
+extern      tCMD        s_cmds      [CMD_MAX];   /* command data structure    */
 extern      int         icmd        [CMD_MAX];   /* command index             */
 extern      int         ncmd;                    /* command count             */
 #define     CMD_NEGATIVE    -30
@@ -552,7 +552,7 @@ char        PKG_wipe           (int    a_curr);
 char        PKG_link           (int    a_pkg , int a_cmd);
 char        PKG_unlink         (int    a_cmd);
 /*---reporting---------*/
-char        PKG_list           (void);
+char        PKG_list           (char   a_order);
 /*---gathering---------*/
 char        PKG_world          (void);
 /*---database----------*/
@@ -582,6 +582,7 @@ char        CMD_header         (int     a_page , int  a_loc);
 char        CMD_footer         (int     a_page , int  a_lines);
 char        CMD_show           (int     a_count, int  a_num,  tCMD *a_cmd);
 char        CMD_list           (void);
+char        CMD_list_NEW       (void);
 /*---gathering---------*/
 char        CMD_gather         (char    a_check);
 char        CMD_world          (void);

@@ -278,14 +278,14 @@ LOC_link           (int a_loc, int a_cmd)
       return rce;
    }
    --rce;  /*=== command already linked =*/
-   if (cmds [a_cmd].i_loc >= 0) {
-      DEBUG_LOCATIONS   printf ("command already linked to location (%d), SKIPPING\n", cmds [a_cmd].i_loc);
+   if (s_cmds [a_cmd].i_loc >= 0) {
+      DEBUG_LOCATIONS   printf ("command already linked to location (%d), SKIPPING\n", s_cmds [a_cmd].i_loc);
       return rce;
    }
    /*---(link)---------------------------*/
-   cmds [a_cmd].i_loc = a_loc;
+   s_cmds [a_cmd].i_loc = a_loc;
    ++locs [a_loc].ncmd;
-   DEBUG_LOCATIONS   printf ("linked %s to %s, done\n", cmds [a_cmd].name, locs [a_loc].path);
+   DEBUG_LOCATIONS   printf ("linked %s to %s, done\n", s_cmds [a_cmd].name, locs [a_loc].path);
    /*---(complete)-----------------------*/
    return 0;
 }
@@ -309,7 +309,7 @@ LOC_unlink         (int a_cmd)
       DEBUG_LOCATIONS   printf ("command index too high, SKIPPING\n");
       return -4;
    }
-   x_loc = cmds [a_cmd].i_loc;
+   x_loc = s_cmds [a_cmd].i_loc;
    // location index
    rcc = LOC_valid (x_loc);
    if (rcc < 0)  {
@@ -317,9 +317,9 @@ LOC_unlink         (int a_cmd)
       return rcc;
    }
    /*---(link)---------------------------*/
-   cmds [a_cmd].i_loc = -1;
+   s_cmds [a_cmd].i_loc = -1;
    --locs [x_loc].ncmd;
-   DEBUG_PACKAGES   printf ("unlinked %s from %s, done\n", cmds [a_cmd].name, locs [x_loc].path);
+   DEBUG_PACKAGES   printf ("unlinked %s from %s, done\n", s_cmds [a_cmd].name, locs [x_loc].path);
    /*---(complete)-----------------------*/
    return 0;
 }

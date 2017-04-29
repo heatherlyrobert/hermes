@@ -24,7 +24,15 @@ main               (int argc, char *argv[])
    AREA_list    ();
    PKG_world    ();
    /*> PKG_readdb   ();                                                               <*/
-   PKG_list     ();
+
+   PKG_index    ();
+   PKG_list     ('s');
+   PKG_list     ('i');
+
+   CMD_gather   ('n');
+
+   CMD_index    ();
+   CMD_list_NEW ();
 
    DEBUG_TOPS   yLOG_exit    (__FUNCTION__);
    PROG_end     ();
@@ -43,7 +51,7 @@ main               (int argc, char *argv[])
    /*> CMD_writeall ();                                                              <*/
 
    if (my.list_locs == 'y')  LOC_list     ();
-   if (my.list_pkgs == 'y')  PKG_list     ();
+   if (my.list_pkgs == 'y')  PKG_list     ('s');
    if (my.list_cmds == 'y')  CMD_list     ();
 
    PKG_writedb  ();
@@ -92,7 +100,7 @@ main               (int argc, char *argv[])
     *>    printf ("\n");                                                              <* 
     *> }                                                                              <*/
    /*---(final reporting)----------------*/
-   /*> RUN_WORLD    PKG_list    ();                                                   <*/
+   /*> RUN_WORLD    PKG_list    ('s');                                                   <*/
    /*> RUN_COMMAND  CMD_list    ();                                                   <*/
    /*---(matching)-----------------------*/
    /*> RUN_WRITE  {                                                                   <* 

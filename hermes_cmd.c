@@ -28,7 +28,7 @@
  */
 #include    "hermes.h"
 
-tCMD        cmds        [CMD_MAX];       /* main command structure (unsorted) */
+tCMD        s_cmds      [CMD_MAX];       /* main command structure (unsorted) */
 int         icmd        [CMD_MAX];       /* index for commands                */
 int         ncmd        = 0;             /* count of commands                 */
 static char valid_src   [10] = "-+#";    /* valid source types                */
@@ -50,7 +50,7 @@ CMD_purge          (void)
    DEBUG_CMDS   printf ("     begin initializing command data structure\n");
    /*---(clear all)----------------------*/
    for (i = 0; i < CMD_MAX; ++i)  {
-      CMD_wipe (&cmds[i]);
+      CMD_wipe (&s_cmds[i]);
       icmd [i]            = -1;
    }
    /*---(index)-----------------------*/
@@ -83,11 +83,11 @@ CMD_index          (void)
       one = icmd [i - 1];
       two = icmd [i    ];
       /*---(header)--------------------------------*/
-      DEBUG_SORT   printf("   %-4d  %-4d  <%02d.%-45.45s>    %-4d  %-4d  <%02d.%-45.45s>    ", i - 1, one, cmds [one].i_loc, cmds [one].full, i    , two, cmds [two].i_loc, cmds [two].full);
+      DEBUG_SORT   printf("   %-4d  %-4d  <%-45.45s>    %-4d  %-4d  <%-45.45s>    ", i - 1, one, s_cmds [one].name, i    , two, s_cmds [two].name);
       /*---(compare)-------------------------------*/
       ++comps;
-      sprintf (s, "%02d.%-45.45s", cmds [one].i_loc, cmds [one].full);
-      sprintf (t, "%02d.%-45.45s", cmds [two].i_loc, cmds [two].full);
+      sprintf (s, "%-45.45s", s_cmds [one].name);
+      sprintf (t, "%-45.45s", s_cmds [two].name);
       rci = strcmp (s, t);
       DEBUG_SORT   printf("%2d    ", rci);
       if ((i == 0) || (rci <= 0)) {
@@ -117,7 +117,7 @@ CMD_index          (void)
    /*---(report out)----------------------------*/
    for (i = 0; i < ncmd; ++i) {
       one = icmd [i];
-      DEBUG_SORT   printf ("   %-4d  %-4d   %-40.40s.%-45.45s\n", one, i, locs [cmds [one].i_loc].path, cmds [one].full);
+      DEBUG_SORT   printf ("   %-4d  %-4d   %-40.40s.%-45.45s\n", one, i, locs [s_cmds [one].i_loc].path, s_cmds [one].name);
    }
    /*---(complete)------------------------------*/
    return 0;
@@ -193,8 +193,8 @@ CMD_push           (char *a_name, char a_src)
    /*---(append)-------------------------*/
    curr = ncmd;
    /*---(full)---------------------------*/
-   strncpy (cmds [curr].full, a_name, LCFULL);
-   cmds [curr].flen = strlen (cmds [curr].full);
+   strncpy (s_cmds [curr].full, a_name, LCFULL);
+   s_cmds [curr].flen = strlen (s_cmds [curr].full);
    /*---(name)---------------------------*/
    strcpy  (s, a_name);
    p = strrchr (s, '/');
@@ -203,8 +203,8 @@ CMD_push           (char *a_name, char a_src)
       DEBUG_DATABASE   printf ("location not found in %s, SKIPPING\n", s);
       return rce;
    }
-   strcpy (cmds [curr].name, p + 1);
-   cmds [curr].len  = strlen (cmds [curr].name);
+   strcpy (s_cmds [curr].name, p + 1);
+   s_cmds [curr].len  = strlen (s_cmds [curr].name);
    *p = '\0';
    /*---(location)--------------------*/
    rci = LOC_find (s);
@@ -215,11 +215,11 @@ CMD_push           (char *a_name, char a_src)
    }
    LOC_link (rci, curr);
    /*---(source)-------------------------*/
-   cmds [curr].source   = a_src;
+   s_cmds [curr].source   = a_src;
    /*---(focus)--------------------------*/
-   if (  cmds [curr].len == my.focus_len &&
-         strcmp (cmds [curr].name, my.focus) == 0) {
-      cmds [curr].active = 'y';
+   if (  s_cmds [curr].len == my.focus_len &&
+         strcmp (s_cmds [curr].name, my.focus) == 0) {
+      s_cmds [curr].active = 'y';
    }
    /*---(index)--------------------------*/
    icmd [curr]         = curr;
@@ -249,21 +249,21 @@ CMD_append         (
    if (a_name == NULL     )   return -105;
    /*---(save name)----------------------*/
    len = strlen (a_name);
-   cmds [a_num].len        = len;
+   s_cmds [a_num].len        = len;
    if (len >= LCNAME)  {
-      cmds [a_num].toolong = '*';
+      s_cmds [a_num].toolong = '*';
       rcc = -1;
    }
-   strncpy (cmds [a_num].name, a_name, LCNAME);
+   strncpy (s_cmds [a_num].name, a_name, LCNAME);
    /*---(save full)----------------------*/
    snprintf (s, 200, "%s/%s", locs [a_loc].path, a_name);
    len = strlen (s);
-   cmds [a_num].flen       = len;
+   s_cmds [a_num].flen       = len;
    if (len >= LCFULL)  {
-      cmds [a_num].ftoolong = '*';
+      s_cmds [a_num].ftoolong = '*';
       rcc = -2;
    }
-   strncpy (cmds [a_num].full, s     , LCFULL);
+   strncpy (s_cmds [a_num].full, s     , LCFULL);
    /*---(complete)-----------------------*/
    return rcc;
 }
@@ -285,10 +285,10 @@ CMD_find           (char *a_full)
    /*---(locate)-------------------------*/
    for (i = 0; i < ncmd; ++i) {
       /*---(filter)----------------------*/
-      if (cmds [i].flen     != len                   )   continue;
-      if (cmds [i].full [0] != a_full [0]            )   continue;
-      if (strchr (valid_src, cmds [i].source) == NULL)   continue;
-      if (strcmp (cmds [i].full, a_full) != 0        )   continue;
+      if (s_cmds [i].flen     != len                   )   continue;
+      if (s_cmds [i].full [0] != a_full [0]            )   continue;
+      if (strchr (valid_src, s_cmds [i].source) == NULL)   continue;
+      if (strcmp (s_cmds [i].full, a_full) != 0        )   continue;
       /*---(save)------------------------*/
       found = i;
       break;
@@ -403,26 +403,26 @@ CMD_valid          (int a_cmd)
  *>       DEBUG_CMDS    printf (", perfect\n");                                               <* 
  *>    }                                                                                          <* 
  *>    --rce;  /+=== name is null ===========+/                                                   <* 
- *>    if (cmds [a_cmd].full == NULL) {                                                        <* 
+ *>    if (s_cmds [a_cmd].full == NULL) {                                                        <* 
  *>       DEBUG_CMDS   printf ("command index (%d) name is null, SKIPPING\n", a_cmd);         <* 
  *>       return rce;                                                                             <* 
  *>    }                                                                                          <* 
  *>    --rce;  /+=== name is empty ==========+/                                                   <* 
- *>    if (cmds [a_cmd].full [0] == '\0') {                                                    <* 
+ *>    if (s_cmds [a_cmd].full [0] == '\0') {                                                    <* 
  *>       DEBUG_CMDS   printf ("command index (%d) name is empty, SKIPPING\n", a_cmd);        <* 
  *>       return rce;                                                                             <* 
  *>    }                                                                                          <* 
  *>    --rce;  /+=== file does not exist ====+/                                                   <* 
- *>    rci = lstat (cmds [a_cmd].full, &st);                                                   <* 
+ *>    rci = lstat (s_cmds [a_cmd].full, &st);                                                   <* 
  *>    if (rci < 0) {                                                                             <* 
- *>       DEBUG_CMDS   printf ("can not stat command file (%s)\n", cmds [a_cmd].full);     <* 
+ *>       DEBUG_CMDS   printf ("can not stat command file (%s)\n", s_cmds [a_cmd].full);     <* 
  *>       return rce;                                                                             <* 
  *>    }                                                                                          <* 
  *>    /+---(uid and gid)--------------------+/                                                   <* 
- *>    cmds [a_cmd].uid = st.st_uid;                                                           <* 
- *>    if (st.st_mode & S_ISUID)   cmds [a_cmd].suid = '*';                                    <* 
- *>    cmds [a_cmd].gid = st.st_gid;                                                           <* 
- *>    if (st.st_mode & S_ISGID)   cmds [a_cmd].sgid = '*';                                    <* 
+ *>    s_cmds [a_cmd].uid = st.st_uid;                                                           <* 
+ *>    if (st.st_mode & S_ISUID)   s_cmds [a_cmd].suid = '*';                                    <* 
+ *>    s_cmds [a_cmd].gid = st.st_gid;                                                           <* 
+ *>    if (st.st_mode & S_ISGID)   s_cmds [a_cmd].sgid = '*';                                    <* 
  *>    /+---(type)---------------------------+/                                                   <* 
  *>    if      (S_ISDIR (st.st_mode))  c = 'd';                                                   <* 
  *>    else if (S_ISCHR (st.st_mode))  c = 'c';                                                   <* 
@@ -432,22 +432,22 @@ CMD_valid          (int a_cmd)
  *>    else if (S_ISREG (st.st_mode))  c = '-';                                                   <* 
  *>    else if (S_ISLNK (st.st_mode))  c = 'l';                                                   <* 
  *>    else                            c = '?';                                                   <* 
- *>    cmds [a_cmd].ftype = c;                                                                 <* 
+ *>    s_cmds [a_cmd].ftype = c;                                                                 <* 
  *>    /+---(execute)------------------------+/                                                   <* 
  *>    --rce;  /+=== not executable =========+/                                                   <* 
  *>    if   ((! (st.st_mode & S_IXUSR))  &&                                                       <* 
  *>          (! (st.st_mode & S_IXGRP))  &&                                                       <* 
  *>          (! (st.st_mode & S_IXOTH))) {                                                        <* 
- *>       DEBUG_CMDS   printf ("command file (%s) not executable\n", cmds [a_cmd].full);   <* 
+ *>       DEBUG_CMDS   printf ("command file (%s) not executable\n", s_cmds [a_cmd].full);   <* 
  *>       return rce;                                                                             <* 
  *>    }                                                                                          <* 
  *>    /+---(mode)---------------------------+/                                                   <* 
  *>    sprintf (s, "%-10.10o", st.st_mode);                                                       <* 
- *>    strncpy (cmds [a_cmd].mode, s + 7, LCMODE);                                             <* 
+ *>    strncpy (s_cmds [a_cmd].mode, s + 7, LCMODE);                                             <* 
  *>    /+---(timestamp)----------------------+/                                                   <* 
- *>    cmds [a_cmd].filetime   = st.st_mtime;                                                  <* 
+ *>    s_cmds [a_cmd].filetime   = st.st_mtime;                                                  <* 
  *>    /+---(size)---------------------------+/                                                   <* 
- *>    cmds [a_cmd].size       = st.st_size;                                                   <* 
+ *>    s_cmds [a_cmd].size       = st.st_size;                                                   <* 
  *>    /+---(complete)------------------------+/                                                  <* 
  *>    return 0;                                                                                  <* 
  *> }                                                                                             <*/
@@ -463,7 +463,6 @@ CMD_stat           (tCMD *a_cmd)
    char        rcc         = 0;             /* return code as character       */
    int         rci         = 0;             /* return code as integer         */
    /*---(header)-------------------------*/
-   yLOG_enter   (__FUNCTION__);
    DEBUG_CMDS   yLOG_enter   (__FUNCTION__);
    DEBUG_CMDS   yLOG_point   ("a_cmd"     , a_cmd);
    /*---(defense : null command)---------*/
@@ -557,29 +556,29 @@ CMD_stat           (tCMD *a_cmd)
  *>       DEBUG_CMDS    printf (", perfect\n");                                                      <* 
  *>    }                                                                                             <* 
  *>    --rce;  /+=== name is null ===========+/                                                      <* 
- *>    if (cmds [a_cmd].full == NULL) {                                                              <* 
+ *>    if (s_cmds [a_cmd].full == NULL) {                                                              <* 
  *>       DEBUG_CMDS   printf ("command index (%d) name is null, SKIPPING\n", a_cmd);                <* 
  *>       return rce;                                                                                <* 
  *>    }                                                                                             <* 
  *>    --rce;  /+=== name is empty ==========+/                                                      <* 
- *>    if (cmds [a_cmd].full [0] == '\0') {                                                          <* 
+ *>    if (s_cmds [a_cmd].full [0] == '\0') {                                                          <* 
  *>       DEBUG_CMDS   printf ("command index (%d) name is empty, SKIPPING\n", a_cmd);               <* 
  *>       return rce;                                                                                <* 
  *>    }                                                                                             <* 
  *>    --rce;  /+=== file type not regular ==+/                                                      <* 
- *>    if (strchr ("-l", cmds [a_cmd].ftype) == 0) {                                                 <* 
+ *>    if (strchr ("-l", s_cmds [a_cmd].ftype) == 0) {                                                 <* 
  *>       DEBUG_CMDS   printf ("command index (%d) not regular file, SKIPPING\n", a_cmd);            <* 
  *>       return rce;                                                                                <* 
  *>    }                                                                                             <* 
  *>    --rce;  /+=== file does not exist ====+/                                                      <* 
- *>    f = fopen (cmds [a_cmd].full, "rb");                                                          <* 
+ *>    f = fopen (s_cmds [a_cmd].full, "rb");                                                          <* 
  *>    if (f == NULL) {                                                                              <* 
- *>       DEBUG_CMDS   printf ("can not open command file (%s)\n", cmds [a_cmd].full);               <* 
+ *>       DEBUG_CMDS   printf ("can not open command file (%s)\n", s_cmds [a_cmd].full);               <* 
  *>       return rce;                                                                                <* 
  *>    }                                                                                             <* 
  *>    /+---(initialize)---------------------+/                                                      <* 
- *>    strcpy (cmds [a_cmd].hash, "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- ");   <* 
- *>    cmds [a_cmd].bytes = 0;                                                                       <* 
+ *>    strcpy (s_cmds [a_cmd].hash, "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- ");   <* 
+ *>    s_cmds [a_cmd].bytes = 0;                                                                       <* 
  *>    /+---(start hash)---------------------+/                                                      <* 
  *>    --rce;  /+=== hash not possible ======+/                                                      <* 
  *>    rcc = SHA1_Init (&ctx);                                                                       <* 
@@ -616,13 +615,13 @@ CMD_stat           (tCMD *a_cmd)
    *>       DEBUG_CMDS   printf ("can not finalize SHA1\n");                                           <* 
       *>       return rce;                                                                                <* 
       *>    }                                                                                             <* 
-      *>    strcpy (cmds [a_cmd].hash, "");                                                               <* 
+      *>    strcpy (s_cmds [a_cmd].hash, "");                                                               <* 
       *>    for (k = 0; k < 20; ++k) {                                                                    <* 
          *>       sprintf (s, "%02x ", md [k]);                                                              <* 
-            *>       strncat (cmds [a_cmd].hash, s, LCHASH);                                                    <* 
+            *>       strncat (s_cmds [a_cmd].hash, s, LCHASH);                                                    <* 
             *>    }                                                                                             <* 
             *>    /+---(sizes)--------------------------+/                                                      <* 
-            *>    cmds [a_cmd].bytes  = fsize;                                                                  <* 
+            *>    s_cmds [a_cmd].bytes  = fsize;                                                                  <* 
             *>    /+---(complete)-----------------------+/                                                      <* 
             *>    return 0;                                                                                     <* 
             *> }                                                                                                <*/
@@ -851,9 +850,9 @@ CMD_list           (void)
       for (i = 0; i < ncmd; ++i) {
          curr = icmd [i];
          /*---(filter for location)------*/
-         if (cmds [curr].i_loc != j)  continue;
+         if (s_cmds [curr].i_loc != j)  continue;
          /*---(filter for empty/unused)--*/
-         if (strchr (valid_src, cmds [curr].source) == NULL)   continue;
+         if (strchr (valid_src, s_cmds [curr].source) == NULL)   continue;
          /*---(check for page break)-----*/
          if ((lines % (9 * 6)) == 0) {
             ++page;
@@ -867,7 +866,7 @@ CMD_list           (void)
             ++lines;
          }
          /*---(name formatting)----------*/
-         CMD_show (count, curr, cmds + curr);
+         CMD_show (count, curr, s_cmds + curr);
          /*---(done)---------------------*/
          ++count;
          ++lines;
@@ -881,6 +880,41 @@ CMD_list           (void)
       }
       CMD_footer  (page, lines);
       /*---(done)------------------------*/
+   }
+   /*---(complete)-----------------------*/
+   return 0;
+}
+
+char             /* [------] output a sorted list ----------------------------*/
+CMD_list_NEW       (void)
+{
+   /*---(locals)-----------+-----------+-*/
+   int         i           = 0;             /* iterator -- package            */
+   int         j           = 0;             /* iterator -- locations          */
+   int         curr        = 0;
+   int         page        = 0;             /* page count                     */
+   int         count       = 0;             /* record count                   */
+   int         lines       = 0;             /* line count                     */
+   /*---(cycle commands)--------------*/
+   for (i = 0; i < ncmd; ++i) {
+      curr = i;
+      /*---(check for page break)-----*/
+      if ((lines % (9 * 6)) == 0) {
+         ++page;
+         if (count > 0)  CMD_footer (page, lines);
+         lines = 0;
+         CMD_header (page, j);
+      }
+      /*---(line grouping)------------*/
+      if ((count % 5) == 0) {
+         printf ("\n");
+         ++lines;
+      }
+      /*---(name formatting)----------*/
+      CMD_show (count, curr, s_cmds + curr);
+      /*---(done)---------------------*/
+      ++count;
+      ++lines;
    }
    /*---(complete)-----------------------*/
    return 0;
@@ -941,6 +975,7 @@ CMD_analyze        (int a_count, char *a_path, char *a_name, tCMD *a_cmd, char a
    CMD_wipe (a_cmd);
    /*---(create names)-------------------*/
    strncpy (a_cmd->name, a_name, LCNAME);
+   DEBUG_CMDS   yLOG_info    ("name"      , a_cmd->name);
    a_cmd->len  = strlen (a_name);
    --rce;  if (a_cmd->len >= LCNAME) {
       DEBUG_CMDS   yLOG_note    ("a_name too long");
@@ -948,6 +983,7 @@ CMD_analyze        (int a_count, char *a_path, char *a_name, tCMD *a_cmd, char a
       return rce;
    }
    snprintf (a_cmd->full, LCFULL, "%s/%s", a_path, a_name);
+   DEBUG_CMDS   yLOG_info    ("full"      , a_cmd->full);
    a_cmd->flen = strlen (a_cmd->full);
    --rce;  if ((a_cmd->len + strlen (a_path) + 1) >= LCFULL) {
       DEBUG_CMDS   yLOG_note    ("full name too long");
@@ -956,18 +992,33 @@ CMD_analyze        (int a_count, char *a_path, char *a_name, tCMD *a_cmd, char a
    }
    /*---(check name quality)-------------*/
    rc = CMD_chars (a_cmd);
-   if (rc < 0)  return rc;
+   if (rc < 0) {
+      DEBUG_CMDS   yLOG_note    ("characters in name failed");
+      DEBUG_CMDS   yLOG_exit    (__FUNCTION__);
+      return rc;
+   }
    /*---(stats)--------------------*/
    rc = CMD_stat  (a_cmd);
-   if (rc < 0)  return rc;
+   if (rc < 0)  {
+      DEBUG_CMDS   yLOG_note    ("getting statistics failed");
+      DEBUG_CMDS   yLOG_exit    (__FUNCTION__);
+      return rc;
+   }
    /*---(contents)-----------------*/
    rc = CMD_hash  (a_cmd);
-   if (rc < 0)  return rc;
+   if (rc < 0)  {
+      DEBUG_CMDS   yLOG_note    ("getting hash failed");
+      DEBUG_CMDS   yLOG_exit    (__FUNCTION__);
+      return rc;
+   }
    /*---(size)---------------------*/
    if (a_cmd->size != a_cmd->bytes)  a_cmd->smiss = '#';
    /*---(final touches)------------*/
    a_cmd->i_loc  = LOC_find (a_path);
-   if (a_cmd->i_loc < 0)  return a_cmd->i_loc;
+   if (a_cmd->i_loc < 0) {
+      DEBUG_CMDS   yLOG_exit    (__FUNCTION__);
+      return a_cmd->i_loc;
+   }
    ++locs [a_cmd->i_loc].ncmd;
    DEBUG_CMDS   yLOG_value   ("loc_num"   , a_cmd->i_loc);
    a_cmd->source = '-';
@@ -981,7 +1032,7 @@ CMD_analyze        (int a_count, char *a_path, char *a_name, tCMD *a_cmd, char a
          DEBUG_CMDS   yLOG_note    ("new entry, can not check");
       } else {
          DEBUG_CMDS   yLOG_note    ("existing, will check");
-         CMD_compare (a_cmd, cmds + x_curr);
+         CMD_compare (a_cmd, s_cmds + x_curr);
       }
    }
    /*---(complete)-----------------------*/
@@ -1059,11 +1110,11 @@ CMD_gather         (char a_check)
                DEBUG_CMDS   yLOG_note    ("pkg filter on, new command, skipping");
                continue;
             }
-            if (strlen (pkgs [cmds [rci].i_pkg].full) != my.focus_len) {
+            if (strlen (pkgs [s_cmds [rci].i_pkg].full) != my.focus_len) {
                DEBUG_CMDS   yLOG_note    ("pkg filter on, length wrong, skipping");
                continue;
             }
-            if (strcmp (pkgs [cmds [rci].i_pkg].full, my.focus) != 0) {
+            if (strcmp (pkgs [s_cmds [rci].i_pkg].full, my.focus) != 0) {
                DEBUG_CMDS   yLOG_note    ("pkg filter on, name wrong, skipping");
                continue;
             }
@@ -1087,8 +1138,14 @@ CMD_gather         (char a_check)
          else {
             SHOW_GATHER  printf ("new command\n");
             DEBUG_CMDS   yLOG_note    ("new command");
-            rc = CMD_analyze (x_total, locs [i].path, den->d_name, cmds + ncmd, '-');
+            DEBUG_CMDS   yLOG_point   ("pointer"   , s_cmds + ncmd);
+            DEBUG_CMDS   yLOG_info    ("name"      , (s_cmds + ncmd)->name);
+            rc = CMD_analyze (x_total, locs [i].path, den->d_name, s_cmds + ncmd, '-');
+            DEBUG_CMDS   yLOG_info    ("name"      , (s_cmds + ncmd)->name);
+            DEBUG_CMDS   yLOG_value   ("rc"        , rc);
+            DEBUG_CMDS   yLOG_value   ("ncmd"      , ncmd);
             if (rc < 0)  continue;
+            icmd [ncmd] = ncmd;
             ++ncmd;
          }
          /*---(done)---------------------*/
@@ -1162,15 +1219,15 @@ CMD_world          (void)
          len = strlen (recd);
          found = -1;
          for (k = 0; k < ncmd; ++k) {
-            if (cmds [k].flen                != len)  continue;
-            if (strcmp (cmds [k].full, recd) != 0  )  continue;
-            if (cmds [k].i_pkg >= 0 && my.matchall != 'y') {
+            if (s_cmds [k].flen                != len)  continue;
+            if (strcmp (s_cmds [k].full, recd) != 0  )  continue;
+            if (s_cmds [k].i_pkg >= 0 && my.matchall != 'y') {
                found = -2;
                break;
             }
-            cmds [k].i_pkg = i;
+            s_cmds [k].i_pkg = i;
             found = k;
-            /*> printf (", %d (%s)", found, cmds [k].full);                        <*/
+            /*> printf (", %d (%s)", found, s_cmds [k].full);                        <*/
          }
          if (found == -1) {
             DEBUG_CMDS   printf ("x");
@@ -1214,19 +1271,19 @@ CMD_package        (void)
    system ("rm -f /tmp/hermes.txt");
    for (i = 0; i < ncmd; ++i) {
       /*---(prefix)----------------------*/
-      DEBUG_CMDS   printf ("      %03d of %03d, %-45.45s      ", i, ncmd, cmds [i].full);
+      DEBUG_CMDS   printf ("      %03d of %03d, %-45.45s      ", i, ncmd, s_cmds [i].full);
       /*---(filter)----------------------*/
-      if (cmds [i].i_pkg >= 0) {
-         DEBUG_CMDS   printf ("      %-4d = (%c) %-45.45s      ", cmds [i].i_pkg, pkgs [cmds [i].i_pkg].source, pkgs [cmds [i].i_pkg].name);
-         if (pkgs [cmds [i].i_pkg].source == 'w') {
+      if (s_cmds [i].i_pkg >= 0) {
+         DEBUG_CMDS   printf ("      %-4d = (%c) %-45.45s      ", s_cmds [i].i_pkg, pkgs [s_cmds [i].i_pkg].source, pkgs [s_cmds [i].i_pkg].name);
+         if (pkgs [s_cmds [i].i_pkg].source == 'w') {
             DEBUG_CMDS   printf ("assigned to world ebulid, done\n");
             continue;
          }
-         if (pkgs [cmds [i].i_pkg].source == '#') {
+         if (pkgs [s_cmds [i].i_pkg].source == '#') {
             DEBUG_CMDS   printf ("assigned to local package, done\n");
             continue;
          }
-         if (pkgs [cmds [i].i_pkg].source == '+' && my.packageall != 'y') {
+         if (pkgs [s_cmds [i].i_pkg].source == '+' && my.packageall != 'y') {
             DEBUG_CMDS   printf ("assigned to non-world ebulid and no force, done\n");
             continue;
          }
@@ -1235,7 +1292,7 @@ CMD_package        (void)
          DEBUG_CMDS   printf ("empty      ");
       }
       /*---(get commands)----------------*/
-      sprintf (cmd, "equery --no-color belongs --early-out --name-only %s > /tmp/hermes.txt", cmds [i].full);
+      sprintf (cmd, "equery --no-color belongs --early-out --name-only %s > /tmp/hermes.txt", s_cmds [i].full);
       system  (cmd);
       /*---(open)------------------------*/
       fp = fopen ("/tmp/hermes.txt", "r");
@@ -1338,13 +1395,13 @@ CMD_writeall       (void)
    for (i = 0; i < ncmd; ++i) {
       /*---(prepare)---------------------*/
       curr = icmd [i];
-      j = cmds [curr].i_loc;
+      j = s_cmds [curr].i_loc;
       /*---(filter)----------------------*/
-      if (strchr (valid_src, cmds [curr].source) == NULL)   continue;
+      if (strchr (valid_src, s_cmds [curr].source) == NULL)   continue;
       /*---(output)----------------------*/
       if ((x_count % 5)     == 0)  fprintf (f, "\n");
       if (x_count % (9 * 5) == 0)  FILE_title (f);
-      FILE_write (f, &cmds [curr], "cmd");
+      FILE_write (f, &s_cmds [curr], "cmd");
       ++x_count;
       /*---(done)------------------------*/
    }
@@ -1414,17 +1471,17 @@ CMD_readdb         (void)
          continue;
       }
       /*---(full)------------------------*/
-      rcc = parse_string  (NULL, &r, 1, LCFULL, cmds  [ncmd].full);
+      rcc = parse_string  (NULL, &r, 1, LCFULL, s_cmds  [ncmd].full);
       if (rcc < 0)   continue;
-      cmds [ncmd].flen = strlen (cmds [ncmd].full);
-      strcpy (s, cmds [ncmd].full);
+      s_cmds [ncmd].flen = strlen (s_cmds [ncmd].full);
+      strcpy (s, s_cmds [ncmd].full);
       p = strrchr (s, '/');
       if (p == NULL)  {
          DEBUG_DATABASE   printf ("location not found in %s, SKIPPING\n", s);
          continue;
       }
-      strcpy (cmds [ncmd].name, p + 1);
-      cmds [ncmd].len  = strlen (cmds [ncmd].name);
+      strcpy (s_cmds [ncmd].name, p + 1);
+      s_cmds [ncmd].len  = strlen (s_cmds [ncmd].name);
       *p = '\0';
       /*---(location)--------------------*/
       rci = LOC_find (s);
@@ -1435,47 +1492,47 @@ CMD_readdb         (void)
       }
       LOC_link (rci, ncmd);
       x_loc = rci;
-      cmds [ncmd].source = '-';
+      s_cmds [ncmd].source = '-';
       DEBUG_DATABASE   printf ("%c "          , locs [rci].source);
       DEBUG_DATABASE   printf ("%-15.15s    " , locs [rci].path);
-      DEBUG_DATABASE   printf ("%-15.15s    " , cmds  [ncmd].name);
-      DEBUG_DATABASE   printf ("%-30.30s "    , cmds  [ncmd].full);
+      DEBUG_DATABASE   printf ("%-15.15s    " , s_cmds  [ncmd].name);
+      DEBUG_DATABASE   printf ("%-30.30s "    , s_cmds  [ncmd].full);
       /*---(type)------------------------*/
-      rcc = parse_flag  (NULL, &r, "l-"       , &cmds [ncmd].ftype);
+      rcc = parse_flag  (NULL, &r, "l-"       , &s_cmds [ncmd].ftype);
       if (rcc < 0)   continue;
-      DEBUG_DATABASE   printf ("%c    "       , cmds  [ncmd].ftype);
+      DEBUG_DATABASE   printf ("%c    "       , s_cmds  [ncmd].ftype);
       /*---(record update time)----------*/
-      rcc = parse_long    (NULL, &r, 0, -1    , &cmds [ncmd].lastchg);
+      rcc = parse_long    (NULL, &r, 0, -1    , &s_cmds [ncmd].lastchg);
       if (rcc < 0)   continue;
-      if (cmds [ncmd].lastchg == 0)  cmds [ncmd].lastchg = my.runtime;
+      if (s_cmds [ncmd].lastchg == 0)  s_cmds [ncmd].lastchg = my.runtime;
       /*---(timestamp)-------------------*/
-      rcc = parse_long    (NULL, &r, 1, -1    , &cmds [ncmd].filetime);
+      rcc = parse_long    (NULL, &r, 1, -1    , &s_cmds [ncmd].filetime);
       if (rcc < 0)   continue;
       DEBUG_DATABASE   printf ("- ");
       /*---(security)--------------------*/
-      rcc = parse_integer (NULL, &r, 0, 100000, &cmds [ncmd].uid);
+      rcc = parse_integer (NULL, &r, 0, 100000, &s_cmds [ncmd].uid);
       if (rcc < 0)   continue;
       DEBUG_DATABASE   printf ("- ");
-      rcc = parse_flag  (NULL, &r, "*-"       , &cmds [ncmd].suid);
+      rcc = parse_flag  (NULL, &r, "*-"       , &s_cmds [ncmd].suid);
       if (rcc < 0)   continue;
-      DEBUG_DATABASE   printf ("%c "          , cmds  [ncmd].suid);
-      rcc = parse_integer (NULL, &r, 0, 100000, &cmds [ncmd].gid);
+      DEBUG_DATABASE   printf ("%c "          , s_cmds  [ncmd].suid);
+      rcc = parse_integer (NULL, &r, 0, 100000, &s_cmds [ncmd].gid);
       if (rcc < 0)   continue;
       DEBUG_DATABASE   printf ("- ");
-      rcc = parse_flag  (NULL, &r, "*-"       , &cmds [ncmd].sgid);
+      rcc = parse_flag  (NULL, &r, "*-"       , &s_cmds [ncmd].sgid);
       if (rcc < 0)   continue;
-      DEBUG_DATABASE   printf ("%c "          , cmds  [ncmd].sgid);
-      rcc = parse_string  (NULL, &r, 1, LCMODE, cmds  [ncmd].mode);
+      DEBUG_DATABASE   printf ("%c "          , s_cmds  [ncmd].sgid);
+      rcc = parse_string  (NULL, &r, 1, LCMODE, s_cmds  [ncmd].mode);
       if (rcc < 0)   continue;
       DEBUG_DATABASE   printf ("- ");
       /*---(size)------------------------*/
       DEBUG_DATABASE   printf ("   ");
-      rcc = parse_integer (NULL, &r, 0, -1    , &cmds [ncmd].bytes);
+      rcc = parse_integer (NULL, &r, 0, -1    , &s_cmds [ncmd].bytes);
       if (rcc < 0)   continue;
       DEBUG_DATABASE   printf ("- ");
-      cmds  [ncmd].size = cmds  [ncmd].bytes;
+      s_cmds  [ncmd].size = s_cmds  [ncmd].bytes;
       DEBUG_DATABASE   printf ("   ");
-      rcc = parse_string  (NULL, &r, 1, LCHASH, cmds  [ncmd].hash);
+      rcc = parse_string  (NULL, &r, 1, LCHASH, s_cmds  [ncmd].hash);
       if (rcc < 0)   continue;
       DEBUG_DATABASE   printf ("- ");
       /*---(package)---------------------*/
@@ -1485,25 +1542,25 @@ CMD_readdb         (void)
       rci = -1;
       if (strcmp (s, "-") == 0)  {
          DEBUG_DATABASE   printf ("---- ");
-         cmds [ncmd].i_pkg = -1;
+         s_cmds [ncmd].i_pkg = -1;
          DEBUG_DATABASE   printf ("x x ---- %-25.25s ", s);
       } else {
          rci = PKG_find (s);
          DEBUG_DATABASE   printf ("%4d ", rci);
          if (rci < 0)  {
             rci = PKG_push (s, '+', ' ', "");
-            DEBUG_DATABASE   printf ("+ %c %4d ", cmds [ncmd].source, rci);
+            DEBUG_DATABASE   printf ("+ %c %4d ", s_cmds [ncmd].source, rci);
             DEBUG_DATABASE   printf ("%-25.25s ", pkgs [rci].full);
          } else {
-            DEBUG_DATABASE   printf ("- %c %4d ", cmds [ncmd].source, rci);
+            DEBUG_DATABASE   printf ("- %c %4d ", s_cmds [ncmd].source, rci);
             DEBUG_DATABASE   printf ("%-25.25s ", pkgs [rci].full);
          }
          PKG_link     (rci, ncmd);
       }
       /*---(focus)--------------------------*/
-      if (  cmds [ncmd].len == my.focus_len &&
-            strcmp (cmds [ncmd].name, my.focus) == 0) {
-         cmds [ncmd].active = 'y';
+      if (  s_cmds [ncmd].len == my.focus_len &&
+            strcmp (s_cmds [ncmd].name, my.focus) == 0) {
+         s_cmds [ncmd].active = 'y';
       }
       /*---(done-------------------------*/
       DEBUG_DATABASE   printf ("\n");
@@ -1546,7 +1603,7 @@ CMD_unit           (char *a_question, int a_num)
    }
    /*---(command name)-------------------*/
    else if (strncmp (a_question, "command_name"      , 20)      == 0) {
-      snprintf (unit_answer, LEN_TEXT, "command name     : %3d, %-.35s", a_num, cmds [a_num].full);
+      snprintf (unit_answer, LEN_TEXT, "command name     : %3d, %-.35s", a_num, s_cmds [a_num].full);
    }
    /*---(command count)------------------*/
    else if (strncmp (a_question, "command_count"     , 20)      == 0) {
@@ -1554,18 +1611,18 @@ CMD_unit           (char *a_question, int a_num)
    }
    /*---(last command)-------------------*/
    else if (strncmp (a_question, "command_last"      , 20)      == 0) {
-      snprintf (unit_answer, LEN_TEXT, "command last     : (%2d) %c, %-25.25s (%2d)", ncmd - 1, cmds [ncmd - 1].source, cmds [ncmd - 1].full, cmds [ncmd - 1].flen);
+      snprintf (unit_answer, LEN_TEXT, "command last     : (%2d) %c, %-25.25s (%2d)", ncmd - 1, s_cmds [ncmd - 1].source, s_cmds [ncmd - 1].full, s_cmds [ncmd - 1].flen);
    }
    /*---(parsed command)-----------------*/
    else if (strncmp (a_question, "command_parse"     , 20)      == 0) {
-      snprintf (unit_answer, LEN_TEXT, "command parsed   : %-10.10s, %-.25s", locs [cmds [a_num].i_loc].path, cmds [a_num].name);
+      snprintf (unit_answer, LEN_TEXT, "command parsed   : %-10.10s, %-.25s", locs [s_cmds [a_num].i_loc].path, s_cmds [a_num].name);
    }
    /*---(command link)-------------------*/
    else if (strncmp (a_question, "command_link"      , 20)      == 0) {
-      if (cmds [a_num].i_pkg < 0) {
+      if (s_cmds [a_num].i_pkg < 0) {
          snprintf (unit_answer, LEN_TEXT, "command link     : not linked");
       } else {
-         snprintf (unit_answer, LEN_TEXT, "command link     : (%3d) %-.25s", cmds [a_num].i_pkg, pkgs [cmds [a_num].i_pkg].full);
+         snprintf (unit_answer, LEN_TEXT, "command link     : (%3d) %-.25s", s_cmds [a_num].i_pkg, pkgs [s_cmds [a_num].i_pkg].full);
       }
    }
    /*---(location command count)---------*/
@@ -1580,15 +1637,15 @@ CMD_unit           (char *a_question, int a_num)
    }
    /*---(command security)---------------*/
    else if (strncmp (a_question, "command_sec"       , 20)      == 0) {
-      snprintf (unit_answer, LEN_TEXT, "command security : %3d, %3.3s, %4d, %c, %4d, %c", a_num, cmds [a_num].mode, cmds [a_num].uid, cmds [a_num].suid, cmds [a_num].gid, cmds [a_num].sgid);
+      snprintf (unit_answer, LEN_TEXT, "command security : %3d, %3.3s, %4d, %c, %4d, %c", a_num, s_cmds [a_num].mode, s_cmds [a_num].uid, s_cmds [a_num].suid, s_cmds [a_num].gid, s_cmds [a_num].sgid);
    }
    /*---(command size)-------------------*/
    else if (strncmp (a_question, "command_size"      , 20)      == 0) {
-      snprintf (unit_answer, LEN_TEXT, "command size     : %3d, %9d, %9d, %c", a_num, cmds [a_num].size, cmds [a_num].bytes, cmds [a_num].smiss);
+      snprintf (unit_answer, LEN_TEXT, "command size     : %3d, %9d, %9d, %c", a_num, s_cmds [a_num].size, s_cmds [a_num].bytes, s_cmds [a_num].smiss);
    }
    /*---(command hash)-------------------*/
    else if (strncmp (a_question, "command_hash"      , 20)      == 0) {
-      snprintf (unit_answer, LEN_TEXT, "command hash     : %3d, %-35.35s", a_num, cmds [a_num].hash);
+      snprintf (unit_answer, LEN_TEXT, "command hash     : %3d, %-35.35s", a_num, s_cmds [a_num].hash);
    }
    /*---(complete)-----------------------*/
    return unit_answer;
