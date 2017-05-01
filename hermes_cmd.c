@@ -778,16 +778,17 @@ CMD_chars          (tCMD *a_cmd)
 static void      o___REPORTING_______________o (void) {;}
 
 char             /* [------] show list header --------------------------------*/
-CMD_header         (int  a_page, int  a_loc)
+CMD_header         (int  a_page, int  a_loc, char a_order)
 {
    char        s           [500];           /* generic string                 */
    printf ("\n\n");
-   sprintf (s, "HERMES-DIACTOROS -- command executable report, page %3d, location %2d, %s ==========================================================================================================================================================================================================================================================================================================================================================================================================================", a_page, a_loc, locs [a_loc].path );
-   printf  ("%-273.273s\n\n", s);
-   /*> printf  ("  seqn indx  s a  name                   len   full name                           len   t filetime   uid    gid    ugo m size      bytes     sha1 hash                                                   pkg# src name                                         \n");   <* 
-    *> printf  ("  ---- ----  - -  - -------------------- - --- ----------------------------------- - --- - ---------- - ---- - ---- --- - --------- --------- ----------------------------------------------------------- ---- --- ---------------------------------------------\n");   <*/
-   printf  ("  seqn indx  s a  name                   len   full name                           len   t filetime   uid    gid    ugo m size      bytes     sha1 hash                                                   pkg# src\n");
-   printf  ("  ---- ----  - -  - -------------------- - --- ----------------------------------- - --- - ---------- - ---- - ---- --- - --------- --------- ----------------------------------------------------------- ---- ---\n");
+   printf ("HERMES-DIACTOROS (messenger) integrity assurance for executables and shared libraries\n");
+   printf ("executable reporting %s\n", (a_order == 's') ? "in original sequence" : "sorted by location/name");
+   printf ("\n");
+   /*> sprintf (s, "HERMES-DIACTOROS -- command executable report, page %3d, location %2d, %s ==========================================================================================================================================================================================================================================================================================================================================================================================================================", a_page, a_loc, locs [a_loc].path );   <* 
+    *> printf  ("%-273.273s\n\n", s);                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            <*/
+   printf  ("  seqn indx  s a  name                   len   t filetime   uid    gid    ugo m size      bytes     sha1 hash                                                   pkg# src\n");
+   printf  ("  ---- ----  - -  - -------------------- - --- - ---------- - ---- - ---- --- - --------- --------- ----------------------------------------------------------- ---- ---\n");
    return 0;
 }
 
@@ -798,7 +799,7 @@ CMD_footer         (int  a_page, int  a_lines)
    if (a_page == 1)  return 0;
    for (i = a_lines; i <= (9 * 6); ++i)   printf ("\n");
    /*> printf  ("  ---- ----  - -  - -------------------- - --- ----------------------------------- - --- - ---------- - ---- - ---- --- - --------- --------- ----------------------------------------------------------- ---- --- ---------------------------------------------\n");   <*/
-   printf  ("  ---- ----  - -  - -------------------- - --- ----------------------------------- - --- - ---------- - ---- - ---- --- - --------- --------- ----------------------------------------------------------- ---- ---\n");
+   printf  ("  ---- ----  - -  - -------------------- - --- - ---------- - ---- - ---- --- - --------- --------- ----------------------------------------------------------- ---- ---\n");
    printf  ("             - database    - only good chars      - good                                          - reg file   - norm - norm     - size match                                                                            - unchecked                                     \n");
    printf  ("             + new entry   + extended chars       + long name                                     l symlink    * suid * sgid     # size diff                                                                             w world file                                    \n");
    printf  ("             # conflict    # bad chars                                                                                                                                                                                   + non-world ebuild                              \n");
@@ -822,18 +823,10 @@ CMD_show           (int a_seq, int a_index, int a_num, tCMD *a_cmd)
    if (a_cmd->filetime <= time (NULL))   sprintf (r, "%-10d", a_cmd->filetime);
    else                                  strcpy  (r, "(bad-time)");
    /*---(output line)--------------*/
-   /*> printf ("  %4d %4d  %c %c  %c %-20.20s %c %3d %-35.35s %c %3d %c %-10.10s %c %4d %c %4d %-3.3s %c %9d %9d %-60.60s%4d  %c  %-45.45s\n" ,       <* 
-    *>       a_seq           , a_index        , a_cmd->source  , a_cmd->active  , a_cmd->concern ,                                                    <* 
-    *>       s               , a_cmd->toolong , a_cmd->len     ,                                                                                      <* 
-    *>       t               , a_cmd->ftoolong, a_cmd->flen    , a_cmd->ftype   ,                                                                     <* 
-    *>       r               ,                                                                                                                        <* 
-    *>       a_cmd->suid     , a_cmd->uid     , a_cmd->sgid    , a_cmd->gid     , a_cmd->mode    ,                                                    <* 
-    *>       a_cmd->smiss    , a_cmd->size    , a_cmd->bytes   , a_cmd->hash    ,                                                                     <* 
-    *>       a_cmd->i_pkg    , (a_cmd->i_pkg   >= 0) ? pkgs [a_cmd->i_pkg].source : '-' , (a_cmd->i_pkg >= 0) ? pkgs [a_cmd->i_pkg].full : "---" );   <*/
-   printf ("  %4d %4d  %c %c  %c %-20.20s %c %3d %-35.35s %c %3d %c %-10.10s %c %4d %c %4d %-3.3s %c %9d %9d %-60.60s%4d  %c  \n" ,
+   printf ("  %4d %4d  %c %c  %c %-20.20s %c %3d %c %-10.10s %c %4d %c %4d %-3.3s %c %9d %9d %-60.60s%4d  %c  \n" ,
          a_seq           , a_index        , a_cmd->source  , a_cmd->active  , a_cmd->concern ,
          s               , a_cmd->toolong , a_cmd->len     ,
-         t               , a_cmd->ftoolong, a_cmd->flen    , a_cmd->ftype   ,
+         a_cmd->ftype   ,
          r               ,
          a_cmd->suid     , a_cmd->uid     , a_cmd->sgid    , a_cmd->gid     , a_cmd->mode    ,
          a_cmd->smiss    , a_cmd->size    , a_cmd->bytes   , a_cmd->hash    ,
@@ -888,7 +881,7 @@ CMD_list           (char a_order)
             ++page;
             if (count > 0)  CMD_footer (page, lines);
             lines = 0;
-            CMD_header (page, j);
+            CMD_header (page, j, a_order);
          }
          /*---(line grouping)------------*/
          if ((count % 5) == 0) {
@@ -903,7 +896,7 @@ CMD_list           (char a_order)
       }
       /*---(check for empty)-------------*/
       if (count == 0) {
-         CMD_header (page, j);
+         CMD_header (page, j, a_order);
          printf ("\n");
          printf ("  no commands identified\n");
          count = lines += 2;
