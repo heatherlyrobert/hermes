@@ -209,8 +209,8 @@
 
 
 /* rapidly evolving version number to aid with visual change confirmation     */
-#define     VER_NUM   "0.6k"
-#define     VER_TXT   "added yURG and modernized Makefile"
+#define     VER_NUM   "0.6l"
+#define     VER_TXT   "LOC focus, added validator functions to simplify code"
 
 
 /*---(struct typedefs)-------------------*/
@@ -228,39 +228,6 @@ typedef long long        llong;
 
 /*---(command database)------------------*/
 
-
-
-/*===[[ location struct ]]============*/
-/*---(design notes)-------------------*/
-/*
- * locations are location of the compiled code
- *
- *
- * the two primary fields are...
- *
- *    source   :  c is loaded from the configuration file   ( search    )
- *                a is added as a command line argument     ( search    )
- *                # is added while reading command database ( no search )
- *
- *    path     :  fully qualified directory path
- *
- */
-#define     LOC_MAX     100
-typedef     struct cLOC  tLOC;
-struct      cLOC {
-   /*---(base)---------------------------*/
-   char        active;                 /* verify commands in this loc         */
-   char        source;                 /* what method created this entry      */
-   char        path        [STR_MAX];  /* directory path                      */
-   char        desc        [STR_REG];  /* free-form description               */
-   /*---(working)------------------------*/
-   int         len;                    /* length of path string               */
-   int         ncmd;                   /* number of commands in location      */
-   /*---(error-flags)--------------------*/
-   char        f_concern;              /* flag for path name issues           */
-}; /*---(done)---------------------------*/
-extern      tLOC        locs        [LOC_MAX];   /* location data structure   */
-extern      int         nloc;                    /* location count            */
 
 
 /*---(package struct)--------------------*/
@@ -523,9 +490,12 @@ char        parse_long         (char *a_recd, char **a_place, long a_min, long a
 
 
 /*---(hermes_loc)-----------------------------------------*/
+char        LOC_check_name      (char  *a_path);
+int         LOC_find_name           (char  *a_name);
+
+char        LOC_check_index     (int    a_loc);
 char        LOC_valid          (int    a_loc);
 char        LOC_purge          (void);
-int         LOC_find           (char  *a_name);
 int         LOC_push           (char  *a_name, char a_type, char *a_desc);
 char        LOC_wipe           (int    a_curr);
 char        LOC_link           (int    a_loc, int a_cmd);

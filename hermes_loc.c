@@ -19,9 +19,41 @@
 
 
 
-tLOC        s_locs      [LOC_MAX];       /* location data structure           */
+/*===[[ location struct ]]============*/
+/*---(design notes)-------------------*/
+/*
+ * locations are location of the compiled code
+ *
+ *
+ * the two primary fields are...
+ *
+ *    source   :  c is loaded from the configuration file   ( search    )
+ *                a is added as a command line argument     ( search    )
+ *                # is added while reading command database ( no search )
+ *
+ *    path     :  fully qualified directory path
+ *
+ */
+#define     MAX_LOCATIONS     100
+#define     LEN_PATH           50
+typedef     struct cLOC  tLOC;
+struct      cLOC {
+   /*---(base)---------------------------*/
+   char        active;                 /* verify commands in this loc         */
+   char        source;                 /* what method created this entry      */
+   char        path        [STR_MAX];  /* directory path                      */
+   char        desc        [STR_REG];  /* free-form description               */
+   /*---(working)------------------------*/
+   int         len;                    /* length of path string               */
+   int         ncmd;                   /* number of commands in location      */
+   /*---(error-flags)--------------------*/
+   char        f_concern;              /* flag for path name issues           */
+}; /*---(done)---------------------------*/
+tLOC        s_locs      [MAX_LOCATIONS]; /* location data structure           */
 int         s_nloc      = 0;             /* total number of locations         */
 int         s_cloc      = -1;            /* current location in use           */
+
+
 
 static char valid_src   [10] = "cad";    /* valid source types                */
 /*  c = from configuration file /etc/themis.conf
@@ -32,44 +64,84 @@ static char valid_src   [10] = "cad";    /* valid source types                */
 
 
 /*====================------------------------------------====================*/
-/*===----                      helper functions                        ----===*/
+/*===----                 validation/checking functions                ----===*/
 /*====================------------------------------------====================*/
-static void      o___HELPERS_________________o (void) {;}
+static void      o___CHECKERS________________o (void) {;}
 
-char             /* [------] validate a location index -----------------------*/
-LOC_valid          (int a_loc)
+char             /*-> validate a location index ----------[ ------ [ ------ ]-*/
+LOC_check_index     (int a_loc)
 {
-   /*---(design notes)-------------------*/
-   /*
-    * return code must deferentiate fairly precisely to aid rapid debugging and
-    * tracing back to a specific failure reason.  also, some callers may choose
-    * to ignore one or more of the return values which helps with reuse, i.e.,
-    * ATNEXT which may not actually be an error in the case of an append/push.
-    *
-    */
+   /*---(locals)-----------+-----------+-*/
+   char        rce         = -10;      /* return code for errors              */
+   /*---(header)-------------------------*/
+   DEBUG_DIRS   yLOG_senter  (__FUNCTION__);
+   DEBUG_DIRS   yLOG_sint    (a_loc);
    /*---(defenses)-----------------------*/
-   char        rce         = -10;
    --rce;  if (a_loc  <  0) {
-      DEBUG_DIRS   yLOG_note    ("warning, location index is negative");
+      DEBUG_DIRS   yLOG_snote   ("can not be negative");
+      DEBUG_DIRS   yLOG_sexitr  (__FUNCTION__, rce);
       return rce;
    }
-   --rce;  if (a_loc  >= LOC_MAX)  {
-      DEBUG_DIRS   yLOG_note    ("warning, location index is greater than max");
+   --rce;  if (a_loc  >= MAX_LOCATIONS)  {
+      DEBUG_DIRS   yLOG_snote   ("over maximum allowed");
+      DEBUG_DIRS   yLOG_sexitr  (__FUNCTION__, rce);
       return rce;
    }
-   --rce;  if (a_loc  == s_nloc)  {
-      DEBUG_DIRS   yLOG_note    ("warning, location index is at next");
-      return rce;
-   }
-   --rce;  if (a_loc  >  s_nloc)  {
-      DEBUG_DIRS   yLOG_note    ("warning, location index is too high");
-      return rce;
-   }
-   --rce;  if (s_nloc >= LOC_MAX) {
-      DEBUG_DIRS   yLOG_note    ("warning, location structure is full");
+   --rce;  if (a_loc  >= s_nloc)  {
+      DEBUG_DIRS   yLOG_snote   ("unused, open slot");
+      DEBUG_DIRS   yLOG_sexitr  (__FUNCTION__, rce);
       return rce;
    }
    /*---(complete)-----------------------*/
+   DEBUG_DIRS   yLOG_snote   ("validated");
+   DEBUG_DIRS   yLOG_sexit   (__FUNCTION__);
+   return 0;
+}
+
+char             /*-> validate a location name -----------[ ------ [ ------ ]-*/
+LOC_check_name      (char *a_path)
+{
+   /*---(locals)-----------+-----------+-*/
+   char        rce         = -10;      /* return code for errors              */
+   int         x_len       =   0;
+   DIR        *x_dir       = NULL;          /* directory pointer              */
+   /*---(header)-------------------------*/
+   DEBUG_DIRS   yLOG_senter  (__FUNCTION__);
+   DEBUG_DIRS   yLOG_spoint  (a_path);
+   /*---(defenses)-----------------------*/
+   --rce;  if (a_path ==  NULL) {
+      DEBUG_DIRS   yLOG_snote   ("can not be null");
+      DEBUG_DIRS   yLOG_sexitr  (__FUNCTION__, rce);
+      return rce;
+   }
+   x_len = strlen (a_path);
+   --rce;  if (x_len <  4) {
+      DEBUG_DIRS   yLOG_snote   ("path too short");
+      DEBUG_DIRS   yLOG_sexitr  (__FUNCTION__, rce);
+      return rce;
+   }
+   --rce;  if (x_len >= LEN_PATH) {
+      DEBUG_DIRS   yLOG_snote   ("path too long");
+      DEBUG_DIRS   yLOG_sexitr  (__FUNCTION__, rce);
+      return rce;
+   }
+   --rce;  if (a_path[0] !=  '/') {
+      DEBUG_DIRS   yLOG_snote   ("must be absolute path");
+      DEBUG_DIRS   yLOG_sexitr  (__FUNCTION__, rce);
+      return rce;
+   }
+   /*---(test against real location)-----*/
+   x_dir = opendir (a_path);
+   --rce;  if (x_dir == NULL) {
+      closedir (x_dir);
+      DEBUG_DIRS   yLOG_snote   ("does not exist");
+      DEBUG_DIRS   yLOG_sexitr  (__FUNCTION__, rce);
+      return rce;
+   }
+   closedir (x_dir);
+   /*---(complete)-----------------------*/
+   DEBUG_DIRS   yLOG_snote   ("validated");
+   DEBUG_DIRS   yLOG_sexit   (__FUNCTION__);
    return 0;
 }
 
@@ -87,9 +159,9 @@ LOC_purge          (void)
    int         i           = 0;             /* iterator -- location           */
    /*---(bagin)--------------------------*/
    DEBUG_DIRS  yLOG_enter   (__FUNCTION__);
-   DEBUG_DIRS  yLOG_value   ("slots"     , LOC_MAX);
+   DEBUG_DIRS  yLOG_value   ("slots"     , MAX_LOCATIONS);
    /*---(cycle)--------------------------*/
-   for (i = 0; i < LOC_MAX; ++i) {
+   for (i = 0; i < MAX_LOCATIONS; ++i) {
       LOC_wipe (i);
    }
    DEBUG_DIRS  yLOG_note    ("initialized all slots");
@@ -109,30 +181,51 @@ LOC_purge          (void)
 static void      o___UPDATES_________________o (void) {;}
 
 int              /* [------] verify a location by name -----------------------*/
-LOC_find           (char  *a_name)
+LOC_find_name           (char  *a_name)
 {
    /*---(locals)-----------+-----------+-*/
    char        rce         = -10;
-   int         i           = 0;             /* iterator -- location           */
-   int         found       = -1;            /* generic locator                */
+   char        rc          =   0;
    int         x_len       = 0;             /* generic string length          */
+   int         x_found     = -1;            /* generic locator                */
+   int         i           = 0;             /* iterator -- location           */
+   /*---(header)-------------------------*/
+   DEBUG_DIRS   yLOG_senter  (__FUNCTION__);
    /*---(prepare)------------------------*/
    s_cloc = -1;
    /*---(defense))-----------------------*/
-   --rce;  if (a_name == NULL)      return rce;
+   rc = LOC_check_name (a_name);
+   --rce;  if (rc < 0) {
+      DEBUG_DIRS   yLOG_sexitr  (__FUNCTION__, rce);
+      return rce;
+   }
+   DEBUG_DIRS   yLOG_snote   (a_name);
    x_len = strlen (a_name);
-   --rce;  if (x_len  == 0   )      return rce;
+   DEBUG_DIRS   yLOG_sint    (x_len);
+   --rce;  if (x_len  == 0   ) {
+      DEBUG_DIRS   yLOG_snote   ("can not be blank");
+      DEBUG_DIRS   yLOG_sexitr  (__FUNCTION__, rce);
+      return rce;
+   }
    /*---(cycle)--------------------------*/
    for (i = 0; i < s_nloc; ++i) {
       /*---(filter)----------------------*/
       if (s_locs [i].len                   != x_len)   continue;
       if (strcmp (s_locs [i].path, a_name) != 0    )   continue;
       /*---(save)------------------------*/
-      found = i;
+      x_found = i;
       break;
    }
+   DEBUG_DIRS   yLOG_sint    (x_found);
+   --rce;  if (x_found < 0) {
+      DEBUG_DIRS   yLOG_snote   ("cound not find");
+      DEBUG_DIRS   yLOG_sexitr  (__FUNCTION__, rce);
+      return rce;
+   }
+   DEBUG_DIRS   yLOG_snote   ("FOUND");
    /*---(complete)-----------------------*/
-   return found;
+   DEBUG_DIRS   yLOG_sexit   (__FUNCTION__);
+   return x_found;
 }
 
 int              /* [------] append a location to the list -------------------*/
@@ -149,7 +242,7 @@ LOC_push           (char  *a_path, char a_source, char *a_desc)
    int         i           = 0;             /* iterator -- location           */
    /*---(defenses)-----------------------*/
    --rce;
-   if (s_nloc >= LOC_MAX) {
+   if (s_nloc >= MAX_LOCATIONS) {
       DEBUG_DIRS   printf ("location structure full, SKIPPING\n");
       return rce;
    }
@@ -158,7 +251,7 @@ LOC_push           (char  *a_path, char a_source, char *a_desc)
       DEBUG_DIRS   printf ("location name is null, SKIPPING\n");
       return -7;
    }
-   found = LOC_find (a_path);
+   found = LOC_find_name (a_path);
    --rce;
    if (found < -1) {
       DEBUG_DIRS   printf ("bad name or length, SKIPPING\n");
@@ -232,7 +325,7 @@ char             /* [------] clear a single location entry -------------------*/
 LOC_wipe           (int a_loc)
 {
    /*---(defenses)-----------------------*/
-   if (a_loc >= LOC_MAX)   return -1;
+   if (a_loc >= MAX_LOCATIONS)   return -1;
    /*---(database)-----------------------*/
    s_locs [a_loc].active         = my.def_loc;
    s_locs [a_loc].source         = '?';
@@ -264,7 +357,7 @@ LOC_link           (int a_loc, int a_cmd)
    DEBUG_DIRS   printf ("   linking location/command  : ");
    /*---(defenses)-----------------------*/
    // location index
-   rcc = LOC_valid (a_loc);
+   rcc = LOC_check_index (a_loc);
    if (rcc < 0)  {
       DEBUG_DIRS   printf (", SKIPPING\n");
       return rcc;
@@ -314,7 +407,7 @@ LOC_unlink         (int a_cmd)
    }
    x_loc = s_cmds [a_cmd].i_loc;
    // location index
-   rcc = LOC_valid (x_loc);
+   rcc = LOC_check_index (x_loc);
    if (rcc < 0)  {
       DEBUG_DIRS   printf (", SKIPPING\n");
       return rcc;
@@ -342,7 +435,7 @@ LOC_list           (void)
    int         x_cmds      = 0;
    /*---(header)-------------------------*/
    printf ("\n");
-   printf ("HERMES-DIACTOROS -- location report                                                            %3d of %3d slots used\n", s_nloc, LOC_MAX);
+   printf ("HERMES-DIACTOROS -- location report                                                            %3d of %3d slots used\n", s_nloc, MAX_LOCATIONS);
    printf ("\n");
    printf ("  seq# indx  s a  ---path--------------------------------- len  -c-  ncmd   ---dsec---------------------------------\n");
    /*---(cycle location)-----------------*/
@@ -389,6 +482,17 @@ LOC_change         (int a_loc)
       s_cloc = -1;
       return -3;
    }
+   return 0;
+}
+
+char             /*-> return first directory -------------[ ------ [ ------ ]-*/
+LOC_open           (void)
+{
+   if (s_nloc >= MAX_LOCATIONS) {
+      return -1;
+   }
+   s_cloc = s_nloc;
+   return s_nloc;
    return 0;
 }
 
