@@ -206,8 +206,8 @@
 
 
 /* rapidly evolving version number to aid with visual change confirmation     */
-#define     VER_NUM   "0.6i"
-#define     VER_TXT   "cleaned up command reporting titles and notes"
+#define     VER_NUM   "0.6j"
+#define     VER_TXT   "run basic package and command database writes"
 
 
 /*---(struct typedefs)-------------------*/

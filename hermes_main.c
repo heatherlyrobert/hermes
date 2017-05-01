@@ -26,15 +26,20 @@ main               (int argc, char *argv[])
    /*> PKG_readdb   ();                                                               <*/
 
    PKG_index    ();
-   PKG_list     ('s');
+   /*> PKG_list     ('s');                                                            <*/
    PKG_list     ('i');
+   PKG_writedb  ();
 
    CMD_gather   ('n');
 
    CMD_index    ();
    CMD_list     ('s');
-   CMD_list     ('i');
-   CMD_list     ('a');
+   /*> CMD_list     ('i');                                                            <*/
+   /*> CMD_list     ('a');                                                            <*/
+
+   CMD_world    ();
+
+   CMD_writeall ();
 
    DEBUG_TOPS   yLOG_exit    (__FUNCTION__);
    PROG_end     ();
