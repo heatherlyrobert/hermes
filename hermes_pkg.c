@@ -150,23 +150,23 @@ PKG_valid          (int a_pkg)
     */
    /*---(defenses)-----------------------*/
    if (a_pkg  <  0) {
-      DEBUG_PACKAGES    printf ("package index (%d) negative"      , a_pkg);
+      DEBUG_PKGS    printf ("package index (%d) negative"      , a_pkg);
       return PKG_NEGATIVE;
    }
    if (a_pkg  >= PKG_MAX)  {
-      DEBUG_PACKAGES    printf ("package index (%d vs %d) over max", a_pkg, PKG_MAX);
+      DEBUG_PKGS    printf ("package index (%d vs %d) over max", a_pkg, PKG_MAX);
       return PKG_OVERMAX;
    }
    if (a_pkg  == npkg)  {
-      DEBUG_PACKAGES    printf ("package index (%d == %d) at next" , a_pkg, npkg);
+      DEBUG_PKGS    printf ("package index (%d == %d) at next" , a_pkg, npkg);
       return PKG_ATNEXT;
    }
    if (a_pkg  >  npkg)  {
-      DEBUG_PACKAGES    printf ("package index (%d vs %d) too high", a_pkg, npkg);
+      DEBUG_PKGS    printf ("package index (%d vs %d) too high", a_pkg, npkg);
       return PKG_TOOHIGH;
    }
    if (npkg  >= PKG_MAX) {
-      DEBUG_PACKAGES    printf ("package structure full");
+      DEBUG_PKGS    printf ("package structure full");
       return PKG_FULL;
    }
    /*---(complete)-----------------------*/
@@ -186,16 +186,16 @@ PKG_purge          (void)
    /*---(locals)-----------+-----------+-*/
    int         i           = 0;             /* iterator -- location           */
    /*---(output)-------------------------*/
-   DEBUG_WORLD   printf ("\n");
-   DEBUG_WORLD   printf ("   begin initializing package data structure\n");
+   DEBUG_GENTOO   printf ("\n");
+   DEBUG_GENTOO   printf ("   begin initializing package data structure\n");
    /*---(clear all)----------------------*/
    for (i = 0; i < PKG_MAX;  ++i)  PKG_wipe  (i);
    npkg  = 0;
    for (i = 0; i < AREA_MAX; ++i)  AREA_wipe (i);
    s_narea = 0;
    /*---(cycle)--------------------------*/
-   DEBUG_WORLD   printf ("   done initializing %d elemeets\n", PKG_MAX);
-   DEBUG_WORLD   printf ("\n");
+   DEBUG_GENTOO   printf ("   done initializing %d elemeets\n", PKG_MAX);
+   DEBUG_GENTOO   printf ("\n");
    /*---(complete)-----------------------*/
    return 0;
 }
@@ -269,7 +269,7 @@ static void      o___UPDATES_________________o (void) {;}
 int              /* [------] append a package --------------------------------*/
 PKG_push           (char  *a_full, char  a_source, char a_priority, char *a_desc)
 {
-   DEBUG_PACKAGES   printf ("   appending package: ");
+   DEBUG_PKGS   printf ("   appending package: ");
    /*---(locals)-----------+-----------+-*/
    int         i           = 0;             /* loop iterator -- location      */
    int         found       = -1;            /* generic locator                */
@@ -283,41 +283,41 @@ PKG_push           (char  *a_full, char  a_source, char a_priority, char *a_desc
    /*---(defenses)-----------------------*/
    --rce;     /* too many packages ------*/
    if (npkg >= PKG_MAX) {
-      DEBUG_PACKAGES   printf ("package structure full, SKIPPING\n");
+      DEBUG_PKGS   printf ("package structure full, SKIPPING\n");
       return rce;
    }
    --rce;     /* null name --------------*/
    if (a_full   == NULL) {
-      DEBUG_PACKAGES   printf ("package name is null, SKIPPING\n");
+      DEBUG_PKGS   printf ("package name is null, SKIPPING\n");
       return rce;
    }
    --rce;     /* bad name ---------------*/
    found = PKG_find     (a_full);
    if (found < -1) {
-      DEBUG_PACKAGES   printf ("bad name or length, SKIPPING\n");
+      DEBUG_PKGS   printf ("bad name or length, SKIPPING\n");
       return rce;
    }
-   DEBUG_PACKAGES   printf ("%s, ", a_full);
+   DEBUG_PKGS   printf ("%s, ", a_full);
    --rce;     /* already appended -------*/
    if (found >= 0) {
-      DEBUG_PACKAGES   printf ("already exists as %d, done\n", found);
+      DEBUG_PKGS   printf ("already exists as %d, done\n", found);
       if (a_source == 'w')   pkgs [found].world  = 'y';
       return found;
    }
    --rce;     /* bad source type --------*/
    if (strchr (valid_src, a_source) == NULL) {
-      DEBUG_PACKAGES   printf ("can't understand source type (%c vs %s), SKIPPING\n", a_source, valid_src);
+      DEBUG_PKGS   printf ("can't understand source type (%c vs %s), SKIPPING\n", a_source, valid_src);
       return rce;
    }
    len = strlen (a_full);
    --rce;     /* name too long ----------*/
    if (len >= STR_REG) {
-      DEBUG_LOCATIONS   printf ("name too long (%d vs. %d)\n", len, STR_REG);
+      DEBUG_DIRS   printf ("name too long (%d vs. %d)\n", len, STR_REG);
       return rce;
    }
    --rce;     /* name too short ---------*/
    if (len < 10) {
-      DEBUG_LOCATIONS   printf ("name too short (%d vs. %d)\n", len, 10);
+      DEBUG_DIRS   printf ("name too short (%d vs. %d)\n", len, 10);
       return rce;
    }
    /*---(append)-------------------------*/
@@ -328,14 +328,14 @@ PKG_push           (char  *a_full, char  a_source, char a_priority, char *a_desc
       p = strtok_r  (s, q, &r);
       --rce;     /* ---------------------*/
       if (p == NULL)  {
-         DEBUG_PACKAGES   printf ("can not parse category part, SKIPPING\n");
+         DEBUG_PKGS   printf ("can not parse category part, SKIPPING\n");
          return rce;
       }
       strncpy (pkgs [found].cat , p, LPCAT );
       p = strtok_r  (NULL, q, &r);
       --rce;     /* ---------------------*/
       if (p == NULL)  {
-         DEBUG_PACKAGES   printf ("can not parse name part, SKIPPING\n");
+         DEBUG_PKGS   printf ("can not parse name part, SKIPPING\n");
          return rce;
       }
       strncpy (pkgs [found].name, p       , LPNAME);
@@ -358,7 +358,7 @@ PKG_push           (char  *a_full, char  a_source, char a_priority, char *a_desc
    if (dir == NULL) {
       dir = opendir (a_full);
       if (dir == NULL) {
-         DEBUG_PACKAGES   printf ("skipping (%s), not portage or local package\n", s);
+         DEBUG_PKGS   printf ("skipping (%s), not portage or local package\n", s);
          pkgs [found].portage = '-';
          /*> return rce;                                                              <*/
       }
@@ -382,7 +382,7 @@ PKG_push           (char  *a_full, char  a_source, char a_priority, char *a_desc
    }
    if (a_source == 'w')   pkgs [found].world  = 'y';
    /*---(update)-------------------------*/
-   DEBUG_PACKAGES   printf ("added as %d with source=%c, done\n", found, a_source);
+   DEBUG_PKGS   printf ("added as %d with source=%c, done\n", found, a_source);
    AREA_addpkg (pkgs [found].area);
    ++npkg;
    /*---(complete)-----------------------*/
@@ -451,27 +451,27 @@ PKG_link           (int a_pkg, int a_cmd)
    char        rce         = -10;           /* return code for errors         */
    char        rcc         = 0;             /* return code as char            */
    /*---(header)-------------------------*/
-   DEBUG_PACKAGES   printf ("   linking package/command  : ");
+   DEBUG_PKGS   printf ("   linking package/command  : ");
    /*---(defense))-----------------------*/
    rcc = PKG_valid (a_pkg);
    if (rcc < 0)  {
-      DEBUG_PACKAGES    printf ("package not valid, SKIPPING\n");
+      DEBUG_PKGS    printf ("package not valid, SKIPPING\n");
       return rcc;
    }
    rcc = CMD_valid (a_cmd);
    if (rcc < 0 && rcc != CMD_ATNEXT)  {
-      DEBUG_PACKAGES    printf ("command not valid, SKIPPING\n");
+      DEBUG_PKGS    printf ("command not valid, SKIPPING\n");
       return rcc;
    }
    --rce;  /*=== command already linked =*/
    if (s_cmds [a_cmd].i_pkg >= 0) {
-      DEBUG_PACKAGES   printf ("command already linked to package (%d), SKIPPING\n", s_cmds [a_cmd].i_pkg);
+      DEBUG_PKGS   printf ("command already linked to package (%d), SKIPPING\n", s_cmds [a_cmd].i_pkg);
       return rce;
    }
    /*---(link)---------------------------*/
    s_cmds [a_cmd].i_pkg = a_pkg;
    ++pkgs [a_pkg].ncmd;
-   DEBUG_PACKAGES   printf ("linked %s to %s, done\n", s_cmds [a_cmd].name, pkgs [a_pkg].full);
+   DEBUG_PKGS   printf ("linked %s to %s, done\n", s_cmds [a_cmd].name, pkgs [a_pkg].full);
    /*---(complete)-----------------------*/
    return 0;
 }
@@ -479,7 +479,7 @@ PKG_link           (int a_pkg, int a_cmd)
 char             /* [------] unlink a command from a package -----------------*/
 PKG_unlink         (int a_cmd)
 {
-   DEBUG_PACKAGES   printf ("   unlinking package/command: ");
+   DEBUG_PKGS   printf ("   unlinking package/command: ");
    /*---(locals)-----------+-----------+-*/
    int         i           = 0;             /* iterator -- location           */
    int         found       = -1;            /* generic locator                */
@@ -491,24 +491,24 @@ PKG_unlink         (int a_cmd)
    char        rcc         = 0;             /* return code as char            */
    /*---(defense))-----------------------*/
    if (a_cmd < 0) {
-      DEBUG_PACKAGES   printf ("aommand index negative, SKIPPING\n");
+      DEBUG_PKGS   printf ("aommand index negative, SKIPPING\n");
       return -3;
    }
    if (a_cmd >  ncmd) {
-      DEBUG_PACKAGES   printf ("command index too high, SKIPPING\n");
+      DEBUG_PKGS   printf ("command index too high, SKIPPING\n");
       return -4;
    }
    x_pkg = s_cmds [a_cmd].i_pkg;
    // location index
    rcc = PKG_valid (x_pkg);
    if (rcc < 0)  {
-      DEBUG_PACKAGES    printf (", SKIPPING\n");
+      DEBUG_PKGS    printf (", SKIPPING\n");
       return rcc;
    }
    /*---(link)---------------------------*/
    s_cmds [a_cmd].i_pkg = -1;
    --pkgs [x_pkg].ncmd;
-   DEBUG_PACKAGES   printf ("unlinked %s from %s, done\n", s_cmds [a_cmd].name, pkgs [x_pkg].full);
+   DEBUG_PKGS   printf ("unlinked %s from %s, done\n", s_cmds [a_cmd].name, pkgs [x_pkg].full);
    /*---(complete)-----------------------*/
    return 0;
 }
@@ -630,15 +630,15 @@ PKG_world          (void)
    /*---(begin)--------------------------*/
    DEBUG_TOPS   yLOG_enter   (__FUNCTION__);
    /*---(open world file)----------------*/
-   DEBUG_WORLD  yLOG_info    ("world_file", FILE_WORLD);
+   DEBUG_GENTOO  yLOG_info    ("world_file", FILE_WORLD);
    fp = fopen (FILE_WORLD, "r");
-   DEBUG_WORLD  yLOG_point   ("file point", fp);
+   DEBUG_GENTOO  yLOG_point   ("file point", fp);
    --rce;  if (fp == NULL) {
-      DEBUG_WORLD  yLOG_note    ("failed to open file");
+      DEBUG_GENTOO  yLOG_note    ("failed to open file");
       DEBUG_TOPS   yLOG_exit    (__FUNCTION__);
       return rce;
    }
-   DEBUG_WORLD  yLOG_note    ("successfully openned");
+   DEBUG_GENTOO  yLOG_note    ("successfully openned");
    while (1) {
       /*---(read)---------------------*/
       fgets(x_recd, 1000, fp);
@@ -646,31 +646,31 @@ PKG_world          (void)
       ++i;
       x_len = strlen (x_recd);
       x_recd [--x_len] = '\0';
-      DEBUG_WORLD  yLOG_info    ("line"      , x_recd);
+      DEBUG_GENTOO  yLOG_info    ("line"      , x_recd);
       /*---(filter)-------------------*/
       if (x_recd[0] == '#' ) {
-         DEBUG_WORLD  yLOG_note    ("comment skipping");
+         DEBUG_GENTOO  yLOG_note    ("comment skipping");
          continue;
       }
       if (x_recd[0] == '\0')  {
-         DEBUG_WORLD  yLOG_note    ("emty skipping");
+         DEBUG_GENTOO  yLOG_note    ("emty skipping");
          continue;
       }
       /*---(save)---------------------*/
-      DEBUG_WORLD  yLOG_note    ("accepted");
+      DEBUG_GENTOO  yLOG_note    ("accepted");
       PKG_push (x_recd, 'w', ' ', "");
       /*---(done----------------------*/
    }
    /*---(close the file)-----------------*/
-   DEBUG_WORLD  yLOG_note    ("closing world file");
+   DEBUG_GENTOO  yLOG_note    ("closing world file");
    rc = fclose(fp);
-   DEBUG_WORLD  yLOG_value   ("close rc"  , rc);
+   DEBUG_GENTOO  yLOG_value   ("close rc"  , rc);
    --rce;  if (rc < 0) {
-      DEBUG_WORLD  yLOG_note    ("failed to close file");
+      DEBUG_GENTOO  yLOG_note    ("failed to close file");
       DEBUG_TOPS   yLOG_exit    (__FUNCTION__);
       return rce;
    }
-   DEBUG_WORLD  yLOG_note    ("successfully closed world file");
+   DEBUG_GENTOO  yLOG_note    ("successfully closed world file");
    /*---(complete)-----------------------*/
    DEBUG_TOPS   yLOG_exit    (__FUNCTION__);
    return 0;
@@ -702,41 +702,41 @@ PKG_readdb         (void)
    char        x_type      [20];
    char        x_ver       [20];
    /*---(haeder)-------------------------*/
-   DEBUG_DATABASE   printf ("package database read\n");
+   DEBUG_CACHE   printf ("package database read\n");
    /*---(open)---------------------------*/
-   DEBUG_DATABASE   printf ("   openning input file <<%s>>\n", PKG_DATABASE);
+   DEBUG_CACHE   printf ("   openning input file <<%s>>\n", PKG_DATABASE);
    f = fopen (PKG_DATABASE, "r");
    if (f == NULL) {
-      DEBUG_DATABASE   printf ("               can not open package file\n");
+      DEBUG_CACHE   printf ("               can not open package file\n");
       return -1;
    }
-   DEBUG_DATABASE   printf ("   package database open\n");
+   DEBUG_CACHE   printf ("   package database open\n");
    /*---(process entries)----------------*/
-   DEBUG_DATABASE   printf ("   reading entries\n");
-   DEBUG_DATABASE   printf ("   line seq    eval    len category------------ name---------------- full-------------------------- len    s p u\n");
+   DEBUG_CACHE   printf ("   reading entries\n");
+   DEBUG_CACHE   printf ("   line seq    eval    len category------------ name---------------- full-------------------------- len    s p u\n");
    while (1) {
       /*---(read)------------------------*/
       fgets(recd, 1000, f);
       if (feof (f)) break;
       /*---(output)----------------------*/
       ++nread;
-      DEBUG_DATABASE  if (nread % 3 == 1)   printf ("\n");
-      DEBUG_DATABASE  printf ("   %4d %3d    ", nread, nproc);
+      DEBUG_CACHE  if (nread % 3 == 1)   printf ("\n");
+      DEBUG_CACHE  printf ("   %4d %3d    ", nread, nproc);
       /*---(filter)----------------------*/
       rcc = recd_valid (recd, &len);
       if (rcc < 0)  continue;
-      DEBUG_DATABASE   printf ("----    %3d ", len);
+      DEBUG_CACHE   printf ("----    %3d ", len);
       r = NULL;
       /*---(type)------------------------*/
       rcc = parse_string  (recd, &r, 1, LCFULL, x_type);
       if (strcmp ("pkg", x_type) != 0) {
-         DEBUG_DATABASE   printf ("not a command record, SKIPPING\n");
+         DEBUG_CACHE   printf ("not a command record, SKIPPING\n");
          continue;
       }
       /*---(type)------------------------*/
       rcc = parse_string  (NULL, &r, 1, LCFULL, x_ver);
       if (strcmp ("-B-", x_ver) != 0) {
-         DEBUG_DATABASE   printf ("version not -B-, SKIPPING\n");
+         DEBUG_CACHE   printf ("version not -B-, SKIPPING\n");
          continue;
       }
       /*---(name)------------------------*/
@@ -751,17 +751,17 @@ PKG_readdb         (void)
       /*---(append)----------------------*/
       rci = PKG_push (s, c, ' ', "");
       if (rci < 0) {
-         DEBUG_DATABASE   printf ("can not append %s, type %c, SKIPPING\n", s, c);
+         DEBUG_CACHE   printf ("can not append %s, type %c, SKIPPING\n", s, c);
          continue;
       }
-      DEBUG_DATABASE   printf ("%-20.20s %-20.20s %-30.30s %3d    %c ", pkgs [rci].cat, pkgs [rci].name, pkgs [rci].full, pkgs [rci].len, pkgs [rci].source);
+      DEBUG_CACHE   printf ("%-20.20s %-20.20s %-30.30s %3d    %c ", pkgs [rci].cat, pkgs [rci].name, pkgs [rci].full, pkgs [rci].len, pkgs [rci].source);
       /*---(area)------------------------*/
       strcpy (pkgs [rci].area, a);
       /*---(priority)--------------------*/
       rcc = parse_flag  (NULL, &r, "-+#", &c);
       if (rcc < 0)   continue;
       pkgs [rci].priority = c;
-      DEBUG_DATABASE   printf ("%c "      , pkgs [rci].priority);
+      DEBUG_CACHE   printf ("%c "      , pkgs [rci].priority);
       /*---(command count)---------------*/
       rcc = parse_integer (NULL, &r, 0, 500, &x_value);
       if (rcc < 0)   continue;
@@ -769,9 +769,9 @@ PKG_readdb         (void)
       rcc = parse_flag  (NULL, &r, "-URB*?", &c);
       if (rcc < 0)   continue;
       pkgs [rci].update   = c;
-      DEBUG_DATABASE   printf ("%c "      , pkgs [rci].update);
+      DEBUG_CACHE   printf ("%c "      , pkgs [rci].update);
       /*---(done)------------------------*/
-      DEBUG_DATABASE   printf ("\n");
+      DEBUG_CACHE   printf ("\n");
       ++nproc;
    }
    /*---(wrapup)-------------------------*/
@@ -789,15 +789,15 @@ PKG_writedb        (void)
    FILE       *f           = NULL;          /* file pointer - commands        */
    int         curr        = 0;
    /*---(open)---------------------------*/
-   DEBUG_DATABASE   printf ("\n\npackage database write\n");
+   DEBUG_CACHE   printf ("\n\npackage database write\n");
    f = fopen (PKG_DATABASE, "w");
    if (f == NULL) {
       printf ("               can not open package file <<%s>>\n", PKG_DATABASE);
       return -1;
    }
-   DEBUG_DATABASE   printf ("    package database open\n");
+   DEBUG_CACHE   printf ("    package database open\n");
    /*---(header)-------------------------*/
-   DEBUG_DATABASE   printf ("    writing header\n");
+   DEBUG_CACHE   printf ("    writing header\n");
    fprintf (f, "# hermes package database written at %ld\n", my.runtime);
    fprintf (f, "#    -A- recreated simple listing to file\n");
    fprintf (f, "#    -B- added record types and versions\n");

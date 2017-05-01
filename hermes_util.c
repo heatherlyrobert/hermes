@@ -91,25 +91,25 @@ recd_valid         (char  *a_recd, int  *a_len)
    /*---(null pointer)-------------------*/
    --rce;
    if (a_recd == NULL ) {
-      DEBUG_DATABASE   printf ("skip, null recd pointer, SKIPPING\n");
+      DEBUG_CACHE   printf ("skip, null recd pointer, SKIPPING\n");
       return rce;
    }
    /*---(blank line)---------------------*/
    --rce;
    if (a_recd[0] == '\0')  {
-      DEBUG_DATABASE   printf ("skip, blank line, SKIPPING\n");
+      DEBUG_CACHE   printf ("skip, blank line, SKIPPING\n");
       return -2;
    }
    /*---(comment line)-------------------*/
    --rce;
    if (a_recd[0] == '#' ) {
-      DEBUG_DATABASE   printf ("skip, comment line, SKIPPING\n");
+      DEBUG_CACHE   printf ("skip, comment line, SKIPPING\n");
       return rce;
    }
    /*---(space prefixed)-----------------*/
    --rce;
    if (a_recd[0] == ' ')  {
-      DEBUG_DATABASE   printf ("skip, prefixed with space, SKIPPING\n");
+      DEBUG_CACHE   printf ("skip, prefixed with space, SKIPPING\n");
       return rce;
    }
    /*---(clean up)-----------------------*/
@@ -138,26 +138,26 @@ parse_string       (char *a_recd, char **a_place, int a_min, int a_max, char *a_
    /*---(no placeholder)-----------------*/
    --rce;
    if (a_recd != NULL && *a_place != NULL)   {
-      DEBUG_DATABASE   printf ("recd not NULL and placeholder has value, SKIPPING\n");
+      DEBUG_CACHE   printf ("recd not NULL and placeholder has value, SKIPPING\n");
       return rce;
    }
    /*---(no placeholder)-----------------*/
    --rce;
    if (a_recd == NULL && *a_place == NULL)   {
-      DEBUG_DATABASE   printf ("recd is NULL and placeholder has no value, SKIPPING\n");
+      DEBUG_CACHE   printf ("recd is NULL and placeholder has no value, SKIPPING\n");
       return rce;
    }
    /*---(no string)----------------------*/
    --rce;
    if (a_value == NULL)   {
-      DEBUG_DATABASE   printf ("string pointer null, SKIPPING\n");
+      DEBUG_CACHE   printf ("string pointer null, SKIPPING\n");
       return rce;
    }
    /*---(parse)--------------------------*/
    p = strtok_r (a_recd, q, a_place);
    --rce;
    if (p        == NULL)   {
-      DEBUG_DATABASE   printf ("field value null, SKIPPING\n");
+      DEBUG_CACHE   printf ("field value null, SKIPPING\n");
       return rce;
    }
    /*---(clean)--------------------------*/
@@ -166,13 +166,13 @@ parse_string       (char *a_recd, char **a_place, int a_min, int a_max, char *a_
    /*---(too short)----------------------*/
    --rce;
    if (l <  a_min && p [0] != '-')   {
-      DEBUG_DATABASE   printf ("field <<%s>> too short %d vs %d, SKIPPING\n", p, l, a_min);
+      DEBUG_CACHE   printf ("field <<%s>> too short %d vs %d, SKIPPING\n", p, l, a_min);
       return rce;
    }
    /*---(too long)-----------------------*/
    --rce;
    if (l >= a_max)   {
-      DEBUG_DATABASE   printf ("field <<%s>> too long %d vs %d, SKIPPING\n", p, l, a_max);
+      DEBUG_CACHE   printf ("field <<%s>> too long %d vs %d, SKIPPING\n", p, l, a_max);
       return rce;
    }
    /*---(string)-------------------------*/
@@ -192,26 +192,26 @@ parse_flag         (char *a_recd, char **a_place, char *a_valid, char *a_value)
    /*---(no placeholder)-----------------*/
    --rce;
    if (a_recd != NULL && a_place != NULL)   {
-      DEBUG_DATABASE   printf ("recd not NULL and placeholder has value, SKIPPING\n");
+      DEBUG_CACHE   printf ("recd not NULL and placeholder has value, SKIPPING\n");
       return rce;
    }
    /*---(no placeholder)-----------------*/
    --rce;
    if (a_recd == NULL && a_place == NULL)   {
-      DEBUG_DATABASE   printf ("recd is NULL and placeholder has no value, SKIPPING\n");
+      DEBUG_CACHE   printf ("recd is NULL and placeholder has no value, SKIPPING\n");
       return rce;
    }
    /*---(no string)----------------------*/
    --rce;
    if (a_value  == NULL)   {
-      DEBUG_DATABASE   printf ("string pointer null, SKIPPING\n");
+      DEBUG_CACHE   printf ("string pointer null, SKIPPING\n");
       return rce;
    }
    /*---(parse)--------------------------*/
    p = strtok_r (a_recd, q, a_place);
    --rce;
    if (p        == NULL)   {
-      DEBUG_DATABASE   printf ("field value null, SKIPPING\n");
+      DEBUG_CACHE   printf ("field value null, SKIPPING\n");
       return rce;
    }
    /*---(clean)--------------------------*/
@@ -220,19 +220,19 @@ parse_flag         (char *a_recd, char **a_place, char *a_valid, char *a_value)
    /*---(too short)----------------------*/
    --rce;
    if (l <  1)   {
-      DEBUG_DATABASE   printf ("field <<%s>> too short %d vs %d, SKIPPING\n", p, l, 1);
+      DEBUG_CACHE   printf ("field <<%s>> too short %d vs %d, SKIPPING\n", p, l, 1);
       return rce;
    }
    /*---(too long)-----------------------*/
    --rce;
    if (l >  1)   {
-      DEBUG_DATABASE   printf ("field <<%s>> too long %d vs %d, SKIPPING\n", p, l, 1);
+      DEBUG_CACHE   printf ("field <<%s>> too long %d vs %d, SKIPPING\n", p, l, 1);
       return rce;
    }
    /*---(too long)-----------------------*/
    --rce;
    if (strchr (a_valid, p[0]) == NULL)   {
-      DEBUG_DATABASE   printf ("field value %c not in %s, SKIPPING\n", p [0], a_valid);
+      DEBUG_CACHE   printf ("field value %c not in %s, SKIPPING\n", p [0], a_valid);
       return rce;
    }
    /*---(string)-------------------------*/
@@ -252,26 +252,26 @@ parse_integer      (char *a_recd, char **a_place, int a_min, int a_max, int *a_v
    /*---(no placeholder)-----------------*/
    --rce;
    if (a_recd != NULL && *a_place != NULL)   {
-      DEBUG_DATABASE   printf ("recd not NULL and placeholder has value, SKIPPING\n");
+      DEBUG_CACHE   printf ("recd not NULL and placeholder has value, SKIPPING\n");
       return rce;
    }
    /*---(no placeholder)-----------------*/
    --rce;
    if (a_recd == NULL && *a_place == NULL)   {
-      DEBUG_DATABASE   printf ("recd is NULL and placeholder has no value, SKIPPING\n");
+      DEBUG_CACHE   printf ("recd is NULL and placeholder has no value, SKIPPING\n");
       return rce;
    }
    /*---(no string)----------------------*/
    --rce;
    if (a_value == NULL)   {
-      DEBUG_DATABASE   printf ("string pointer null, SKIPPING\n");
+      DEBUG_CACHE   printf ("string pointer null, SKIPPING\n");
       return rce;
    }
    /*---(parse)--------------------------*/
    p = strtok_r (a_recd, q, a_place);
    --rce;
    if (p        == NULL)   {
-      DEBUG_DATABASE   printf ("field value null, SKIPPING\n");
+      DEBUG_CACHE   printf ("field value null, SKIPPING\n");
       return rce;
    }
    /*---(clean)--------------------------*/
@@ -280,13 +280,13 @@ parse_integer      (char *a_recd, char **a_place, int a_min, int a_max, int *a_v
    /*---(too short)----------------------*/
    --rce;
    if (v <  a_min) {
-      DEBUG_DATABASE   printf ("value too low %d vs %d, SKIPPING\n", v, a_min);
+      DEBUG_CACHE   printf ("value too low %d vs %d, SKIPPING\n", v, a_min);
       return rce;
    }
    /*---(too long)-----------------------*/
    --rce;
    if (a_max > 0 && v >= a_max)   {
-      DEBUG_DATABASE   printf ("value too high %d vs %d, SKIPPING\n", v, a_max);
+      DEBUG_CACHE   printf ("value too high %d vs %d, SKIPPING\n", v, a_max);
       return rce;
    }
    /*---(string)-------------------------*/
@@ -306,26 +306,26 @@ parse_long         (char *a_recd, char **a_place, long a_min, long a_max, long *
    /*---(no placeholder)-----------------*/
    --rce;
    if (a_recd != NULL && *a_place != NULL)   {
-      DEBUG_DATABASE   printf ("recd not NULL and placeholder has value, SKIPPING\n");
+      DEBUG_CACHE   printf ("recd not NULL and placeholder has value, SKIPPING\n");
       return rce;
    }
    /*---(no placeholder)-----------------*/
    --rce;
    if (a_recd == NULL && *a_place == NULL)   {
-      DEBUG_DATABASE   printf ("recd is NULL and placeholder has no value, SKIPPING\n");
+      DEBUG_CACHE   printf ("recd is NULL and placeholder has no value, SKIPPING\n");
       return rce;
    }
    /*---(no string)----------------------*/
    --rce;
    if (a_value == NULL)   {
-      DEBUG_DATABASE   printf ("string pointer null, SKIPPING\n");
+      DEBUG_CACHE   printf ("string pointer null, SKIPPING\n");
       return rce;
    }
    /*---(parse)--------------------------*/
    p = strtok_r (a_recd, q, a_place);
    --rce;
    if (p        == NULL)   {
-      DEBUG_DATABASE   printf ("field value null, SKIPPING\n");
+      DEBUG_CACHE   printf ("field value null, SKIPPING\n");
       return rce;
    }
    /*---(clean)--------------------------*/
@@ -334,13 +334,13 @@ parse_long         (char *a_recd, char **a_place, long a_min, long a_max, long *
    /*---(too short)----------------------*/
    --rce;
    if (v <  a_min) {
-      DEBUG_DATABASE   printf ("value too low %ld vs %ld, SKIPPING\n", v, a_min);
+      DEBUG_CACHE   printf ("value too low %ld vs %ld, SKIPPING\n", v, a_min);
       return rce;
    }
    /*---(too long)-----------------------*/
    --rce;
    if (a_max > 0 && v >= a_max)   {
-      DEBUG_DATABASE   printf ("value too high %ld vs %ld, SKIPPING\n", v, a_max);
+      DEBUG_CACHE   printf ("value too high %ld vs %ld, SKIPPING\n", v, a_max);
       return rce;
    }
    /*---(string)-------------------------*/

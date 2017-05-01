@@ -115,10 +115,10 @@ CMD_index          (void)
    DEBUG_SORT   printf("   stats : N2 = %ld, action (move/N2) = %2.0f%%, efficiency (move/comp) = %2.0f%%\n", n2, ratio, action);
    DEBUG_SORT   printf("\n");
    /*---(report out)----------------------------*/
-   for (i = 0; i < ncmd; ++i) {
-      one = icmd [i];
-      DEBUG_SORT   printf ("   %-4d  %-4d   %-40.40s.%-45.45s\n", one, i, locs [s_cmds [one].i_loc].path, s_cmds [one].name);
-   }
+   /*> for (i = 0; i < ncmd; ++i) {                                                                                                 <* 
+    *>    one = icmd [i];                                                                                                           <* 
+    *>    DEBUG_SORT   printf ("   %-4d  %-4d   %-40.40s.%-45.45s\n", one, i, locs [s_cmds [one].i_loc].path, s_cmds [one].name);   <* 
+    *> }                                                                                                                            <*/
    /*---(complete)------------------------------*/
    return 0;
 }
@@ -130,56 +130,90 @@ CMD_index          (void)
 /*====================------------------------------------====================*/
 static void      o___UPDATES_________________o (void) {;}
 
+char             /*-> check file name to standards -------[ ------ [ ------ ]-*/
+CMD_checkname      (char *a_name)
+{
+   /*---(locals)-----------+-----------+-*/
+   char        rce         = -10;           /* return code for errors         */
+   int         x_len       = 0;             /* generic string length          */
+   int         x_curr      = -1;            /* generic locator                */
+   /*---(header)-------------------------*/
+   DEBUG_CMDS   yLOG_senter  (__FUNCTION__);
+   /*---(check for room)-----------------*/
+   DEBUG_CMDS   yLOG_sint    (ncmd);
+   --rce;  if (ncmd >= CMD_MAX) {
+      DEBUG_CMDS   yLOG_snote   ("no room in command structure");
+      DEBUG_CMDS   yLOG_sexitr  (__FUNCTION__, rce);
+      return rce;
+   }
+   /*---(check for null)-----------------*/
+   DEBUG_CMDS   yLOG_spoint  (a_name);
+   --rce;  if (a_name   == NULL) {
+      DEBUG_CMDS   yLOG_snote   ("name can not be null");
+      DEBUG_CMDS   yLOG_sexitr  (__FUNCTION__, rce);
+      return rce;
+   }
+   /*---(check length)-------------------*/
+   x_len = strlen (a_name);
+   DEBUG_CMDS   yLOG_sint    (x_len);
+   --rce;  if (x_len >= LCFULL) {
+      DEBUG_CMDS   yLOG_snote   ("name too long");
+      DEBUG_CMDS   yLOG_sexitr  (__FUNCTION__, rce);
+      return rce;
+   }
+   --rce;  if (x_len <  5) {
+      DEBUG_CMDS   yLOG_snote   ("name too short");
+      DEBUG_CMDS   yLOG_sexitr  (__FUNCTION__, rce);
+      return rce;
+   }
+   /*---(check existing)-----------------*/
+   x_curr = CMD_find     (a_name);
+   DEBUG_CMDS   yLOG_sint    (x_curr);
+   --rce;  if (x_curr < -1) {
+      DEBUG_CMDS   yLOG_snote   ("find failed");
+      DEBUG_CMDS   yLOG_sexitr  (__FUNCTION__, rce);
+      return rce;
+   }
+   DEBUG_CMDS   printf ("%s, ", a_name);
+   --rce;  if (x_curr >= 0)  {
+      DEBUG_CMDS   yLOG_snote   ("already exists");
+      DEBUG_CMDS   yLOG_sexitr  (__FUNCTION__, rce);
+      return x_curr;
+   }
+   /*---(complete)------------------------------*/
+   DEBUG_CMDS   yLOG_sexit   (__FUNCTION__);
+   return 0;
+}
+
 int              /* [------] add a new command to the list -------------------*/
 CMD_push           (char *a_name, char a_src)
 {
-   DEBUG_CMDS   printf ("   appending command: ");
    /*---(locals)-----------+-----------+-*/
    int         curr        = -1;            /* generic locator                */
-   int         len         = 0;             /* generic string length          */
+   int         x_len       = 0;             /* generic string length          */
    char        s           [200];           /* generic string                 */
    char       *p           = NULL;          /* strtok current pointer         */
    FILE       *f           = NULL;          /* file pointer                   */
    char        rce         = -10;           /* return code for errors         */
+   char        rc          =   0;           /* generic return code            */
    int         rci         = 0;             /* return code as integer         */
-   /*---(defenses)-----------------------*/
-   --rce;     /* too many commands ------*/
-   if (ncmd >= CMD_MAX) {
-      DEBUG_CMDS   printf ("structure full, SKIPPING\n");
+   /*---(header)-------------------------*/
+   DEBUG_CMDS   yLOG_enter   (__FUNCTION__);
+   /*---(name defense)-------------------*/
+   rc = CMD_checkname (a_name);
+   DEBUG_CMDS   yLOG_value   ("checkname" , rc);
+   --rce;  if (rc <  0) {
+      DEBUG_CMDS   yLOG_note    ("check name failed");
+      DEBUG_CMDS   yLOG_exitr   (__FUNCTION__, rce);
       return rce;
    }
-   --rce;     /* bad source type --------*/
-   if (strchr (valid_src, a_src) == NULL) {
-      DEBUG_CMDS   printf ("invalid source type %c (%s), SKIPPING\n", a_src, valid_src);
+   /*---(source defense)-----------------*/
+   DEBUG_CMDS   yLOG_char    ("a_src"     , a_src);
+   DEBUG_CMDS   yLOG_info    ("valid"     , valid_src);
+   --rce;  if (strchr (valid_src, a_src) == NULL) {
+      DEBUG_CMDS   yLOG_note    ("source not valid");
+      DEBUG_CMDS   yLOG_exitr   (__FUNCTION__, rce);
       return rce;
-   }
-   --rce;     /* null name --------------*/
-   if (a_name   == NULL) {
-      DEBUG_CMDS   printf ("name is null, SKIPPING\n");
-      return rce;
-   }
-   len = strlen (a_name);
-   --rce;     /* name too long ----------*/
-   if (len >= LCFULL) {
-      DEBUG_CMDS   printf ("name too long (%d vs. %d)\n", len, LCFULL);
-      return rce;
-   }
-   --rce;     /* name too short ---------*/
-   if (len <  5) {
-      DEBUG_CMDS   printf ("name too short (%d vs. %d)\n", len, 5);
-      return rce;
-   }
-   --rce;     /* bad name ---------------*/
-   if (a_src != '#')   curr = CMD_find     (a_name);
-   if (curr < -1) {
-      DEBUG_CMDS   printf ("bad name or length, SKIPPING\n");
-      return rce;
-   }
-   DEBUG_CMDS   printf ("%s, ", a_name);
-   --rce;     /* already appended -------*/
-   if (curr >= 0)  {
-      DEBUG_CMDS   printf ("already exists as %d, done\n", curr);
-      return curr;
    }
    /*---(test against real file)---------*/
    strcpy  (s, a_name);
@@ -200,7 +234,7 @@ CMD_push           (char *a_name, char a_src)
    p = strrchr (s, '/');
    --rce;     /* no location ------------*/
    if (p == NULL)  {
-      DEBUG_DATABASE   printf ("location not found in %s, SKIPPING\n", s);
+      DEBUG_CACHE   printf ("location not found in %s, SKIPPING\n", s);
       return rce;
    }
    strcpy (s_cmds [curr].name, p + 1);
@@ -210,7 +244,7 @@ CMD_push           (char *a_name, char a_src)
    rci = LOC_find (s);
    --rce;     /* bad location -----------*/
    if (rci < 0)  {
-      DEBUG_DATABASE   printf ("location %s not found, SKIPPING\n", p);
+      DEBUG_CACHE   printf ("location %s not found, SKIPPING\n", p);
       return rce;
    }
    LOC_link (rci, curr);
@@ -230,43 +264,43 @@ CMD_push           (char *a_name, char a_src)
    return curr;
 }
 
-int              /* [------] save the command name ---------------------------*/
-CMD_append         (
-      int         a_num,                    /* command index number           */
-      int         a_loc,                    /* location index number          */
-      char       *a_name)                   /* command name string            */
-{
-   /*---(locals)-----------+-----------+-*/
-   char        s           [200];           /* generic string                 */
-   int         rcc         = 0;             /* return code as character       */
-   int         rci         = 0;             /* return code as integer         */
-   int         len         = 0;             /* generic string length          */
-   /*---(defense)------------------------*/
-   if (a_num   < 0        )   return -101;
-   if (a_num   > ncmd     )   return -102;
-   if (a_loc   < 0        )   return -103;
-   if (a_loc   > nloc     )   return -104;
-   if (a_name == NULL     )   return -105;
-   /*---(save name)----------------------*/
-   len = strlen (a_name);
-   s_cmds [a_num].len        = len;
-   if (len >= LCNAME)  {
-      s_cmds [a_num].toolong = '*';
-      rcc = -1;
-   }
-   strncpy (s_cmds [a_num].name, a_name, LCNAME);
-   /*---(save full)----------------------*/
-   snprintf (s, 200, "%s/%s", locs [a_loc].path, a_name);
-   len = strlen (s);
-   s_cmds [a_num].flen       = len;
-   if (len >= LCFULL)  {
-      s_cmds [a_num].ftoolong = '*';
-      rcc = -2;
-   }
-   strncpy (s_cmds [a_num].full, s     , LCFULL);
-   /*---(complete)-----------------------*/
-   return rcc;
-}
+/*> int              /+ [------] save the command name ---------------------------+/   <* 
+ *> CMD_append         (                                                               <* 
+ *>       int         a_num,                    /+ command index number           +/   <* 
+ *>       int         a_loc,                    /+ location index number          +/   <* 
+ *>       char       *a_name)                   /+ command name string            +/   <* 
+ *> {                                                                                  <* 
+ *>    /+---(locals)-----------+-----------+-+/                                        <* 
+ *>    char        s           [200];           /+ generic string                 +/   <* 
+ *>    int         rcc         = 0;             /+ return code as character       +/   <* 
+ *>    int         rci         = 0;             /+ return code as integer         +/   <* 
+ *>    int         len         = 0;             /+ generic string length          +/   <* 
+ *>    /+---(defense)------------------------+/                                        <* 
+ *>    if (a_num   < 0        )   return -101;                                         <* 
+ *>    if (a_num   > ncmd     )   return -102;                                         <* 
+ *>    if (a_loc   < 0        )   return -103;                                         <* 
+ *>    if (a_loc   > nloc     )   return -104;                                         <* 
+ *>    if (a_name == NULL     )   return -105;                                         <* 
+ *>    /+---(save name)----------------------+/                                        <* 
+ *>    len = strlen (a_name);                                                          <* 
+ *>    s_cmds [a_num].len        = len;                                                <* 
+ *>    if (len >= LCNAME)  {                                                           <* 
+ *>       s_cmds [a_num].toolong = '*';                                                <* 
+ *>       rcc = -1;                                                                    <* 
+ *>    }                                                                               <* 
+ *>    strncpy (s_cmds [a_num].name, a_name, LCNAME);                                  <* 
+ *>    /+---(save full)----------------------+/                                        <* 
+ *>    snprintf (s, 200, "%s/%s", LOC_getpath (), a_name);                             <* 
+ *>    len = strlen (s);                                                               <* 
+ *>    s_cmds [a_num].flen       = len;                                                <* 
+ *>    if (len >= LCFULL)  {                                                           <* 
+ *>       s_cmds [a_num].ftoolong = '*';                                               <* 
+ *>       rcc = -2;                                                                    <* 
+ *>    }                                                                               <* 
+ *>    strncpy (s_cmds [a_num].full, s     , LCFULL);                                  <* 
+ *>    /+---(complete)-----------------------+/                                        <* 
+ *>    return rcc;                                                                     <* 
+ *> }                                                                                  <*/
 
 int              /* [------] find a particular command entry -----------------*/
 CMD_find           (char *a_full)
@@ -850,7 +884,7 @@ CMD_list           (char a_order)
    int         x_seq       = 0;
    int         x_index     = 0;
    /*---(output)-------------------------*/
-   if (a_order != 'a') x_loc = nloc;
+   if (a_order != 'a') x_loc = LOC_getcount ();
    for (j = 0; j < x_loc; ++j) {
       /*---(prepare)---------------------*/
       count = 0;
@@ -1007,7 +1041,8 @@ CMD_analyze        (int a_count, char *a_path, char *a_name, tCMD *a_cmd, char a
       DEBUG_CMDS   yLOG_exit    (__FUNCTION__);
       return a_cmd->i_loc;
    }
-   ++locs [a_cmd->i_loc].ncmd;
+   /*> ++locs [a_cmd->i_loc].ncmd;                                                    <*/
+   LOC_addcmd ();
    DEBUG_CMDS   yLOG_value   ("loc_num"   , a_cmd->i_loc);
    a_cmd->source = '-';
    DEBUG_CMDS   yLOG_char    ("source"    , a_cmd->source);
@@ -1037,6 +1072,7 @@ CMD_gather         (char a_check)
    tDIRENT    *den         = NULL;          /* directory entry                */
    int         rcc         = 0;             /* generic return code            */
    int         x_total     = 0;
+   char        x_path      [200];
    char        s           [200];
    int         rci         = 0;
    char        rc          = 0;
@@ -1045,23 +1081,24 @@ CMD_gather         (char a_check)
    DEBUG_CMDS   yLOG_enter   (__FUNCTION__);
    SHOW_GATHER  printf ("HERMES-DIACTOROS -- gather process reporting... focus on %s\n", my.focus);
    /*---(locations)----------------------*/
-   for (i = 0; i < nloc; ++i) {
-      if (locs [i].path == NULL)                      continue;
-      DEBUG_CMDS   yLOG_info    ("loc"       , locs [i].path);
+   for (i = 0; i < LOC_getcount (); ++i) {
+      LOC_change (i);
+      strlcpy (x_path, LOC_getpath (), 200);
+      DEBUG_CMDS   yLOG_info    ("loc"       , x_path);
       /*---(check location filter)----*/
       if (my.focus_type == 'l') {
-         if (strlen (locs [i].path) != my.focus_len) {
+         if (strlen (x_path) != my.focus_len) {
             DEBUG_CMDS   yLOG_note    ("loc filter on, length wrong, skipping");
             continue;
          }
-         if (strcmp (locs [i].path, my.focus) != 0) {
+         if (strcmp (x_path, my.focus) != 0) {
             DEBUG_CMDS   yLOG_note    ("loc filter on, name wrong, skipping");
             continue;
          }
          DEBUG_CMDS   yLOG_note    ("loc filter on and matched");
       }
       /*---(open directory)--------------*/
-      dir = opendir (locs [i].path);
+      dir = opendir (x_path);
       if (dir == NULL) {
          DEBUG_CMDS   yLOG_note    ("could not open the location, next loc");
          closedir (dir);
@@ -1090,7 +1127,7 @@ CMD_gather         (char a_check)
             DEBUG_CMDS   yLOG_note    ("cmd filter on and matched");
          }
          /*---(check for existing)-------*/
-         snprintf (s, 200, "%s/%s", locs [i].path, den->d_name);
+         snprintf (s, 200, "%s/%s", x_path, den->d_name);
          rci = CMD_find (s);
          /*---(check package filter)-----*/
          if (my.focus_type == 'p') {
@@ -1120,7 +1157,7 @@ CMD_gather         (char a_check)
          else if (rci >=  0) {
             SHOW_GATHER  printf ("found, check requested\n");
             DEBUG_CMDS   yLOG_note    ("command already exists, checking on");
-            CMD_analyze (x_total, locs [i].path, den->d_name, &x_cmd, 'y');
+            CMD_analyze (x_total, x_path, den->d_name, &x_cmd, 'y');
          }
          /*---(new command)--------------*/
          else {
@@ -1128,7 +1165,7 @@ CMD_gather         (char a_check)
             DEBUG_CMDS   yLOG_note    ("new command");
             DEBUG_CMDS   yLOG_point   ("pointer"   , s_cmds + ncmd);
             DEBUG_CMDS   yLOG_info    ("name"      , (s_cmds + ncmd)->name);
-            rc = CMD_analyze (x_total, locs [i].path, den->d_name, s_cmds + ncmd, '-');
+            rc = CMD_analyze (x_total, x_path, den->d_name, s_cmds + ncmd, '-');
             DEBUG_CMDS   yLOG_info    ("name"      , (s_cmds + ncmd)->name);
             DEBUG_CMDS   yLOG_value   ("rc"        , rc);
             DEBUG_CMDS   yLOG_value   ("ncmd"      , ncmd);
@@ -1157,6 +1194,7 @@ CMD_world          (void)
    char        cmd         [500];           /* generic system () command      */
    FILE       *fp          = NULL;          /* generic file pointer           */
    char        recd        [1000];          /* generic record buffer          */
+   char        x_path      [200];
    int         len         = 0;             /* string length                  */
    int         found       = 0;
    /*---(header)-------------------------*/
@@ -1193,9 +1231,10 @@ CMD_world          (void)
          /*> printf ("          %4d   %-45.45s", j, recd);                            <*/
          /*---(match to location)--------*/
          found = -1;
-         for (k = 0; k < nloc; ++k) {
-            if (strncmp (locs [k].path, recd, locs [k].len)  != 0)   continue;
-            if (strcmp  (locs [k].path, recd)                    == 0)   continue;
+         for (k = 0; k < LOC_getcount (); ++k) {
+             LOC_change (k);
+             strlcpy (x_path, LOC_getpath (), 200);
+            if (strcmp (x_path, recd)  != 0)   continue;
             found = k;
          }
          if (found < 0)  {
@@ -1367,15 +1406,15 @@ CMD_writeall       (void)
    char        s           [1000];
    int         x_count     = 0;
    /*---(open)---------------------------*/
-   DEBUG_DATABASE   printf ("\n\ndatabase write\n");
+   DEBUG_CACHE   printf ("\n\ndatabase write\n");
    f = fopen (CMD_DATABASE, "w");
    if (f == NULL) {
       printf ("               can not open command file\n");
       return -1;
    }
-   DEBUG_DATABASE   printf ("    database open\n");
+   DEBUG_CACHE   printf ("    database open\n");
    /*---(header)-------------------------*/
-   DEBUG_DATABASE   printf ("    writing header\n");
+   DEBUG_CACHE   printf ("    writing header\n");
    fprintf (f, "# hermes command database written at %ld\n", my.runtime);
    fprintf (f, "#    -D- added last update time to records");
    fprintf (f, "#    -E- added record types and versions\n");
@@ -1425,13 +1464,13 @@ CMD_readdb         (void)
    /*---(open)---------------------------*/
    f = fopen (CMD_DATABASE, "r");
    if (f == NULL) {
-      DEBUG_DATABASE   printf ("               can not open command file\n");
+      DEBUG_CACHE   printf ("               can not open command file\n");
       return -1;
    }
    /*---(prepare)------------------------*/
    CMD_purge ();
-   DEBUG_DATABASE   printf ("   database read\n");
-   DEBUG_DATABASE   printf ("   -seq cnt len    - location-------    name-----------    full-------------------------- t    t u s g s m    s    h    ---- f a ---- pkg----------------------\n");
+   DEBUG_CACHE   printf ("   database read\n");
+   DEBUG_CACHE   printf ("   -seq cnt len    - location-------    name-----------    full-------------------------- t    t u s g s m    s    h    ---- f a ---- pkg----------------------\n");
    /*---(process entries)----------------*/
    while (1) {
       /*---(read)------------------------*/
@@ -1439,23 +1478,23 @@ CMD_readdb         (void)
       if (feof (f)) break;
       /*---(output)----------------------*/
       ++nread;
-      DEBUG_DATABASE  if (nread % 3 == 1)   printf ("\n");
-      DEBUG_DATABASE  printf ("   %4d %3d ", nread, nproc);
+      DEBUG_CACHE  if (nread % 3 == 1)   printf ("\n");
+      DEBUG_CACHE  printf ("   %4d %3d ", nread, nproc);
       /*---(filter)----------------------*/
       rcc = recd_valid (recd, &len);
       if (rcc < 0)  continue;
-      DEBUG_DATABASE   printf ("%3d    ", len);
+      DEBUG_CACHE   printf ("%3d    ", len);
       r = NULL;
       /*---(type)------------------------*/
       rcc = parse_string  (recd, &r, 1, LCFULL, x_type);
       if (strcmp ("cmd", x_type) != 0) {
-         DEBUG_DATABASE   printf ("not a command record, SKIPPING\n");
+         DEBUG_CACHE   printf ("not a command record, SKIPPING\n");
          continue;
       }
       /*---(type)------------------------*/
       rcc = parse_string  (NULL, &r, 1, LCFULL, x_ver);
       if (strcmp ("-E-", x_ver) != 0) {
-         DEBUG_DATABASE   printf ("version not -E-, SKIPPING\n");
+         DEBUG_CACHE   printf ("version not -E-, SKIPPING\n");
          continue;
       }
       /*---(full)------------------------*/
@@ -1465,7 +1504,7 @@ CMD_readdb         (void)
       strcpy (s, s_cmds [ncmd].full);
       p = strrchr (s, '/');
       if (p == NULL)  {
-         DEBUG_DATABASE   printf ("location not found in %s, SKIPPING\n", s);
+         DEBUG_CACHE   printf ("location not found in %s, SKIPPING\n", s);
          continue;
       }
       strcpy (s_cmds [ncmd].name, p + 1);
@@ -1475,20 +1514,21 @@ CMD_readdb         (void)
       rci = LOC_find (s);
       if (rci < 0)  {
          rci = LOC_push (s, 'd', "");
-         /*> DEBUG_DATABASE   printf ("location %s not found, SKIPPING\n", s);        <*/
+         /*> DEBUG_CACHE   printf ("location %s not found, SKIPPING\n", s);        <*/
          /*> continue;                                                                <*/
       }
       LOC_link (rci, ncmd);
       x_loc = rci;
       s_cmds [ncmd].source = '-';
-      DEBUG_DATABASE   printf ("%c "          , locs [rci].source);
-      DEBUG_DATABASE   printf ("%-15.15s    " , locs [rci].path);
-      DEBUG_DATABASE   printf ("%-15.15s    " , s_cmds  [ncmd].name);
-      DEBUG_DATABASE   printf ("%-30.30s "    , s_cmds  [ncmd].full);
+      LOC_change (x_loc);
+      DEBUG_CACHE   printf ("%c "          , LOC_getsource ());
+      DEBUG_CACHE   printf ("%-15.15s    " , LOC_getpath   ());
+      DEBUG_CACHE   printf ("%-15.15s    " , s_cmds  [ncmd].name);
+      DEBUG_CACHE   printf ("%-30.30s "    , s_cmds  [ncmd].full);
       /*---(type)------------------------*/
       rcc = parse_flag  (NULL, &r, "l-"       , &s_cmds [ncmd].ftype);
       if (rcc < 0)   continue;
-      DEBUG_DATABASE   printf ("%c    "       , s_cmds  [ncmd].ftype);
+      DEBUG_CACHE   printf ("%c    "       , s_cmds  [ncmd].ftype);
       /*---(record update time)----------*/
       rcc = parse_long    (NULL, &r, 0, -1    , &s_cmds [ncmd].lastchg);
       if (rcc < 0)   continue;
@@ -1496,52 +1536,52 @@ CMD_readdb         (void)
       /*---(timestamp)-------------------*/
       rcc = parse_long    (NULL, &r, 1, -1    , &s_cmds [ncmd].filetime);
       if (rcc < 0)   continue;
-      DEBUG_DATABASE   printf ("- ");
+      DEBUG_CACHE   printf ("- ");
       /*---(security)--------------------*/
       rcc = parse_integer (NULL, &r, 0, 100000, &s_cmds [ncmd].uid);
       if (rcc < 0)   continue;
-      DEBUG_DATABASE   printf ("- ");
+      DEBUG_CACHE   printf ("- ");
       rcc = parse_flag  (NULL, &r, "*-"       , &s_cmds [ncmd].suid);
       if (rcc < 0)   continue;
-      DEBUG_DATABASE   printf ("%c "          , s_cmds  [ncmd].suid);
+      DEBUG_CACHE   printf ("%c "          , s_cmds  [ncmd].suid);
       rcc = parse_integer (NULL, &r, 0, 100000, &s_cmds [ncmd].gid);
       if (rcc < 0)   continue;
-      DEBUG_DATABASE   printf ("- ");
+      DEBUG_CACHE   printf ("- ");
       rcc = parse_flag  (NULL, &r, "*-"       , &s_cmds [ncmd].sgid);
       if (rcc < 0)   continue;
-      DEBUG_DATABASE   printf ("%c "          , s_cmds  [ncmd].sgid);
+      DEBUG_CACHE   printf ("%c "          , s_cmds  [ncmd].sgid);
       rcc = parse_string  (NULL, &r, 1, LCMODE, s_cmds  [ncmd].mode);
       if (rcc < 0)   continue;
-      DEBUG_DATABASE   printf ("- ");
+      DEBUG_CACHE   printf ("- ");
       /*---(size)------------------------*/
-      DEBUG_DATABASE   printf ("   ");
+      DEBUG_CACHE   printf ("   ");
       rcc = parse_integer (NULL, &r, 0, -1    , &s_cmds [ncmd].bytes);
       if (rcc < 0)   continue;
-      DEBUG_DATABASE   printf ("- ");
+      DEBUG_CACHE   printf ("- ");
       s_cmds  [ncmd].size = s_cmds  [ncmd].bytes;
-      DEBUG_DATABASE   printf ("   ");
+      DEBUG_CACHE   printf ("   ");
       rcc = parse_string  (NULL, &r, 1, LCHASH, s_cmds  [ncmd].hash);
       if (rcc < 0)   continue;
-      DEBUG_DATABASE   printf ("- ");
+      DEBUG_CACHE   printf ("- ");
       /*---(package)---------------------*/
-      DEBUG_DATABASE   printf ("   ");
+      DEBUG_CACHE   printf ("   ");
       rcc = parse_string  (NULL, &r, 1, LCHASH, s);
       if (rcc < 0)   continue;
       rci = -1;
       if (strcmp (s, "-") == 0)  {
-         DEBUG_DATABASE   printf ("---- ");
+         DEBUG_CACHE   printf ("---- ");
          s_cmds [ncmd].i_pkg = -1;
-         DEBUG_DATABASE   printf ("x x ---- %-25.25s ", s);
+         DEBUG_CACHE   printf ("x x ---- %-25.25s ", s);
       } else {
          rci = PKG_find (s);
-         DEBUG_DATABASE   printf ("%4d ", rci);
+         DEBUG_CACHE   printf ("%4d ", rci);
          if (rci < 0)  {
             rci = PKG_push (s, '+', ' ', "");
-            DEBUG_DATABASE   printf ("+ %c %4d ", s_cmds [ncmd].source, rci);
-            DEBUG_DATABASE   printf ("%-25.25s ", pkgs [rci].full);
+            DEBUG_CACHE   printf ("+ %c %4d ", s_cmds [ncmd].source, rci);
+            DEBUG_CACHE   printf ("%-25.25s ", pkgs [rci].full);
          } else {
-            DEBUG_DATABASE   printf ("- %c %4d ", s_cmds [ncmd].source, rci);
-            DEBUG_DATABASE   printf ("%-25.25s ", pkgs [rci].full);
+            DEBUG_CACHE   printf ("- %c %4d ", s_cmds [ncmd].source, rci);
+            DEBUG_CACHE   printf ("%-25.25s ", pkgs [rci].full);
          }
          PKG_link     (rci, ncmd);
       }
@@ -1551,7 +1591,7 @@ CMD_readdb         (void)
          s_cmds [ncmd].active = 'y';
       }
       /*---(done-------------------------*/
-      DEBUG_DATABASE   printf ("\n");
+      DEBUG_CACHE   printf ("\n");
       icmd [ncmd] = ncmd;
       LOC_link     (x_loc, ncmd);
       ++ncmd;
@@ -1603,7 +1643,8 @@ CMD_unit           (char *a_question, int a_num)
    }
    /*---(parsed command)-----------------*/
    else if (strncmp (a_question, "command_parse"     , 20)      == 0) {
-      snprintf (unit_answer, LEN_TEXT, "command parsed   : %-10.10s, %-.25s", locs [s_cmds [a_num].i_loc].path, s_cmds [a_num].name);
+      LOC_change (s_cmds [a_num].i_loc);
+      snprintf (unit_answer, LEN_TEXT, "command parsed   : %-10.10s, %-.25s", LOC_getpath (), s_cmds [a_num].name);
    }
    /*---(command link)-------------------*/
    else if (strncmp (a_question, "command_link"      , 20)      == 0) {

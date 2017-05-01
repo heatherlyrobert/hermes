@@ -13,12 +13,16 @@ main               (int argc, char *argv[])
 {
    /*---(locals)-----------+-----------+-*/
    int         rc          = 0;
-   /*---(startup)------------------------*/
-   if (rc == 0)   rc = PROG_urgs    (argc, argv);
-   if (rc == 0)   rc = PROG_init    ();
-   if (rc == 0)   rc = PROG_args    (argc, argv);
-   if (rc == 0)   rc = PROG_begin   ();
-   if (rc != 0)   return -1;
+   /*---(initialize)---------------------*/
+   if (rc >= 0)   rc = yURG_logger  (argc, argv);
+   if (rc >= 0)   rc = PROG_init    ();
+   if (rc >= 0)   rc = yURG_urgs    (argc, argv);
+   if (rc >= 0)   rc = PROG_args    (argc, argv);
+   if (rc >= 0)   rc = PROG_begin   ();
+   if (rc <  0)  {
+      PROG_end     ();
+      exit (-1);
+   }
    /*---(main)---------------------------*/
    DEBUG_TOPS   yLOG_enter   (__FUNCTION__);
    AREA_list    ();
@@ -73,10 +77,10 @@ main               (int argc, char *argv[])
 
    /*---(package inventory)--------------*/
    /*> RUN_WORLD  {                                                                   <* 
-    *>    DEBUG_WORLD   printf ("reading in packages/ebuilds from world\n");          <* 
+    *>    DEBUG_GENTOO   printf ("reading in packages/ebuilds from world\n");          <* 
     *>    PKG_world       ();                                                         <* 
     *>    PKG_index       ();                                                         <* 
-    *>    DEBUG_WORLD   printf ("\n");                                                <* 
+    *>    DEBUG_GENTOO   printf ("\n");                                                <* 
     *> }                                                                              <*/
    /*---(read command database)----------*/
    /*> RUN_READ  {                                                                    <* 

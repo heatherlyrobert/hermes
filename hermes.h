@@ -194,6 +194,9 @@
 
 /*===[[ CUSTOM LIBRARIES ]]===================================================*/
 #include    <yLOG.h>         /* CUSTOM : heatherly program logging            */
+#include    <yURG.h>         /* CUSTOM : heatherly urgent processing          */
+#include    <ySTR.h>         /* CUSTOM : heatherly string handling            */
+#include    <yVAR.h>         /* CUSTOM : heatherly variable testing           */
 
 
 
@@ -206,8 +209,8 @@
 
 
 /* rapidly evolving version number to aid with visual change confirmation     */
-#define     VER_NUM   "0.6j"
-#define     VER_TXT   "run basic package and command database writes"
+#define     VER_NUM   "0.6k"
+#define     VER_TXT   "added yURG and modernized Makefile"
 
 
 /*---(struct typedefs)-------------------*/
@@ -258,11 +261,6 @@ struct      cLOC {
 }; /*---(done)---------------------------*/
 extern      tLOC        locs        [LOC_MAX];   /* location data structure   */
 extern      int         nloc;                    /* location count            */
-#define     LOC_NEGATIVE    -10
-#define     LOC_OVERMAX     -11
-#define     LOC_ATNEXT      -12
-#define     LOC_TOOHIGH     -13
-#define     LOC_FULL        -14
 
 
 /*---(package struct)--------------------*/
@@ -367,73 +365,73 @@ extern      int         curg;
 /*===[[ DEBUGGING SETUP ]]====================================================*/
 /* this is my latest standard format, vars, and urgents                       */
 /* v3.0b : added signal handling                                (2014-feb-01) */
-typedef  struct cDEBUG  tDEBUG;
-struct cDEBUG
-{
-   /*---(notes)---------------------------------------------------------------*/
-   /* f = full urgents turns on all standard urgents                          */
-   /* k = kitchen sink and turns everything, i mean everything on             */
-   /* q = quiet turns all urgents off including the log itself                */
-   /*---(overall)------------------------*/  /* abcdefghi_klm_opq_stu__x__    */
-   int         logger;                 /* -) pointer to the logger            */
-   char        tops;                   /* t) broad structure and context      */
-   char        summ;                   /* s) statistics and analytical output */
-   /*---(startup/shutdown)---------------*/
-   char        args;                   /* a) command line args and urgents    */
-   char        conf;                   /* c) configuration handling           */
-   char        prog;                   /* p) program setup and teardown       */
-   /*---(file processing)----------------*/
-   char        inpt;                   /* i) text and data file input         */
-   char        outp;                   /* o) text and data file output        */
-   /*---(event handling)-----------------*/
-   char        loop;                   /* l) main program event loop          */
-   char        user;                   /* u) user input and handling          */
-   char        apis;                   /* m) interprocess communication       */
-   char        sign;                   /* x) os signal handling               */
-   char        scrp;                   /* b) scripts and batch operations     */
-   char        hist;                   /* h) history, undo, redo              */
-   /*---(program)------------------------*/
-   char        graf;                   /* g) grahpics, drawing, and display   */
-   char        data;                   /* d) complex data structure handling  */
-   char        envi;                   /* e) environment processing           */
-   /*---(specific)-----------------------*/
-   char        locs;                   /* processing of locations             */
-   char        world;                  /* processing of world file            */
-   char        pkgs;                   /* processing of packages              */
-   char        cmds;                   /* processing system commands          */
-   char        match;                  /* matching world to commands          */
-   char        db;                     /* reading command database            */
-   char        sort;                   /* follow sorting                      */
-};
-tDEBUG      debug;
+/*> typedef  struct cDEBUG  tDEBUG;                                                    <* 
+ *> struct cDEBUG                                                                      <* 
+ *> {                                                                                  <* 
+ *>    /+---(notes)---------------------------------------------------------------+/   <* 
+ *>    /+ f = full urgents turns on all standard urgents                          +/   <* 
+ *>    /+ k = kitchen sink and turns everything, i mean everything on             +/   <* 
+ *>    /+ q = quiet turns all urgents off including the log itself                +/   <* 
+ *>    /+---(overall)------------------------+/  /+ abcdefghi_klm_opq_stu__x__    +/   <* 
+ *>    int         logger;                 /+ -) pointer to the logger            +/   <* 
+ *>    char        tops;                   /+ t) broad structure and context      +/   <* 
+ *>    char        summ;                   /+ s) statistics and analytical output +/   <* 
+ *>    /+---(startup/shutdown)---------------+/                                        <* 
+ *>    char        args;                   /+ a) command line args and urgents    +/   <* 
+ *>    char        conf;                   /+ c) configuration handling           +/   <* 
+ *>    char        prog;                   /+ p) program setup and teardown       +/   <* 
+ *>    /+---(file processing)----------------+/                                        <* 
+ *>    char        inpt;                   /+ i) text and data file input         +/   <* 
+ *>    char        outp;                   /+ o) text and data file output        +/   <* 
+ *>    /+---(event handling)-----------------+/                                        <* 
+ *>    char        loop;                   /+ l) main program event loop          +/   <* 
+ *>    char        user;                   /+ u) user input and handling          +/   <* 
+ *>    char        apis;                   /+ m) interprocess communication       +/   <* 
+ *>    char        sign;                   /+ x) os signal handling               +/   <* 
+ *>    char        scrp;                   /+ b) scripts and batch operations     +/   <* 
+ *>    char        hist;                   /+ h) history, undo, redo              +/   <* 
+ *>    /+---(program)------------------------+/                                        <* 
+ *>    char        graf;                   /+ g) grahpics, drawing, and display   +/   <* 
+ *>    char        data;                   /+ d) complex data structure handling  +/   <* 
+ *>    char        envi;                   /+ e) environment processing           +/   <* 
+ *>    /+---(specific)-----------------------+/                                        <* 
+ *>    char        locs;                   /+ processing of locations             +/   <* 
+ *>    char        world;                  /+ processing of world file            +/   <* 
+ *>    char        pkgs;                   /+ processing of packages              +/   <* 
+ *>    char        cmds;                   /+ processing system commands          +/   <* 
+ *>    char        match;                  /+ matching world to commands          +/   <* 
+ *>    char        db;                     /+ reading command database            +/   <* 
+ *>    char        sort;                   /+ follow sorting                      +/   <* 
+ *> };                                                                                 <* 
+ *> tDEBUG      debug;                                                                 <*/
 
-#define     DEBUG_TOPS          if (debug.tops      == 'y')
-#define     DEBUG_SUMM          if (debug.summ      == 'y')
-#define     DEBUG_ARGS          if (debug.args      == 'y')
-#define     DEBUG_CONF          if (debug.conf      == 'y')
-#define     DEBUG_PROG          if (debug.prog      == 'y')
-#define     DEBUG_INPT          if (debug.inpt      == 'y')
-#define     DEBUG_OUTP          if (debug.outp      == 'y')
-#define     DEBUG_LOOP          if (debug.loop      == 'y')
-#define     DEBUG_USER          if (debug.user      == 'y')
-#define     DEBUG_APIS          if (debug.apis      == 'y')
-#define     DEBUG_SIGN          if (debug.sign      == 'y')
-#define     DEBUG_SCRP          if (debug.scrp      == 'y')
-#define     DEBUG_HIST          if (debug.hist      == 'y')
-#define     DEBUG_GRAF          if (debug.graf      == 'y')
-#define     DEBUG_DATA          if (debug.data      == 'y')
-#define     DEBUG_ENVI          if (debug.envi      == 'y')
+/*> #define     DEBUG_TOPS          if (debug.tops      == 'y')                       <* 
+ *> #define     DEBUG_SUMM          if (debug.summ      == 'y')                       <* 
+ *> #define     DEBUG_ARGS          if (debug.args      == 'y')                       <* 
+ *> #define     DEBUG_CONF          if (debug.conf      == 'y')                       <* 
+ *> #define     DEBUG_PROG          if (debug.prog      == 'y')                       <* 
+ *> #define     DEBUG_INPT          if (debug.inpt      == 'y')                       <* 
+ *> #define     DEBUG_OUTP          if (debug.outp      == 'y')                       <* 
+ *> #define     DEBUG_LOOP          if (debug.loop      == 'y')                       <* 
+ *> #define     DEBUG_USER          if (debug.user      == 'y')                       <* 
+ *> #define     DEBUG_APIS          if (debug.apis      == 'y')                       <* 
+ *> #define     DEBUG_SIGN          if (debug.sign      == 'y')                       <* 
+ *> #define     DEBUG_SCRP          if (debug.scrp      == 'y')                       <* 
+ *> #define     DEBUG_HIST          if (debug.hist      == 'y')                       <* 
+ *> #define     DEBUG_GRAF          if (debug.graf      == 'y')                       <* 
+ *> #define     DEBUG_DATA          if (debug.data      == 'y')                       <* 
+ *> #define     DEBUG_ENVI          if (debug.envi      == 'y')                       <*/
 
-#define     DEBUG_WORLD         if (debug.world     == 'y')
+/*> #define     DEBUG_WORLD         if (debug.world     == 'y')                       <*/
 
-#define     DEBUG_LOCS          if (debug.locs      == 'y')
-#define     DEBUG_LOCATIONS     if (debug.locs      == 'y')
-#define     DEBUG_PKGS          if (debug.pkgs      == 'y')
-#define     DEBUG_PACKAGES      if (debug.pkgs      == 'y')
-#define     DEBUG_CMDS          if (debug.cmds      == 'y')
-#define     DEBUG_MATCH         if (debug.match     == 'y')
-#define     DEBUG_DATABASE      if (debug.db        == 'y')
-#define     DEBUG_SORT          if (debug.sort      == 'y')
+/*> #define     DEBUG_DIRS          if (debug.locs      == 'y')                       <* 
+ *> #define     DEBUG_DIRS     if (debug.locs      == 'y')                            <*/
+/*> #define     DEBUG_PKGS          if (debug.pkgs      == 'y')                       <*/
+/*> #define     DEBUG_PKGS      if (debug.pkgs      == 'y')                           <*/
+/*> #define     DEBUG_CMDS          if (debug.cmds      == 'y')                       <*/
+/*> #define     DEBUG_MATCH         if (debug.match     == 'y')                       <*/
+/*> #define     DEBUG_CACHE      if (debug.db        == 'y')                          <*/
+/*> #define     DEBUG_SORT          if (debug.sort      == 'y')                       <*/
 
 
 
@@ -535,6 +533,13 @@ char        LOC_unlink         (int    a_cmd);
 char        LOC_list           (void);
 char*       LOC_unit           (char  *a_question, int a_num);
 
+char        LOC_change         (int    a_loc);
+char        LOC_head           (void);
+char        LOC_next           (void);
+char*       LOC_getpath        (void);
+char        LOC_getsource      (void);
+int         LOC_getcount       (void);
+char        LOC_addcmd         (void);
 
 
 /*---(hermes_pkg)-----------------------------------------*/
@@ -568,6 +573,7 @@ char*       PKG_unit           (char *a_question, int a_num);
 char        CMD_purge          (void);
 char        CMD_index          (void);
 /*---updates-----------*/
+char        CMD_checkname      (char   *a_name);
 int         CMD_push           (char   *a_name, char a_source);
 int         CMD_append         (int     a_num, int a_loc, char *a_name);
 int         CMD_find           (char    *a_name);

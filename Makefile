@@ -1,109 +1,150 @@
 #*============================---(source-start)---============================*#
 
-BASE    = hermes
 
-#*---(standard variables)-------------*#
+
+#===[[ VARABLES ]]======================================================================================================================================================#
+
+#===(current variables)=================================================================================================================================================#
+BASE    = hermes
+DEBUG   = ${BASE}_debug
+UNIT    = ${BASE}_unit
+HDIR    = /home/system/hermes.command_verification
+IDIR    = /usr/sbin
+MDIR    = /usr/share/man/man8
+
+#===(compilier variables)===============================================================================================================================================#
 # must have "-x c" on gcc line so stripped files work with alternate extensions
 COMP    = gcc -c -std=gnu89 -x c -g -pg -Wall -Wextra
-INC     = -I/usr/include/openssl
-LINK    = gcc 
-LIBS    = -L/usr/local/lib -L/usr/lib64/ -lcrypto -lssl -lyLOG
-LIBSS   = -L/usr/local/lib -L/usr/lib64/ -lcrypto -lssl
-OBJS    = hermes_prog.o  hermes_util.o  hermes_loc.o  hermes_pkg.o  hermes_cmd.o
-OBJSS   = hermes_prog.So hermes_util.So hermes_loc.So hermes_pkg.So hermes_cmd.So
-#*---(make variables)-----------------*#
-COPY    = cp -f  
+INCS    = -I/usr/local/include -I/usr/include/openssl
+
+#===(linker options)========================================================================================================================================================================#
+#------   (0)-------------- (1)-------------- (2)-------------- (3)-------------- (4)-------------- (5)-------------- (6)-------------- (7)-------------- (8)-------------- (9)--------------
+LINK    = gcc
+LIBDIR  = -L/usr/local/lib -L/usr/lib64 
+LIBS    = ${LIBDIR}         -lcrypto          -lssl             -lySTR            -lyURG
+LIBD    = ${LIBDIR}         -lcrypto          -lssl             -lySTR_debug      -lyURG            -lyLOG
+LIBU    = ${LIBD}           -lyUNIT           -lyVAR         
+
+#===(file lists)============================================================================================================================================================================#
+#------   (0)-------------- (1)-------------- (2)-------------- (3)-------------- (4)-------------- (5)-------------- (6)-------------- (7)-------------- (8)-------------- (9)-------------- (A)-------------- (B)-------------- (C)-------------- (D)-------------- (5)--------------
+HEADS   = ${BASE}.h
+OBJS    = ${BASE}_main.os   ${BASE}_prog.os   ${BASE}_util.os   ${BASE}_loc.os    ${BASE}_pkg.os    ${BASE}_cmd.os    ${BASE}_files.os
+OBJD    = ${BASE}_main.o    ${BASE}_prog.o    ${BASE}_util.o    ${BASE}_loc.o     ${BASE}_pkg.o     ${BASE}_cmd.o     ${BASE}_files.o 
+OBJU    = ${BASE}_unit.o    ${BASE}_prog.o    ${BASE}_util.o    ${BASE}_loc.o     ${BASE}_pkg.o     ${BASE}_cmd.o     ${BASE}_files.o 
+
+#===(make variables)====================================================================================================================================================#
+COPY    = cp -f
 CLEAN   = rm -f
-ECHO    = @echo
-PRINTF  = @printf
+PRINT   = @printf
 STRIP   = @grep -v -e " DEBUG_" -e " yLOG_" 
 
 
 
-#*---(MAIN)---------------------------*#
-#all                : hermes hermes_strip hermes_unit
-all                : hermes hermes_strip
+#===[[ EXECUTABLES ]]===================================================================================================================================================#
+
+all                : ${DEBUG} ${BASE} ${UNIT}
+
+${BASE}            : ${OBJD}
+	${LINK}  -o ${BASE}        ${OBJS}   ${LIBS}
+
+${DEBUG}           : ${OBJD}
+	${LINK}  -o ${DEBUG}       ${OBJD}   ${LIBD}
+
+${UNIT}            : ${OBJU}
+	${LINK}  -o ${UNIT}        ${OBJU}   ${LIBU}
 
 
 
-#*---(executables)--------------------*#
-hermes             :         hermes_main.o   ${OBJS}
-	${LINK}  -o hermes        hermes_main.o   ${OBJS}    ${LIBS}
+#===[[ OBJECT FILES ]]==================================================================================================================================================#
 
-hermes_strip       :         hermes_main.So  ${OBJSS}
-	${LINK}  -o hermes_strip  hermes_main.So  ${OBJSS}   ${LIBSS}
+${BASE}_main.o     : ${HEADS}       ${BASE}_main.c
+	${COMP}    ${BASE}_main.c                           ${INC}
+	${STRIP}   ${BASE}_main.c      > ${BASE}_main.cs
+	${COMP}    ${BASE}_main.cs    -o ${BASE}_main.os    ${INC}
 
-hermes_unit        :         hermes_unit.o   ${OBJS}
-	${LINK}  -o hermes_unit   hermes_unit.o   ${OBJS}    ${LIBS} -lyUNIT -lyVAR 
+${BASE}_prog.o     : ${HEADS}       ${BASE}_prog.c
+	${COMP}    ${BASE}_prog.c                           ${INC}
+	${STRIP}   ${BASE}_prog.c      > ${BASE}_prog.cs
+	${COMP}    ${BASE}_prog.cs    -o ${BASE}_prog.os    ${INC}
 
+${BASE}_util.o     : ${HEADS}       ${BASE}_util.c
+	${COMP}    ${BASE}_util.c                           ${INC}
+	${STRIP}   ${BASE}_util.c      > ${BASE}_util.cs
+	${COMP}    ${BASE}_util.cs    -o ${BASE}_util.os    ${INC}
 
+${BASE}_loc.o      : ${HEADS}       ${BASE}_loc.c 
+	${COMP}    ${BASE}_loc.c                            ${INC}
+	${STRIP}   ${BASE}_loc.c       > ${BASE}_loc.cs 
+	${COMP}    ${BASE}_loc.cs     -o ${BASE}_loc.os     ${INC}
 
-#*---(objects)------------------------*#
-hermes_main.o      : hermes.h hermes_main.c
-	${COMP}    hermes_main.c                     ${INC}
-	${STRIP}   hermes_main.c   > hermes_main.Sc
-	${COMP}    hermes_main.Sc -o hermes_main.So  ${INC}
+${BASE}_pkg.o      : ${HEADS}       ${BASE}_pkg.c 
+	${COMP}    ${BASE}_pkg.c                            ${INC}
+	${STRIP}   ${BASE}_pkg.c       > ${BASE}_pkg.cs 
+	${COMP}    ${BASE}_pkg.cs     -o ${BASE}_pkg.os     ${INC}
 
-hermes_prog.o      : hermes.h hermes_prog.c
-	${COMP}    hermes_prog.c                     ${INC}
-	${STRIP}   hermes_prog.c   > hermes_prog.Sc
-	${COMP}    hermes_prog.Sc -o hermes_prog.So  ${INC}
+${BASE}_cmd.o      : ${HEADS}       ${BASE}_cmd.c 
+	${COMP}    ${BASE}_cmd.c                            ${INC}
+	${STRIP}   ${BASE}_cmd.c       > ${BASE}_cmd.cs 
+	${COMP}    ${BASE}_cmd.cs     -o ${BASE}_cmd.os     ${INC}
 
-hermes_util.o      : hermes.h hermes_util.c
-	${COMP}    hermes_util.c                     ${INC}
-	${STRIP}   hermes_util.c   > hermes_util.Sc
-	${COMP}    hermes_util.Sc -o hermes_util.So  ${INC}
+${BASE}_files.o    : ${HEADS}       ${BASE}_files.c
+	${COMP}    ${BASE}_files.c                          ${INC}
+	${STRIP}   ${BASE}_files.c     > ${BASE}_files.cs
+	${COMP}    ${BASE}_files.cs   -o ${BASE}_files.os   ${INC}
 
-hermes_loc.o       : hermes.h hermes_loc.c
-	${COMP}    hermes_loc.c                      ${INC}
-	${STRIP}   hermes_loc.c    > hermes_loc.Sc  
-	${COMP}    hermes_loc.Sc  -o hermes_loc.So   ${INC}
-
-hermes_pkg.o       : hermes.h hermes_pkg.c
-	${COMP}    hermes_pkg.c                      ${INC}
-	${STRIP}   hermes_pkg.c    > hermes_pkg.Sc  
-	${COMP}    hermes_pkg.Sc  -o hermes_pkg.So   ${INC}
-
-hermes_cmd.o       : hermes.h hermes_cmd.c
-	${COMP}    hermes_cmd.c                      ${INC}
-	${STRIP}   hermes_cmd.c    > hermes_cmd.Sc  
-	${COMP}    hermes_cmd.Sc  -o hermes_cmd.So   ${INC}
-
-hermes_unit.o      : hermes.unit
-	uUNIT      hermes
-	${COMP}    -x c hermes_unit.code
-	mv         hermes_unit.code hermes_unit.c
-	${COMP}    hermes_unit.c
+${BASE}_unit.o     : ${BASE}.unit
+	koios    ${BASE}
+	${COMP}  ${BASE}_unit.c
 
 
-#*---(housecleaning)------------------*#
+
+#===[[ HOUSEKEPPING ]]==================================================================================================================================================#
+
 clean              :
-	${PRINTF} "\n---cleaning------------------------------\n"
-	${CLEAN}  *.o
-	${CLEAN}  *~
-	${CLEAN}  temp*
-	${CLEAN}  hermes
-	${CLEAN}  hermes*.zc
-	${CLEAN}  hermes*.zo
-	${CLEAN}  hermes_unit
-	${CLEAN}  hermes_unit.c
+	#---(all versions)--------------------#
+	${CLEAN} ${BASE}
+	${CLEAN} ${DEBUG}
+	${CLEAN} ${UNIT}
+	#---(object and stripped files)-------#
+	${CLEAN} ${BASE}*.o
+	${CLEAN} ${BASE}*.cs
+	${CLEAN} ${BASE}*.os
+	${CLEAN} ${BASE}*.Sc
+	${CLEAN} ${BASE}*.So
+	#---(created unit code)---------------#
+	${CLEAN} ${UNIT}.code
+	${CLEAN} ${UNIT}.c
+	#---(junk files)----------------------#
+	${CLEAN} *~
+	${CLEAN} temp*
 
 bigclean           :
-	${CLEAN}  .*.swp
+	${CLEAN} .*.swp
 
-install            : 
-	${PRINTF} "\n---installing----------------------------\n"
-	${COPY}   hermes     /usr/sbin/
-	chmod     0700       /usr/sbin/hermes
-	chown     root:root  /usr/sbin/hermes
-	sha1sum   hermes
-	rm -f       /usr/share/man/man8/${BASE}.8.bz2
-	cp -f       ${BASE}.8    /usr/share/man/man8/
-	bzip2       /usr/share/man/man8/${BASE}.8
-	chmod 0644  /usr/share/man/man8/${BASE}.8.bz2
+install            : ${BASE}
+	#---(production version)--------------#
+	${COPY}   ${BASE}    ${IDIR}/
+	chown     root:root  ${IDIR}/${BASE}
+	chmod     0755       ${IDIR}/${BASE}
+	@sha1sum  ${BASE}
+	#---(debug version)-------------------#
+	${COPY}  ${DEBUG}    ${IDIR}/
+	chown     root:root  ${IDIR}/${DEBUG}
+	chmod     0755       ${IDIR}/${DEBUG}
+	@sha1sum  ${DEBUG}
+	#---(man page)------------------------#
+	rm -f       ${MDIR}/${BASE}.8.bz2
+	cp -f       ${BASE}.8  ${MDIR}/
+	bzip2       ${MDIR}/${BASE}.8
+	chmod 0644  ${MDIR}/${BASE}.8.bz2
 
 remove             :
-	${CLEAN}  /usr/sbin/hermes
+	#---(all versions)--------------------#
+	${CLEAN}  ${IDIR}/${BASE}
+	${CLEAN}  ${IDIR}/${DEBUG}
+	#---(documentation)-------------------#
+	${CLEAN}  ${MDIR}/${BASE}.8.bz2
+
 
 
 #*============================----(source-end)----============================*#

@@ -1,41 +1,12 @@
 /*===============================[[ beg-code ]]===============================*/
 #include    "hermes.h"
 
-tDEBUG      debug;
+/*> tDEBUG      debug;                                                                <*/
 tGLOBAL     my;
 
 
 FILE       *f_conf      = NULL;
 
-tURG        urgs [URG_MAX] = {
-   /*'-', "--------------------", '-', "--------------------------------------------------"*/
-   { 't', "tops"                , '-', "broad structure and context for debugging"         },
-   { 's', "summ"                , '-', "statistics and analytical reporting"               },
-   { 'a', "args"                , '-', "command line argument and urgent processing"       },
-   { 'c', "conf"                , '-', "configuration file input and processing"           },
-   { 'p', "prog"                , '-', "program setup and teardown, except args, conf"     },
-   /*'-', "--------------------", '-', "--------------------------------------------------"*/
-   { 'i', "inpt"                , '-', "text stream and data file input"                   },
-   { 'o', "outp"                , '-', "text stream and data file output"                  },
-   { 'l', "loop"                , '-', "main program event loop processing"                },
-   { 'u', "user"                , '-', "interactive user input and processing"             },
-   { 'm', "apis"                , '-', "interprocess communication, except signals"        },
-   /*'-', "--------------------", '-', "--------------------------------------------------"*/
-   { 'x', "sign"                , '-', "operating signal catches and processing"           },
-   { 'b', "scrp"                , '-', "scripts and batch processing"                      },
-   { 'h', "hist"                , '-', "history handling including undo, redo, backout"    },
-   { 'g', "graf"                , '-', "graphics, drawing, and display processing"         },
-   { 'd', "data"                , '-', "complex data structure handling"                   },
-   /*'-', "--------------------", '-', "--------------------------------------------------"*/
-   { 'e', "envi"                , '-', "operating system environment updates"              },
-   { ' ', ""                    , '-', ""                                                  },
-   { ' ', ""                    , '-', ""                                                  },
-   { ' ', ""                    , '-', ""                                                  },
-   { ' ', ""                    , '-', ""                                                  },
-   /*'-', "--------------------", '-', "--------------------------------------------------"*/
-};
-int         nurg        = 0;
-int         curg        = 0;
 
 
 /*====================------------------------------------====================*/
@@ -151,166 +122,166 @@ PROG_version       (void)
    return verstring;
 }
 
-char         /*--: wholesale urgents change --------------[ ------ [ ------ ]-*/
-PROG_urgsmass      (char a_set, char a_extra)
-{
-   /*---(overall)------------------------*/
-   debug.tops   = a_set;
-   debug.summ   = a_set;
-   /*---(startup/shutdown)---------------*/
-   debug.args   = a_set;
-   debug.conf   = a_set;
-   debug.prog   = a_set;
-   /*---(file processing)----------------*/
-   debug.inpt   = a_set;
-   debug.outp   = a_set;
-   /*---(event handling)-----------------*/
-   debug.loop   = a_set;
-   debug.user   = a_set;
-   debug.apis   = a_set;
-   debug.sign   = a_set;
-   debug.scrp   = a_set;
-   debug.hist   = a_set;
-   /*---(program)------------------------*/
-   debug.graf   = a_set;
-   debug.data   = a_set;
-   debug.envi   = a_set;
-   /*---(specific)-----------------------*/
-   if (a_extra == 'y') {
-      debug.locs   = a_set;
-      debug.world  = a_set;
-      debug.pkgs   = a_set;
-      debug.cmds   = a_set;
-      debug.match  = a_set;
-      debug.db     = a_set;
-      debug.sort   = a_set;
-   }
-   /*---(complete)-----------------------*/
-   return 0;
-}
+/*> char         /+--: wholesale urgents change --------------[ ------ [ ------ ]-+/   <* 
+ *> PROG_urgsmass      (char a_set, char a_extra)                                      <* 
+ *> {                                                                                  <* 
+ *>    /+---(overall)------------------------+/                                        <* 
+ *>    debug.tops   = a_set;                                                           <* 
+ *>    debug.summ   = a_set;                                                           <* 
+ *>    /+---(startup/shutdown)---------------+/                                        <* 
+ *>    debug.args   = a_set;                                                           <* 
+ *>    debug.conf   = a_set;                                                           <* 
+ *>    debug.prog   = a_set;                                                           <* 
+ *>    /+---(file processing)----------------+/                                        <* 
+ *>    debug.inpt   = a_set;                                                           <* 
+ *>    debug.outp   = a_set;                                                           <* 
+ *>    /+---(event handling)-----------------+/                                        <* 
+ *>    debug.loop   = a_set;                                                           <* 
+ *>    debug.user   = a_set;                                                           <* 
+ *>    debug.apis   = a_set;                                                           <* 
+ *>    debug.sign   = a_set;                                                           <* 
+ *>    debug.scrp   = a_set;                                                           <* 
+ *>    debug.hist   = a_set;                                                           <* 
+ *>    /+---(program)------------------------+/                                        <* 
+ *>    debug.graf   = a_set;                                                           <* 
+ *>    debug.data   = a_set;                                                           <* 
+ *>    debug.envi   = a_set;                                                           <* 
+ *>    /+---(specific)-----------------------+/                                        <* 
+ *>    if (a_extra == 'y') {                                                           <* 
+ *>       debug.locs   = a_set;                                                        <* 
+ *>       debug.world  = a_set;                                                        <* 
+ *>       debug.pkgs   = a_set;                                                        <* 
+ *>       debug.cmds   = a_set;                                                        <* 
+ *>       debug.match  = a_set;                                                        <* 
+ *>       debug.db     = a_set;                                                        <* 
+ *>       debug.sort   = a_set;                                                        <* 
+ *>    }                                                                               <* 
+ *>    /+---(complete)-----------------------+/                                        <* 
+ *>    return 0;                                                                       <* 
+ *> }                                                                                  <*/
 
-char             /* [------] process the command line urgent arguments -------*/
-PROG_urgs          (int argc, char *argv[])
-{
-   /*---(locals)-----------+-----------+-*/
-   int         i           = 0;        /* loop iterator -- arguments          */
-   char       *a           = NULL;     /* current argument                    */
-   int         l           = 0;        /* argument length                     */
-   int         x_total     = 0;
-   int         x_urgs      = 0;
-   /*---(default urgents)----------------*/
-   PROG_urgsmass ('-', 'y');
-   /*---(logger preprocessing)-----------*/
-   debug.logger = -1;
-   for (i = 1; i < argc; ++i) {
-      a = argv[i];
-      if (a[0] != '@')  continue;
-      debug.tops = debug.args = 'y';
-      DEBUG_TOPS  debug.logger = yLOG_begin ("hermes", yLOG_SYSTEM, yLOG_NOISE);
-      DEBUG_TOPS  yLOG_info  ("purpose",  "assure executable file integrity, sourcing, and versioning");
-      DEBUG_TOPS  yLOG_info  ("hermes" ,  PROG_version ());
-      DEBUG_TOPS  yLOG_info  ("yLOG"   ,  yLOG_version ());
-      break;
-   }
-   if (debug.logger < 0) {
-      DEBUG_TOPS  debug.logger = yLOG_begin ("hermes", yLOG_SYSTEM, yLOG_QUIET);
-   }
-   /*---(walk through urgents)-----------*/
-   DEBUG_ARGS   yLOG_enter   (__FUNCTION__);
-   for (i = 1; i < argc; ++i) {
-      /*---(prepare)---------------------*/
-      a        = argv[i];
-      l        = strlen (a);
-      ++x_total;
-      /*---(filter)----------------------*/
-      if (a[0] != '@')  continue;
-      ++x_urgs;
-      DEBUG_ARGS  yLOG_info  ("urgent"    , a);
-      /*---(overall)---------------------*/
-      if      (strncmp(a, "@t"           ,10) == 0)  debug.tops = 'y';
-      else if (strncmp(a, "@@top"        ,10) == 0)  debug.tops = 'y';
-      else if (strncmp(a, "@s"           ,10) == 0)  debug.tops = debug.summ  = 'y';
-      else if (strncmp(a, "@@summ"       ,10) == 0)  debug.tops = debug.summ  = 'y';
-      /*---(startup/shutdown)------------*/
-      else if (strncmp(a, "@a"           ,10) == 0)  debug.tops = debug.args  = 'y';
-      else if (strncmp(a, "@@args"       ,10) == 0)  debug.tops = debug.args  = 'y';
-      else if (strncmp(a, "@c"           ,10) == 0)  debug.tops = debug.conf  = 'y';
-      else if (strncmp(a, "@@conf"       ,10) == 0)  debug.tops = debug.conf  = 'y';
-      else if (strncmp(a, "@p"           ,10) == 0)  debug.tops = debug.prog  = 'y';
-      else if (strncmp(a, "@@prog"       ,10) == 0)  debug.tops = debug.prog  = 'y';
-      /*---(file processing)-------------*/
-      else if (strncmp(a, "@i"           ,10) == 0)  debug.tops = debug.inpt  = 'y';
-      else if (strncmp(a, "@@inpt"       ,10) == 0)  debug.tops = debug.inpt  = 'y';
-      else if (strncmp(a, "@o"           ,10) == 0)  debug.tops = debug.outp  = 'y';
-      else if (strncmp(a, "@@outp"       ,10) == 0)  debug.tops = debug.outp  = 'y';
-      /*---(processing)------------------*/
-      else if (strncmp(a, "@l"           ,10) == 0)  debug.tops = debug.loop  = 'y';
-      else if (strncmp(a, "@@loop"       ,10) == 0)  debug.tops = debug.loop  = 'y';
-      else if (strncmp(a, "@u"           ,10) == 0)  debug.tops = debug.user  = 'y';
-      else if (strncmp(a, "@@user"       ,10) == 0)  debug.tops = debug.user  = 'y';
-      else if (strncmp(a, "@i"           ,10) == 0)  debug.tops = debug.apis  = 'y';
-      else if (strncmp(a, "@@apis"       ,10) == 0)  debug.tops = debug.apis  = 'y';
-      else if (strncmp(a, "@x"           ,10) == 0)  debug.tops = debug.sign  = 'y';
-      else if (strncmp(a, "@@sign"       ,10) == 0)  debug.tops = debug.sign  = 'y';
-      else if (strncmp(a, "@b"           ,10) == 0)  debug.tops = debug.scrp  = 'y';
-      else if (strncmp(a, "@@scrp"       ,10) == 0)  debug.tops = debug.scrp  = 'y';
-      else if (strncmp(a, "@h"           ,10) == 0)  debug.tops = debug.hist  = 'y';
-      else if (strncmp(a, "@@hist"       ,10) == 0)  debug.tops = debug.hist  = 'y';
-      /*---(program)---------------------*/
-      else if (strncmp(a, "@g"           ,10) == 0)  debug.tops = debug.graf  = 'y';
-      else if (strncmp(a, "@@graf"       ,10) == 0)  debug.tops = debug.graf  = 'y';
-      else if (strncmp(a, "@d"           ,10) == 0)  debug.tops = debug.data  = 'y';
-      else if (strncmp(a, "@@data"       ,10) == 0)  debug.tops = debug.data  = 'y';
-      else if (strncmp(a, "@e"           ,10) == 0)  debug.tops = debug.envi  = 'y';
-      else if (strncmp(a, "@@envi"       ,10) == 0)  debug.tops = debug.envi  = 'y';
-      /*---(complex)---------------------*/
-      else if (strncmp(a, "@q"           ,10) == 0)  PROG_urgsmass ('-', 'y');
-      else if (strncmp(a, "@@quiet"      ,10) == 0)  PROG_urgsmass ('-', 'y');
-      else if (strncmp(a, "@f"           ,10) == 0)  PROG_urgsmass ('y', '-');
-      else if (strncmp(a, "@@full"       ,10) == 0)  PROG_urgsmass ('y', '-');
-      else if (strncmp(a, "@k"           ,10) == 0)  PROG_urgsmass ('y', 'y');
-      else if (strncmp(a, "@@kitchen"    ,10) == 0)  PROG_urgsmass ('y', 'y');
-      /*---(specific)--------------------*/
-      else if (strncmp (a, "@@locs"      ,12) == 0)  debug.tops = debug.locs  = 'y';
-      else if (strncmp (a, "@@world"     ,12) == 0)  debug.tops = debug.world = 'y';
-      else if (strncmp (a, "@@cmds"      ,12) == 0)  debug.tops = debug.cmds  = 'y';
-      else if (strncmp (a, "@@match"     ,12) == 0)  debug.tops = debug.match = 'y';
-      else if (strncmp (a, "@@package"   ,12) == 0)  debug.tops = debug.pkgs  = 'y';
-      else if (strncmp (a, "@@database"  ,12) == 0)  debug.tops = debug.db    = 'y';
-      else if (strncmp (a, "@@sort"      ,12) == 0)  debug.tops = debug.sort  = 'y';
-      /*---(unknown)--------------------*/
-      else {
-         DEBUG_ARGS  yLOG_note    ("urgent not understood");
-      }
-      /*---(done)-----------------------*/
-   }
-   /*---(display urgents)----------------*/
-   DEBUG_ARGS  yLOG_note    ("summarization of urgent processing");
-   DEBUG_ARGS  yLOG_value   ("entries"   , x_total);
-   DEBUG_ARGS  yLOG_value   ("urgents"   , x_urgs);
-   DEBUG_ARGS  yLOG_note    ("standard urgents");
-   DEBUG_ARGS  yLOG_char    ("tops"      , debug.tops);
-   DEBUG_ARGS  yLOG_char    ("summ"      , debug.summ);
-   DEBUG_ARGS  yLOG_char    ("args"      , debug.args);
-   DEBUG_ARGS  yLOG_char    ("conf"      , debug.conf);
-   DEBUG_ARGS  yLOG_char    ("prog"      , debug.prog);
-   DEBUG_ARGS  yLOG_char    ("inpt"      , debug.inpt);
-   DEBUG_ARGS  yLOG_char    ("outp"      , debug.outp);
-   DEBUG_ARGS  yLOG_char    ("loop"      , debug.loop);
-   DEBUG_ARGS  yLOG_char    ("user"      , debug.user);
-   DEBUG_ARGS  yLOG_char    ("apis"      , debug.apis);
-   DEBUG_ARGS  yLOG_char    ("sign"      , debug.sign);
-   DEBUG_ARGS  yLOG_char    ("scrp"      , debug.scrp);
-   DEBUG_ARGS  yLOG_char    ("hist"      , debug.hist);
-   DEBUG_ARGS  yLOG_char    ("graf"      , debug.graf);
-   DEBUG_ARGS  yLOG_char    ("data"      , debug.data);
-   DEBUG_ARGS  yLOG_char    ("envi"      , debug.envi);
-   DEBUG_ARGS  yLOG_note    ("specialty urgents");
-   DEBUG_ARGS  yLOG_char    ("cmds"      , debug.cmds);
-   /*---(complete)-----------------------*/
-   DEBUG_ARGS   yLOG_exit    (__FUNCTION__);
-   return 0;
-}
+/*> char             /+ [------] process the command line urgent arguments -------+/                           <* 
+ *> PROG_urgs          (int argc, char *argv[])                                                                <* 
+ *> {                                                                                                          <* 
+ *>    /+---(locals)-----------+-----------+-+/                                                                <* 
+ *>    int         i           = 0;        /+ loop iterator -- arguments          +/                           <* 
+ *>    char       *a           = NULL;     /+ current argument                    +/                           <* 
+ *>    int         l           = 0;        /+ argument length                     +/                           <* 
+ *>    int         x_total     = 0;                                                                            <* 
+ *>    int         x_urgs      = 0;                                                                            <* 
+ *>    /+---(default urgents)----------------+/                                                                <* 
+ *>    yURG_urgsmass ('-', 'y');                                                                               <* 
+ *>    /+---(logger preprocessing)-----------+/                                                                <* 
+ *>    debug.logger = -1;                                                                                      <* 
+ *>    for (i = 1; i < argc; ++i) {                                                                            <* 
+ *>       a = argv[i];                                                                                         <* 
+ *>       if (a[0] != '@')  continue;                                                                          <* 
+ *>       debug.tops = debug.args = 'y';                                                                       <* 
+ *>       DEBUG_TOPS  debug.logger = yLOG_begin ("hermes", yLOG_SYSTEM, yLOG_NOISE);                           <* 
+ *>       DEBUG_TOPS  yLOG_info  ("purpose",  "assure executable file integrity, sourcing, and versioning");   <* 
+ *>       DEBUG_TOPS  yLOG_info  ("hermes" ,  PROG_version ());                                                <* 
+ *>       DEBUG_TOPS  yLOG_info  ("yLOG"   ,  yLOG_version ());                                                <* 
+ *>       break;                                                                                               <* 
+ *>    }                                                                                                       <* 
+ *>    if (debug.logger < 0) {                                                                                 <* 
+ *>       DEBUG_TOPS  debug.logger = yLOG_begin ("hermes", yLOG_SYSTEM, yLOG_QUIET);                           <* 
+ *>    }                                                                                                       <* 
+ *>    /+---(walk through urgents)-----------+/                                                                <* 
+ *>    DEBUG_ARGS   yLOG_enter   (__FUNCTION__);                                                               <* 
+ *>    for (i = 1; i < argc; ++i) {                                                                            <* 
+ *>       /+---(prepare)---------------------+/                                                                <* 
+ *>       a        = argv[i];                                                                                  <* 
+ *>       l        = strlen (a);                                                                               <* 
+ *>       ++x_total;                                                                                           <* 
+ *>       /+---(filter)----------------------+/                                                                <* 
+ *>       if (a[0] != '@')  continue;                                                                          <* 
+ *>       ++x_urgs;                                                                                            <* 
+ *>       DEBUG_ARGS  yLOG_info  ("urgent"    , a);                                                            <* 
+ *>       /+---(overall)---------------------+/                                                                <* 
+ *>       if      (strncmp(a, "@t"           ,10) == 0)  debug.tops = 'y';                                     <* 
+ *>       else if (strncmp(a, "@@top"        ,10) == 0)  debug.tops = 'y';                                     <* 
+ *>       else if (strncmp(a, "@s"           ,10) == 0)  debug.tops = debug.summ  = 'y';                       <* 
+ *>       else if (strncmp(a, "@@summ"       ,10) == 0)  debug.tops = debug.summ  = 'y';                       <* 
+ *>       /+---(startup/shutdown)------------+/                                                                <* 
+ *>       else if (strncmp(a, "@a"           ,10) == 0)  debug.tops = debug.args  = 'y';                       <* 
+ *>       else if (strncmp(a, "@@args"       ,10) == 0)  debug.tops = debug.args  = 'y';                       <* 
+ *>       else if (strncmp(a, "@c"           ,10) == 0)  debug.tops = debug.conf  = 'y';                       <* 
+ *>       else if (strncmp(a, "@@conf"       ,10) == 0)  debug.tops = debug.conf  = 'y';                       <* 
+ *>       else if (strncmp(a, "@p"           ,10) == 0)  debug.tops = debug.prog  = 'y';                       <* 
+ *>       else if (strncmp(a, "@@prog"       ,10) == 0)  debug.tops = debug.prog  = 'y';                       <* 
+ *>       /+---(file processing)-------------+/                                                                <* 
+ *>       else if (strncmp(a, "@i"           ,10) == 0)  debug.tops = debug.inpt  = 'y';                       <* 
+ *>       else if (strncmp(a, "@@inpt"       ,10) == 0)  debug.tops = debug.inpt  = 'y';                       <* 
+ *>       else if (strncmp(a, "@o"           ,10) == 0)  debug.tops = debug.outp  = 'y';                       <* 
+ *>       else if (strncmp(a, "@@outp"       ,10) == 0)  debug.tops = debug.outp  = 'y';                       <* 
+ *>       /+---(processing)------------------+/                                                                <* 
+ *>       else if (strncmp(a, "@l"           ,10) == 0)  debug.tops = debug.loop  = 'y';                       <* 
+ *>       else if (strncmp(a, "@@loop"       ,10) == 0)  debug.tops = debug.loop  = 'y';                       <* 
+ *>       else if (strncmp(a, "@u"           ,10) == 0)  debug.tops = debug.user  = 'y';                       <* 
+ *>       else if (strncmp(a, "@@user"       ,10) == 0)  debug.tops = debug.user  = 'y';                       <* 
+ *>       else if (strncmp(a, "@i"           ,10) == 0)  debug.tops = debug.apis  = 'y';                       <* 
+ *>       else if (strncmp(a, "@@apis"       ,10) == 0)  debug.tops = debug.apis  = 'y';                       <* 
+ *>       else if (strncmp(a, "@x"           ,10) == 0)  debug.tops = debug.sign  = 'y';                       <* 
+ *>       else if (strncmp(a, "@@sign"       ,10) == 0)  debug.tops = debug.sign  = 'y';                       <* 
+ *>       else if (strncmp(a, "@b"           ,10) == 0)  debug.tops = debug.scrp  = 'y';                       <* 
+ *>       else if (strncmp(a, "@@scrp"       ,10) == 0)  debug.tops = debug.scrp  = 'y';                       <* 
+ *>       else if (strncmp(a, "@h"           ,10) == 0)  debug.tops = debug.hist  = 'y';                       <* 
+ *>       else if (strncmp(a, "@@hist"       ,10) == 0)  debug.tops = debug.hist  = 'y';                       <* 
+ *>       /+---(program)---------------------+/                                                                <* 
+ *>       else if (strncmp(a, "@g"           ,10) == 0)  debug.tops = debug.graf  = 'y';                       <* 
+ *>       else if (strncmp(a, "@@graf"       ,10) == 0)  debug.tops = debug.graf  = 'y';                       <* 
+ *>       else if (strncmp(a, "@d"           ,10) == 0)  debug.tops = debug.data  = 'y';                       <* 
+ *>       else if (strncmp(a, "@@data"       ,10) == 0)  debug.tops = debug.data  = 'y';                       <* 
+ *>       else if (strncmp(a, "@e"           ,10) == 0)  debug.tops = debug.envi  = 'y';                       <* 
+ *>       else if (strncmp(a, "@@envi"       ,10) == 0)  debug.tops = debug.envi  = 'y';                       <* 
+ *>       /+---(complex)---------------------+/                                                                <* 
+ *>       else if (strncmp(a, "@q"           ,10) == 0)  PROG_urgsmass ('-', 'y');                             <* 
+ *>       else if (strncmp(a, "@@quiet"      ,10) == 0)  PROG_urgsmass ('-', 'y');                             <* 
+ *>       else if (strncmp(a, "@f"           ,10) == 0)  PROG_urgsmass ('y', '-');                             <* 
+ *>       else if (strncmp(a, "@@full"       ,10) == 0)  PROG_urgsmass ('y', '-');                             <* 
+ *>       else if (strncmp(a, "@k"           ,10) == 0)  PROG_urgsmass ('y', 'y');                             <* 
+ *>       else if (strncmp(a, "@@kitchen"    ,10) == 0)  PROG_urgsmass ('y', 'y');                             <* 
+ *>       /+---(specific)--------------------+/                                                                <* 
+ *>       else if (strncmp (a, "@@locs"      ,12) == 0)  debug.tops = debug.locs  = 'y';                       <* 
+ *>       else if (strncmp (a, "@@world"     ,12) == 0)  debug.tops = debug.world = 'y';                       <* 
+ *>       else if (strncmp (a, "@@cmds"      ,12) == 0)  debug.tops = debug.cmds  = 'y';                       <* 
+ *>       else if (strncmp (a, "@@match"     ,12) == 0)  debug.tops = debug.match = 'y';                       <* 
+ *>       else if (strncmp (a, "@@package"   ,12) == 0)  debug.tops = debug.pkgs  = 'y';                       <* 
+ *>       else if (strncmp (a, "@@database"  ,12) == 0)  debug.tops = debug.db    = 'y';                       <* 
+ *>       else if (strncmp (a, "@@sort"      ,12) == 0)  debug.tops = debug.sort  = 'y';                       <* 
+ *>       /+---(unknown)--------------------+/                                                                 <* 
+ *>       else {                                                                                               <* 
+ *>          DEBUG_ARGS  yLOG_note    ("urgent not understood");                                               <* 
+ *>       }                                                                                                    <* 
+ *>       /+---(done)-----------------------+/                                                                 <* 
+ *>    }                                                                                                       <* 
+ *>    /+---(display urgents)----------------+/                                                                <* 
+ *>    DEBUG_ARGS  yLOG_note    ("summarization of urgent processing");                                        <* 
+ *>    DEBUG_ARGS  yLOG_value   ("entries"   , x_total);                                                       <* 
+ *>    DEBUG_ARGS  yLOG_value   ("urgents"   , x_urgs);                                                        <* 
+ *>    DEBUG_ARGS  yLOG_note    ("standard urgents");                                                          <* 
+ *>    DEBUG_ARGS  yLOG_char    ("tops"      , debug.tops);                                                    <* 
+ *>    DEBUG_ARGS  yLOG_char    ("summ"      , debug.summ);                                                    <* 
+ *>    DEBUG_ARGS  yLOG_char    ("args"      , debug.args);                                                    <* 
+ *>    DEBUG_ARGS  yLOG_char    ("conf"      , debug.conf);                                                    <* 
+ *>    DEBUG_ARGS  yLOG_char    ("prog"      , debug.prog);                                                    <* 
+ *>    DEBUG_ARGS  yLOG_char    ("inpt"      , debug.inpt);                                                    <* 
+ *>    DEBUG_ARGS  yLOG_char    ("outp"      , debug.outp);                                                    <* 
+ *>    DEBUG_ARGS  yLOG_char    ("loop"      , debug.loop);                                                    <* 
+ *>    DEBUG_ARGS  yLOG_char    ("user"      , debug.user);                                                    <* 
+ *>    DEBUG_ARGS  yLOG_char    ("apis"      , debug.apis);                                                    <* 
+ *>    DEBUG_ARGS  yLOG_char    ("sign"      , debug.sign);                                                    <* 
+ *>    DEBUG_ARGS  yLOG_char    ("scrp"      , debug.scrp);                                                    <* 
+ *>    DEBUG_ARGS  yLOG_char    ("hist"      , debug.hist);                                                    <* 
+ *>    DEBUG_ARGS  yLOG_char    ("graf"      , debug.graf);                                                    <* 
+ *>    DEBUG_ARGS  yLOG_char    ("data"      , debug.data);                                                    <* 
+ *>    DEBUG_ARGS  yLOG_char    ("envi"      , debug.envi);                                                    <* 
+ *>    DEBUG_ARGS  yLOG_note    ("specialty urgents");                                                         <* 
+ *>    DEBUG_ARGS  yLOG_char    ("cmds"      , debug.cmds);                                                    <* 
+ *>    /+---(complete)-----------------------+/                                                                <* 
+ *>    DEBUG_ARGS   yLOG_exit    (__FUNCTION__);                                                               <* 
+ *>    return 0;                                                                                               <* 
+ *> }                                                                                                          <*/
 
 char             /* [------] minimal pre-argument program initialization -----*/
 PROG_init          (void)
@@ -542,27 +513,30 @@ PROG_begin         (void)
    return 0;
 }
 
-char       /*----: set up program urgents/debugging --------------------------*/
-PROG_testing       (void)
+char       /*----: set up programgents/debugging -----------------------------*/
+PROG_testquiet     (void)
 {
-   char       *x_args [1]  = { "hermes" };
-   PROG_urgs   (1, x_args);
+   char       *x_args [1]  = { "gyges" };
+   yURG_logger (1, x_args);
    PROG_init   ();
+   yURG_urgs   (1, x_args);
    PROG_args   (1, x_args);
-   /*> PROG_begin  ();                                                                <*/
+   PROG_begin  ();
    return 0;
 }
 
-char       /*----: set up program urgents/debugging --------------------------*/
+char       /*----: set up programgents/debugging -----------------------------*/
 PROG_testloud      (void)
 {
-   char       *x_args [3]  = { "hermes", "@@log", "@@cmds"    };
-   PROG_urgs   (3, x_args);
+   char       *x_args [2]  = { "gyges_unit", "@@kitchen"    };
+   yURG_logger (2, x_args);
    PROG_init   ();
-   PROG_args   (3, x_args);
-   /*> PROG_begin  ();                                                                <*/
+   yURG_urgs   (2, x_args);
+   PROG_args   (2, x_args);
+   PROG_begin  ();
    return 0;
 }
+
 
 char                /* PURPOSE : shutdown program and free memory ------------*/
 PROG_end           (void)
