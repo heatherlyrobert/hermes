@@ -784,8 +784,10 @@ CMD_header         (int  a_page, int  a_loc)
    printf ("\n\n");
    sprintf (s, "HERMES-DIACTOROS -- command executable report, page %3d, location %2d, %s ==========================================================================================================================================================================================================================================================================================================================================================================================================================", a_page, a_loc, locs [a_loc].path );
    printf  ("%-273.273s\n\n", s);
-   printf  ("  seqn indx  s a  name                   len   full name                           len   t filetime   uid    gid    ugo m size      bytes     sha1 hash                                                   pkg# src name                                         \n");
-   printf  ("  ---- ----  - -  - -------------------- - --- ----------------------------------- - --- - ---------- - ---- - ---- --- - --------- --------- ----------------------------------------------------------- ---- --- ---------------------------------------------\n");
+   /*> printf  ("  seqn indx  s a  name                   len   full name                           len   t filetime   uid    gid    ugo m size      bytes     sha1 hash                                                   pkg# src name                                         \n");   <* 
+    *> printf  ("  ---- ----  - -  - -------------------- - --- ----------------------------------- - --- - ---------- - ---- - ---- --- - --------- --------- ----------------------------------------------------------- ---- --- ---------------------------------------------\n");   <*/
+   printf  ("  seqn indx  s a  name                   len   full name                           len   t filetime   uid    gid    ugo m size      bytes     sha1 hash                                                   pkg# src\n");
+   printf  ("  ---- ----  - -  - -------------------- - --- ----------------------------------- - --- - ---------- - ---- - ---- --- - --------- --------- ----------------------------------------------------------- ---- ---\n");
    return 0;
 }
 
@@ -795,7 +797,8 @@ CMD_footer         (int  a_page, int  a_lines)
    int         i           = 0;             /* iterator -- package            */
    if (a_page == 1)  return 0;
    for (i = a_lines; i <= (9 * 6); ++i)   printf ("\n");
-   printf  ("  ---- ----  - -  - -------------------- - --- ----------------------------------- - --- - ---------- - ---- - ---- --- - --------- --------- ----------------------------------------------------------- ---- --- ---------------------------------------------\n");
+   /*> printf  ("  ---- ----  - -  - -------------------- - --- ----------------------------------- - --- - ---------- - ---- - ---- --- - --------- --------- ----------------------------------------------------------- ---- --- ---------------------------------------------\n");   <*/
+   printf  ("  ---- ----  - -  - -------------------- - --- ----------------------------------- - --- - ---------- - ---- - ---- --- - --------- --------- ----------------------------------------------------------- ---- ---\n");
    printf  ("             - database    - only good chars      - good                                          - reg file   - norm - norm     - size match                                                                            - unchecked                                     \n");
    printf  ("             + new entry   + extended chars       + long name                                     l symlink    * suid * sgid     # size diff                                                                             w world file                                    \n");
    printf  ("             # conflict    # bad chars                                                                                                                                                                                   + non-world ebuild                              \n");
@@ -805,7 +808,7 @@ CMD_footer         (int  a_page, int  a_lines)
 }
 
 char             /* [------] display a single command entry ------------------*/
-CMD_show           (int a_count, int a_num, tCMD *a_cmd)
+CMD_show           (int a_seq, int a_index, int a_num, tCMD *a_cmd)
 {
    /*---(locals)-----------+-----------+-*/
    char        r           [500];           /* generic string                 */
@@ -819,38 +822,65 @@ CMD_show           (int a_count, int a_num, tCMD *a_cmd)
    if (a_cmd->filetime <= time (NULL))   sprintf (r, "%-10d", a_cmd->filetime);
    else                                  strcpy  (r, "(bad-time)");
    /*---(output line)--------------*/
-   printf ("  %4d %4d  %c %c  %c %-20.20s %c %3d %-35.35s %c %3d %c %-10.10s %c %4d %c %4d %-3.3s %c %9d %9d %-60.60s%4d  %c  %-45.45s\n" ,
-         a_count         , a_num          , a_cmd->source  , a_cmd->active  , a_cmd->concern ,
+   /*> printf ("  %4d %4d  %c %c  %c %-20.20s %c %3d %-35.35s %c %3d %c %-10.10s %c %4d %c %4d %-3.3s %c %9d %9d %-60.60s%4d  %c  %-45.45s\n" ,       <* 
+    *>       a_seq           , a_index        , a_cmd->source  , a_cmd->active  , a_cmd->concern ,                                                    <* 
+    *>       s               , a_cmd->toolong , a_cmd->len     ,                                                                                      <* 
+    *>       t               , a_cmd->ftoolong, a_cmd->flen    , a_cmd->ftype   ,                                                                     <* 
+    *>       r               ,                                                                                                                        <* 
+    *>       a_cmd->suid     , a_cmd->uid     , a_cmd->sgid    , a_cmd->gid     , a_cmd->mode    ,                                                    <* 
+    *>       a_cmd->smiss    , a_cmd->size    , a_cmd->bytes   , a_cmd->hash    ,                                                                     <* 
+    *>       a_cmd->i_pkg    , (a_cmd->i_pkg   >= 0) ? pkgs [a_cmd->i_pkg].source : '-' , (a_cmd->i_pkg >= 0) ? pkgs [a_cmd->i_pkg].full : "---" );   <*/
+   printf ("  %4d %4d  %c %c  %c %-20.20s %c %3d %-35.35s %c %3d %c %-10.10s %c %4d %c %4d %-3.3s %c %9d %9d %-60.60s%4d  %c  \n" ,
+         a_seq           , a_index        , a_cmd->source  , a_cmd->active  , a_cmd->concern ,
          s               , a_cmd->toolong , a_cmd->len     ,
          t               , a_cmd->ftoolong, a_cmd->flen    , a_cmd->ftype   ,
          r               ,
          a_cmd->suid     , a_cmd->uid     , a_cmd->sgid    , a_cmd->gid     , a_cmd->mode    ,
          a_cmd->smiss    , a_cmd->size    , a_cmd->bytes   , a_cmd->hash    ,
-         a_cmd->i_pkg    , (a_cmd->i_pkg   >= 0) ? pkgs [a_cmd->i_pkg].source : '-' , (a_cmd->i_pkg >= 0) ? pkgs [a_cmd->i_pkg].full : "---" );
+         a_cmd->i_pkg    , (a_cmd->i_pkg   >= 0) ? pkgs [a_cmd->i_pkg].source : '-' );
    /*---(complete)-----------------------*/
    return 0;
 }
 
 char             /* [------] output a sorted list ----------------------------*/
-CMD_list           (void)
+CMD_list           (char a_order)
 {
    /*---(locals)-----------+-----------+-*/
    int         i           = 0;             /* iterator -- package            */
    int         j           = 0;             /* iterator -- locations          */
+   int         k           = 0;             /* iterator -- locations          */
    int         curr        = 0;
    int         page        = 0;             /* page count                     */
    int         count       = 0;             /* record count                   */
    int         lines       = 0;             /* line count                     */
+   int         x_loc       = 1;
+   int         x_seq       = 0;
+   int         x_index     = 0;
    /*---(output)-------------------------*/
-   for (j = 0; j < nloc; ++j) {
+   if (a_order != 'a') x_loc = nloc;
+   for (j = 0; j < x_loc; ++j) {
       /*---(prepare)---------------------*/
       count = 0;
       lines = 0;
       /*---(cycle commands)--------------*/
       for (i = 0; i < ncmd; ++i) {
-         curr = icmd [i];
+         switch (a_order) {
+         case  's' :
+            x_seq    = i;
+            for (k = 0; k < ncmd; ++k)  if (icmd[k] == i)  x_index = k;
+            break;
+         case  'i' :
+         case  'a' :
+         default   :
+            x_index  = i;
+            x_seq    = icmd [i];
+            break;
+         }
+         curr     = x_seq;
          /*---(filter for location)------*/
-         if (s_cmds [curr].i_loc != j)  continue;
+         if (a_order != 'a') { 
+            if (s_cmds [curr].i_loc != j)  continue;
+         }
          /*---(filter for empty/unused)--*/
          if (strchr (valid_src, s_cmds [curr].source) == NULL)   continue;
          /*---(check for page break)-----*/
@@ -866,7 +896,7 @@ CMD_list           (void)
             ++lines;
          }
          /*---(name formatting)----------*/
-         CMD_show (count, curr, s_cmds + curr);
+         CMD_show (x_seq, x_index, curr, s_cmds + curr);
          /*---(done)---------------------*/
          ++count;
          ++lines;
@@ -880,41 +910,6 @@ CMD_list           (void)
       }
       CMD_footer  (page, lines);
       /*---(done)------------------------*/
-   }
-   /*---(complete)-----------------------*/
-   return 0;
-}
-
-char             /* [------] output a sorted list ----------------------------*/
-CMD_list_NEW       (void)
-{
-   /*---(locals)-----------+-----------+-*/
-   int         i           = 0;             /* iterator -- package            */
-   int         j           = 0;             /* iterator -- locations          */
-   int         curr        = 0;
-   int         page        = 0;             /* page count                     */
-   int         count       = 0;             /* record count                   */
-   int         lines       = 0;             /* line count                     */
-   /*---(cycle commands)--------------*/
-   for (i = 0; i < ncmd; ++i) {
-      curr = i;
-      /*---(check for page break)-----*/
-      if ((lines % (9 * 6)) == 0) {
-         ++page;
-         if (count > 0)  CMD_footer (page, lines);
-         lines = 0;
-         CMD_header (page, j);
-      }
-      /*---(line grouping)------------*/
-      if ((count % 5) == 0) {
-         printf ("\n");
-         ++lines;
-      }
-      /*---(name formatting)----------*/
-      CMD_show (count, curr, s_cmds + curr);
-      /*---(done)---------------------*/
-      ++count;
-      ++lines;
    }
    /*---(complete)-----------------------*/
    return 0;
@@ -1024,7 +1019,7 @@ CMD_analyze        (int a_count, char *a_path, char *a_name, tCMD *a_cmd, char a
    a_cmd->source = '-';
    DEBUG_CMDS   yLOG_char    ("source"    , a_cmd->source);
    /*---(report)-------------------*/
-   DEBUG_CMDS   CMD_show (a_count, 0, a_cmd);
+   DEBUG_CMDS   CMD_show (a_count, 0, 0, a_cmd);
    /*---(handle checking)----------*/
    if (a_check == 'y') {
       x_curr = CMD_find (a_cmd->full);

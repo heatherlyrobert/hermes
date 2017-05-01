@@ -206,8 +206,8 @@
 
 
 /* rapidly evolving version number to aid with visual change confirmation     */
-#define     VER_NUM   "0.6g"
-#define     VER_TXT   "fixed package indexing and reporting"
+#define     VER_NUM   "0.6h"
+#define     VER_TXT   "cleaned up package reporting titles and notes"
 
 
 /*---(struct typedefs)-------------------*/
@@ -580,8 +580,8 @@ char        CMD_chars          (tCMD   *a_cmd);
 /*---reporting---------*/
 char        CMD_header         (int     a_page , int  a_loc);
 char        CMD_footer         (int     a_page , int  a_lines);
-char        CMD_show           (int     a_count, int  a_num,  tCMD *a_cmd);
-char        CMD_list           (void);
+char        CMD_show           (int     a_count, int  a_index, int  a_num,  tCMD *a_cmd);
+char        CMD_list           (char    a_order);
 char        CMD_list_NEW       (void);
 /*---gathering---------*/
 char        CMD_gather         (char    a_check);

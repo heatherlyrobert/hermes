@@ -521,10 +521,13 @@ PKG_unlink         (int a_cmd)
 static void      o___REPORTING_______________o (void) {;}
 
 char             /* [------] display the package inventory -------------------*/
-PKG_header         (int a_page)
+PKG_header         (int a_page, char a_order)
 {
    printf ("\n\n");
-   printf ("HERMES-DIACTOROS -- ebuild package report, page %3d                                                                                              %4d of %4d slots used\n\n", a_page, npkg, PKG_MAX);
+   printf ("HERMES-DIACTOROS (messenger) integrity assurance for executables and shared libraries\n");
+   printf ("package reporting %s\n", (a_order == 's') ? "in original sequence" : "sorted by cat/name");
+   printf ("\n");
+   /*> printf ("HERMES-DIACTOROS -- ebuild package report, page %3d                                                                                              %4d of %4d slots used\n\n", a_page, npkg, PKG_MAX);   <*/
    printf ("  seq# indx  s p w a  cat                  name                           desc                                       cmd   pri   upd   area           \n");
    printf ("  ---- ----  - - - -  -------------------- ------------------------------ ----------------------------------------   ---   ---   ---   -----------------------------------\n");
    return 0;
@@ -535,9 +538,9 @@ PKG_footer         (void)
 {
    printf ("\n");
    printf ("  ---- ----  - - - -  -------------------- ------------------------------ ----------------------------------------   ---   ---   ---   -----------------------------------\n");
-   printf ("  source   = where the package comes from, c=conf file, w=world-ebuild, +=pre-loaded, #=local, -=unknown\n");
+   printf ("  source   = where the package comes from, i.e., c=conf file, w=world-ebuild file, +=pre-loaded, #=local, -=unknown\n");
    printf ("  command  = number of actual commands installed/updated by this package\n");
-   printf ("  priority = \n");
+   printf ("  priority = criticality for updates, i.e., T=top, +=watch, other means as possible\n");
    printf ("  updated  = \n");
    return 0;
 }
@@ -572,7 +575,7 @@ PKG_list           (char a_order)
       curr     = x_seq;
       if (i % 45 == 0) {
          if (i > 0) PKG_footer ();
-         PKG_header (x_page);
+         PKG_header (x_page, a_order);
          ++x_page;
          x_line = 1;
       }
