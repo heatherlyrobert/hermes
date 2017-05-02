@@ -290,7 +290,7 @@ CMD_push           (char *a_name, char a_src)
  *>    }                                                                               <* 
  *>    strncpy (s_cmds [a_num].name, a_name, LCNAME);                                  <* 
  *>    /+---(save full)----------------------+/                                        <* 
- *>    snprintf (s, 200, "%s/%s", LOC_getpath (), a_name);                             <* 
+ *>    snprintf (s, 200, "%s/%s", LOC_get_path (), a_name);                             <* 
  *>    len = strlen (s);                                                               <* 
  *>    s_cmds [a_num].flen       = len;                                                <* 
  *>    if (len >= LCFULL)  {                                                           <* 
@@ -884,7 +884,7 @@ CMD_list           (char a_order)
    int         x_seq       = 0;
    int         x_index     = 0;
    /*---(output)-------------------------*/
-   if (a_order != 'a') x_loc = LOC_getcount ();
+   if (a_order != 'a') x_loc = LOC_get_count ();
    for (j = 0; j < x_loc; ++j) {
       /*---(prepare)---------------------*/
       count = 0;
@@ -1081,9 +1081,9 @@ CMD_gather         (char a_check)
    DEBUG_CMDS   yLOG_enter   (__FUNCTION__);
    SHOW_GATHER  printf ("HERMES-DIACTOROS -- gather process reporting... focus on %s\n", my.focus);
    /*---(locations)----------------------*/
-   for (i = 0; i < LOC_getcount (); ++i) {
-      LOC_change (i);
-      strlcpy (x_path, LOC_getpath (), 200);
+   for (i = 0; i < LOC_get_count (); ++i) {
+      LOC_curs_index (i);
+      strlcpy (x_path, LOC_get_path (), 200);
       DEBUG_CMDS   yLOG_info    ("loc"       , x_path);
       /*---(check location filter)----*/
       if (my.focus_type == 'l') {
@@ -1231,9 +1231,9 @@ CMD_world          (void)
          /*> printf ("          %4d   %-45.45s", j, recd);                            <*/
          /*---(match to location)--------*/
          found = -1;
-         for (k = 0; k < LOC_getcount (); ++k) {
-             LOC_change (k);
-             strlcpy (x_path, LOC_getpath (), 200);
+         for (k = 0; k < LOC_get_count (); ++k) {
+             LOC_curs_index (k);
+             strlcpy (x_path, LOC_get_path (), 200);
             if (strcmp (x_path, recd)  != 0)   continue;
             found = k;
          }
@@ -1520,9 +1520,9 @@ CMD_readdb         (void)
       LOC_link (rci, ncmd);
       x_loc = rci;
       s_cmds [ncmd].source = '-';
-      LOC_change (x_loc);
-      DEBUG_CACHE   printf ("%c "          , LOC_getsource ());
-      DEBUG_CACHE   printf ("%-15.15s    " , LOC_getpath   ());
+      LOC_curs_index (x_loc);
+      DEBUG_CACHE   printf ("%c "          , LOC_get_source ());
+      DEBUG_CACHE   printf ("%-15.15s    " , LOC_get_path   ());
       DEBUG_CACHE   printf ("%-15.15s    " , s_cmds  [ncmd].name);
       DEBUG_CACHE   printf ("%-30.30s "    , s_cmds  [ncmd].full);
       /*---(type)------------------------*/
@@ -1643,8 +1643,8 @@ CMD_unit           (char *a_question, int a_num)
    }
    /*---(parsed command)-----------------*/
    else if (strncmp (a_question, "command_parse"     , 20)      == 0) {
-      LOC_change (s_cmds [a_num].i_loc);
-      snprintf (unit_answer, LEN_TEXT, "command parsed   : %-10.10s, %-.25s", LOC_getpath (), s_cmds [a_num].name);
+      LOC_curs_index (s_cmds [a_num].i_loc);
+      snprintf (unit_answer, LEN_TEXT, "command parsed   : %-10.10s, %-.25s", LOC_get_path (), s_cmds [a_num].name);
    }
    /*---(command link)-------------------*/
    else if (strncmp (a_question, "command_link"      , 20)      == 0) {

@@ -209,8 +209,8 @@
 
 
 /* rapidly evolving version number to aid with visual change confirmation     */
-#define     VER_NUM   "0.6k"
-#define     VER_TXT   "fixed yLOG formatting for first unit test script"
+#define     VER_NUM   "0.6l"
+#define     VER_TXT   "completed location cursor testing successfully"
 
 
 /*---(struct typedefs)-------------------*/
@@ -493,6 +493,12 @@ char        LOC_check_path      (char  *a_path);
 char        LOC_clean_path      (char  *a_path);
 char        LOC_check_index     (int    a_loc);
 
+int         LOC_get_count       (void);
+char*       LOC_get_path        (void);
+char        LOC_get_source      (void);
+int         LOC_get_comands     (void);
+char*       LOC_get_desc        (void);
+
 int         LOC_find_path           (char  *a_name);
 
 char        LOC_valid          (int    a_loc);
@@ -504,12 +510,9 @@ char        LOC_unlink         (int    a_cmd);
 char        LOC_list           (void);
 char*       LOC_unit           (char  *a_question, int a_num);
 
-char        LOC_change         (int    a_loc);
-char        LOC_head           (void);
+char        LOC_curs_index      (int    a_loc);
+char        LOC_curs_next      (void);
 char        LOC_next           (void);
-char*       LOC_getpath        (void);
-char        LOC_getsource      (void);
-int         LOC_getcount       (void);
 char        LOC_addcmd         (void);
 
 

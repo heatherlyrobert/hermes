@@ -240,22 +240,31 @@ LOC_find_path           (char  *a_path)
 
 
 /*====================------------------------------------====================*/
-/*===----                information getting functions                 ----===*/
+/*===----                   data structure cursors                     ----===*/
 /*====================------------------------------------====================*/
-static void      o___GETTERS_________________o (void) {;}
+static void      o___CURSORS_________________o (void) {;}
 
-int              /*-> find the first open location -------[ ------ [ ------ ]-*/
-LOC_get_index      (void)
+char             /*-> return first directory -------------[ ------ [ ------ ]-*/
+LOC_curs_index      (int a_loc)
 {
-   if (s_nloc >= MAX_LOCATIONS) {
+   if (s_nloc < 0) {
+      s_cloc = -1;
       return -1;
    }
-   s_cloc = s_nloc;
+   if (a_loc < 0) {
+      s_cloc = -1;
+      return -2;
+   }
+   if (a_loc >= s_nloc) {
+      s_cloc = -1;
+      return -3;
+   }
+   s_cloc = a_loc;
    return 0;
 }
 
 char             /*-> return first directory -------------[ ------ [ ------ ]-*/
-LOC_head           (void)
+LOC_curs_head      (void)
 {
    s_cloc = 0;
    if (s_nloc == 0) {
@@ -266,7 +275,7 @@ LOC_head           (void)
 }
 
 char             /*-> return first directory -------------[ ------ [ ------ ]-*/
-LOC_next           (void)
+LOC_curs_next      (void)
 {
    if (s_nloc == 0) {
       s_cloc = -1;
@@ -274,20 +283,33 @@ LOC_next           (void)
    }
    ++s_cloc;
    if (s_cloc >= s_nloc) {
-      s_cloc = 0;
+      s_cloc = -1;
       return -2;
    }
    return 0;
 }
 
-char*            /*-> return current rectory -------------[ ------ [ ------ ]-*/
-LOC_getpath        (void)   { if (s_cloc <  0) return ""; return s_locs [s_cloc].path; }
 
-char             /*-> return current rectory -------------[ ------ [ ------ ]-*/
-LOC_getsource      (void)   { if (s_cloc <  0) return '?'; return s_locs [s_cloc].source; }
+
+/*====================------------------------------------====================*/
+/*===----                information getting functions                 ----===*/
+/*====================------------------------------------====================*/
+static void      o___GETTERS_________________o (void) {;}
 
 int              /*-> return count of locations ----------[ ------ [ ------ ]-*/
-LOC_getcount       (void)   { return s_nloc; }
+LOC_get_count       (void)   { return s_nloc; }
+
+char*            /*-> return current rectory -------------[ ------ [ ------ ]-*/
+LOC_get_path        (void)   { if (s_cloc <  0) return "" ; return s_locs [s_cloc].path;   }
+
+char             /*-> return current rectory -------------[ ------ [ ------ ]-*/
+LOC_get_source      (void)   { if (s_cloc <  0) return '?'; return s_locs [s_cloc].source; }
+
+int              /*-> return current rectory -------------[ ------ [ ------ ]-*/
+LOC_get_commands    (void)   { if (s_cloc <  0) return 0  ; return s_locs [s_cloc].ncmd;   }
+
+char*            /*-> return current rectory -------------[ ------ [ ------ ]-*/
+LOC_get_desc        (void)   { if (s_cloc <  0) return "" ; return s_locs [s_cloc].desc;   }
 
 
 
@@ -533,32 +555,6 @@ LOC_list           (void)
 }
 
 
-
-/*====================------------------------------------====================*/
-/*===----                        accessors                             ----===*/
-/*====================------------------------------------====================*/
-static void      o___ACCESSORS_______________o (void) {;}
-
-char             /*-> return first directory -------------[ ------ [ ------ ]-*/
-LOC_change         (int a_loc)
-{
-   s_cloc = 0;
-   if (s_nloc == 0) {
-      s_cloc = -1;
-      return -1;
-   }
-   if (a_loc < 0) {
-      s_cloc = -1;
-      return -2;
-   }
-   if (a_loc >= s_nloc) {
-      s_cloc = -1;
-      return -3;
-   }
-   return 0;
-}
-
-
 /*====================------------------------------------====================*/
 /*===----                    unit testing accessor                     ----===*/
 /*====================------------------------------------====================*/
@@ -594,6 +590,11 @@ LOC_unit           (char *a_question, int a_num)
    /*---(location command count)---------*/
    else if (strncmp (a_question, "location_ncmd"     , 20)      == 0) {
       snprintf (unit_answer, LEN_TEXT, "location links   : %2d %-25.25s %3d", a_num, s_locs [a_num].path, s_locs [a_num].ncmd);
+   }
+   /*---(location cursor)----------------*/
+   else if (strncmp (a_question, "location_curr"     , 20)      == 0) {
+      if (s_cloc < 0)  snprintf (unit_answer, LEN_TEXT, "location curr    : %2d %s"      , s_cloc, "not set");
+      else             snprintf (unit_answer, LEN_TEXT, "location curr    : %2d %-25.25s", s_cloc, s_locs [s_cloc].path);
    }
    /*---(complete)-----------------------*/
    return unit_answer;
