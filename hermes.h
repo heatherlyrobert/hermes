@@ -209,8 +209,8 @@
 
 
 /* rapidly evolving version number to aid with visual change confirmation     */
-#define     VER_NUM   "0.6j"
-#define     VER_TXT   "got unit testing with logging/debugging working"
+#define     VER_NUM   "0.6k"
+#define     VER_TXT   "fixed yLOG formatting for first unit test script"
 
 
 /*---(struct typedefs)-------------------*/

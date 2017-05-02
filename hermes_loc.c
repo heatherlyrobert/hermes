@@ -114,7 +114,9 @@ LOC_check_path      (char *a_path)
       DEBUG_DIRS   yLOG_sexitr  (__FUNCTION__, rce);
       return rce;
    }
+   DEBUG_DIRS   yLOG_snote   ("name real");
    x_len = strlen (a_path);
+   DEBUG_DIRS   yLOG_sint    (x_len);
    --rce;  if (x_len <  4) {
       DEBUG_DIRS   yLOG_snote   ("path too short");
       DEBUG_DIRS   yLOG_sexitr  (__FUNCTION__, rce);
@@ -125,6 +127,7 @@ LOC_check_path      (char *a_path)
       DEBUG_DIRS   yLOG_sexitr  (__FUNCTION__, rce);
       return rce;
    }
+   DEBUG_DIRS   yLOG_snote   ("length good");
    --rce;  if (a_path[0] !=  '/') {
       DEBUG_DIRS   yLOG_snote   ("must be absolute path");
       DEBUG_DIRS   yLOG_sexitr  (__FUNCTION__, rce);
@@ -139,6 +142,7 @@ LOC_check_path      (char *a_path)
       return rce;
    }
    closedir (x_dir);
+   DEBUG_DIRS   yLOG_snote   ("dir exists");
    /*---(complete)-----------------------*/
    DEBUG_DIRS   yLOG_snote   ("validated");
    DEBUG_DIRS   yLOG_sexit   (__FUNCTION__);
@@ -194,21 +198,21 @@ LOC_find_path           (char  *a_path)
    int         x_found     = -1;            /* generic locator                */
    int         i           = 0;             /* iterator -- location           */
    /*---(header)-------------------------*/
-   DEBUG_DIRS   yLOG_senter  (__FUNCTION__);
+   DEBUG_DIRS   yLOG_enter   (__FUNCTION__);
    /*---(prepare)------------------------*/
    s_cloc = -1;
    /*---(defense))-----------------------*/
    rc = LOC_check_path (a_path);
    --rce;  if (rc < 0) {
-      DEBUG_DIRS   yLOG_sexitr  (__FUNCTION__, rce);
+      DEBUG_DIRS   yLOG_exitr   (__FUNCTION__, rce);
       return rce;
    }
-   DEBUG_DIRS   yLOG_snote   (a_path);
+   DEBUG_DIRS   yLOG_note    (a_path);
    x_len = strlen (a_path);
-   DEBUG_DIRS   yLOG_sint    (x_len);
+   DEBUG_DIRS   yLOG_value   ("x_len"     , x_len);
    --rce;  if (x_len  == 0   ) {
-      DEBUG_DIRS   yLOG_snote   ("can not be blank");
-      DEBUG_DIRS   yLOG_sexitr  (__FUNCTION__, rce);
+      DEBUG_DIRS   yLOG_note    ("can not be blank");
+      DEBUG_DIRS   yLOG_exitr   (__FUNCTION__, rce);
       return rce;
    }
    /*---(cycle)--------------------------*/
@@ -220,16 +224,16 @@ LOC_find_path           (char  *a_path)
       x_found = i;
       break;
    }
-   DEBUG_DIRS   yLOG_sint    (x_found);
+   DEBUG_DIRS   yLOG_value   ("x_found"   , x_found);
    --rce;  if (x_found < 0) {
       rce = -1;
-      DEBUG_DIRS   yLOG_snote   ("cound not find");
-      DEBUG_DIRS   yLOG_sexitr  (__FUNCTION__, rce);
+      DEBUG_DIRS   yLOG_note    ("cound not find");
+      DEBUG_DIRS   yLOG_exitr   (__FUNCTION__, rce);
       return rce;
    }
-   DEBUG_DIRS   yLOG_snote   ("FOUND");
+   DEBUG_DIRS   yLOG_note    ("FOUND");
    /*---(complete)-----------------------*/
-   DEBUG_DIRS   yLOG_sexit   (__FUNCTION__);
+   DEBUG_DIRS   yLOG_exit    (__FUNCTION__);
    return x_found;
 }
 
@@ -367,6 +371,7 @@ LOC_push           (char  *a_path, char a_source, char *a_desc)
       return rce;
    }
    /*---(append)-------------------------*/
+   DEBUG_DIRS   yLOG_note    ("adding data to new record");
    if (x_found == -1)  x_found = s_nloc;
    s_locs [x_found].source   = a_source;
    strncpy (s_locs [x_found].path, a_path, STR_MAX);
@@ -377,14 +382,15 @@ LOC_push           (char  *a_path, char a_source, char *a_desc)
    /*---(name concerns)------------------*/
    s_locs [x_found].f_concern  = LOC_clean_path (a_path);
    /*---(focus)--------------------------*/
+   DEBUG_DIRS   yLOG_note    ("checking focus");
    if (  s_locs [x_found].len == my.focus_len &&
          strcmp (s_locs [x_found].path, my.focus) == 0) {
       s_locs [x_found].active = 'y';
    }
    /*---(update)-------------------------*/
-   DEBUG_DIRS   printf ("added as %d, done\n", x_found);
    ++s_nloc;
    /*---(complete)-----------------------*/
+   DEBUG_DIRS  yLOG_exit    (__FUNCTION__);
    return x_found;
 }
 
