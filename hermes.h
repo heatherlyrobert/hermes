@@ -209,8 +209,8 @@
 
 
 /* rapidly evolving version number to aid with visual change confirmation     */
-#define     VER_NUM   "0.6l"
-#define     VER_TXT   "LOC focus, added validator functions to simplify code"
+#define     VER_NUM   "0.6j"
+#define     VER_TXT   "got unit testing with logging/debugging working"
 
 
 /*---(struct typedefs)-------------------*/
@@ -463,14 +463,13 @@ int         main               (int argc, char *argv[]);
 
 
 /*---(hermes_prog)----------------------------------------*/
+char*       PROG_version       (void);
 char        PROG_init          (void);
-char        PROG_urgsmass      (char a_set, char a_extra);
-char        PROG_urgs          (int argc, char *argv[]);
 char        PROG_args          (int argc, char *argv[]);
 char        PROG_begin         (void);
-char        PROG_end           (void);
-char        PROG_testing       (void);
+char        PROG_testquiet     (void);
 char        PROG_testloud      (void);
+char        PROG_end           (void);
 
 
 
@@ -490,10 +489,12 @@ char        parse_long         (char *a_recd, char **a_place, long a_min, long a
 
 
 /*---(hermes_loc)-----------------------------------------*/
-char        LOC_check_name      (char  *a_path);
-int         LOC_find_name           (char  *a_name);
-
+char        LOC_check_path      (char  *a_path);
+char        LOC_clean_path      (char  *a_path);
 char        LOC_check_index     (int    a_loc);
+
+int         LOC_find_path           (char  *a_name);
+
 char        LOC_valid          (int    a_loc);
 char        LOC_purge          (void);
 int         LOC_push           (char  *a_name, char a_type, char *a_desc);

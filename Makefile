@@ -22,7 +22,7 @@ INCS    = -I/usr/local/include -I/usr/include/openssl
 LINK    = gcc
 LIBDIR  = -L/usr/local/lib -L/usr/lib64 
 LIBS    = ${LIBDIR}         -lcrypto          -lssl             -lySTR            -lyURG
-LIBD    = ${LIBDIR}         -lcrypto          -lssl             -lySTR_debug      -lyURG            -lyLOG
+LIBD    = ${LIBDIR}         -lcrypto          -lssl             -lySTR_debug      -lyURG_debug      -lyLOG
 LIBU    = ${LIBD}           -lyUNIT           -lyVAR         
 
 #===(file lists)============================================================================================================================================================================#

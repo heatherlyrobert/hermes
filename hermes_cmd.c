@@ -241,7 +241,7 @@ CMD_push           (char *a_name, char a_src)
    s_cmds [curr].len  = strlen (s_cmds [curr].name);
    *p = '\0';
    /*---(location)--------------------*/
-   rci = LOC_find_name (s);
+   rci = LOC_find_path (s);
    --rce;     /* bad location -----------*/
    if (rci < 0)  {
       DEBUG_CACHE   printf ("location %s not found, SKIPPING\n", p);
@@ -1036,7 +1036,7 @@ CMD_analyze        (int a_count, char *a_path, char *a_name, tCMD *a_cmd, char a
    /*---(size)---------------------*/
    if (a_cmd->size != a_cmd->bytes)  a_cmd->smiss = '#';
    /*---(final touches)------------*/
-   a_cmd->i_loc  = LOC_find_name (a_path);
+   a_cmd->i_loc  = LOC_find_path (a_path);
    if (a_cmd->i_loc < 0) {
       DEBUG_CMDS   yLOG_exit    (__FUNCTION__);
       return a_cmd->i_loc;
@@ -1511,7 +1511,7 @@ CMD_readdb         (void)
       s_cmds [ncmd].len  = strlen (s_cmds [ncmd].name);
       *p = '\0';
       /*---(location)--------------------*/
-      rci = LOC_find_name (s);
+      rci = LOC_find_path (s);
       if (rci < 0)  {
          rci = LOC_push (s, 'd', "");
          /*> DEBUG_CACHE   printf ("location %s not found, SKIPPING\n", s);        <*/

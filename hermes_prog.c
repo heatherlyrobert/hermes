@@ -286,6 +286,13 @@ PROG_version       (void)
 char             /* [------] minimal pre-argument program initialization -----*/
 PROG_init          (void)
 {
+   /*---(log header)---------------------*/
+   DEBUG_TOPS   yLOG_info     ("purpose" , "light, clean, vim-ish, technical, and wicked spreadsheet");
+   DEBUG_TOPS   yLOG_info     ("namesake", "ugly, impossibly powerful, one-hundred handed, fifty headed, primeval giant");
+   DEBUG_TOPS   yLOG_info     ("hermes"  , PROG_version    ());
+   DEBUG_TOPS   yLOG_info     ("yURG"    , yURG_version    ());
+   DEBUG_TOPS   yLOG_info     ("ySTR"    , ySTR_version    ());
+   DEBUG_TOPS   yLOG_info     ("yLOG"    , yLOG_version    ());
    /*---(begin)--------------------------*/
    DEBUG_ARGS   yLOG_enter   (__FUNCTION__);
    /*---(default run-time options)-------*/
@@ -516,7 +523,7 @@ PROG_begin         (void)
 char       /*----: set up programgents/debugging -----------------------------*/
 PROG_testquiet     (void)
 {
-   char       *x_args [1]  = { "gyges" };
+   char       *x_args [1]  = { "hermes" };
    yURG_logger (1, x_args);
    PROG_init   ();
    yURG_urgs   (1, x_args);
@@ -528,7 +535,7 @@ PROG_testquiet     (void)
 char       /*----: set up programgents/debugging -----------------------------*/
 PROG_testloud      (void)
 {
-   char       *x_args [2]  = { "gyges_unit", "@@kitchen"    };
+   char       *x_args [2]  = { "hermes_unit", "@@kitchen"    };
    yURG_logger (2, x_args);
    PROG_init   ();
    yURG_urgs   (2, x_args);

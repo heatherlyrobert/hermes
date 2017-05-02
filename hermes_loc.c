@@ -99,7 +99,7 @@ LOC_check_index     (int a_loc)
 }
 
 char             /*-> validate a location name -----------[ ------ [ ------ ]-*/
-LOC_check_name      (char *a_path)
+LOC_check_path      (char *a_path)
 {
    /*---(locals)-----------+-----------+-*/
    char        rce         = -10;      /* return code for errors              */
@@ -145,6 +145,157 @@ LOC_check_name      (char *a_path)
    return 0;
 }
 
+char             /*-> validate a location name -----------[ ------ [ ------ ]-*/
+LOC_clean_path      (char *a_path)
+{
+   /*---(locals)-----------+-----------+-*/
+   int         x_len       =   0;
+   int         i           =   0;
+   char        x_concern   = '-';
+   char        x_valid     []          = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_./";
+   char        x_extra     []          = "-";
+   /*---(header)-------------------------*/
+   DEBUG_DIRS   yLOG_senter  (__FUNCTION__);
+   /*---(prepare)------------------------*/
+   x_len = strlen (a_path);
+   /*---(test path cleaness)-------------*/
+   for (i = 0; i < x_len; ++i) {
+      /*---(test basic)------------------*/
+      if (strchr (x_valid, a_path [i]) != NULL)  continue;
+      /*---(test extra)------------------*/
+      if (strchr (x_extra, a_path [i]) != NULL) {
+         x_concern = '+';
+         continue;
+      }
+      /*---(other is bad)----------------*/
+      x_concern = '#';
+      break;
+   }
+   DEBUG_DIRS   yLOG_schar   (x_concern);
+   /*---(complete)-----------------------*/
+   DEBUG_DIRS   yLOG_sexit   (__FUNCTION__);
+   return x_concern;
+}
+
+
+
+/*====================------------------------------------====================*/
+/*===----                  searching/finding functions                 ----===*/
+/*====================------------------------------------====================*/
+static void      o___FINDERS_________________o (void) {;}
+
+int              /*-> locate a location by path ----------[ ------ [ ------ ]-*/
+LOC_find_path           (char  *a_path)
+{
+   /*---(locals)-----------+-----------+-*/
+   char        rce         = -10;
+   char        rc          =   0;
+   int         x_len       = 0;             /* generic string length          */
+   int         x_found     = -1;            /* generic locator                */
+   int         i           = 0;             /* iterator -- location           */
+   /*---(header)-------------------------*/
+   DEBUG_DIRS   yLOG_senter  (__FUNCTION__);
+   /*---(prepare)------------------------*/
+   s_cloc = -1;
+   /*---(defense))-----------------------*/
+   rc = LOC_check_path (a_path);
+   --rce;  if (rc < 0) {
+      DEBUG_DIRS   yLOG_sexitr  (__FUNCTION__, rce);
+      return rce;
+   }
+   DEBUG_DIRS   yLOG_snote   (a_path);
+   x_len = strlen (a_path);
+   DEBUG_DIRS   yLOG_sint    (x_len);
+   --rce;  if (x_len  == 0   ) {
+      DEBUG_DIRS   yLOG_snote   ("can not be blank");
+      DEBUG_DIRS   yLOG_sexitr  (__FUNCTION__, rce);
+      return rce;
+   }
+   /*---(cycle)--------------------------*/
+   for (i = 0; i < s_nloc; ++i) {
+      /*---(filter)----------------------*/
+      if (s_locs [i].len                   != x_len)   continue;
+      if (strcmp (s_locs [i].path, a_path) != 0    )   continue;
+      /*---(save)------------------------*/
+      x_found = i;
+      break;
+   }
+   DEBUG_DIRS   yLOG_sint    (x_found);
+   --rce;  if (x_found < 0) {
+      rce = -1;
+      DEBUG_DIRS   yLOG_snote   ("cound not find");
+      DEBUG_DIRS   yLOG_sexitr  (__FUNCTION__, rce);
+      return rce;
+   }
+   DEBUG_DIRS   yLOG_snote   ("FOUND");
+   /*---(complete)-----------------------*/
+   DEBUG_DIRS   yLOG_sexit   (__FUNCTION__);
+   return x_found;
+}
+
+
+
+/*====================------------------------------------====================*/
+/*===----                information getting functions                 ----===*/
+/*====================------------------------------------====================*/
+static void      o___GETTERS_________________o (void) {;}
+
+int              /*-> find the first open location -------[ ------ [ ------ ]-*/
+LOC_get_index      (void)
+{
+   if (s_nloc >= MAX_LOCATIONS) {
+      return -1;
+   }
+   s_cloc = s_nloc;
+   return 0;
+}
+
+char             /*-> return first directory -------------[ ------ [ ------ ]-*/
+LOC_head           (void)
+{
+   s_cloc = 0;
+   if (s_nloc == 0) {
+      s_cloc = -1;
+      return -1;
+   }
+   return 0;
+}
+
+char             /*-> return first directory -------------[ ------ [ ------ ]-*/
+LOC_next           (void)
+{
+   if (s_nloc == 0) {
+      s_cloc = -1;
+      return -1;
+   }
+   ++s_cloc;
+   if (s_cloc >= s_nloc) {
+      s_cloc = 0;
+      return -2;
+   }
+   return 0;
+}
+
+char*            /*-> return current rectory -------------[ ------ [ ------ ]-*/
+LOC_getpath        (void)   { if (s_cloc <  0) return ""; return s_locs [s_cloc].path; }
+
+char             /*-> return current rectory -------------[ ------ [ ------ ]-*/
+LOC_getsource      (void)   { if (s_cloc <  0) return '?'; return s_locs [s_cloc].source; }
+
+int              /*-> return count of locations ----------[ ------ [ ------ ]-*/
+LOC_getcount       (void)   { return s_nloc; }
+
+
+
+/*====================------------------------------------====================*/
+/*===----                information setting functions                 ----===*/
+/*====================------------------------------------====================*/
+static void      o___SETTERS_________________o (void) {;}
+
+char             /*-> return count of locations ----------[ ------ [ ------ ]-*/
+LOC_addcmd         (void)   { if (s_cloc < 0)  return -1; ++s_locs[s_cloc].ncmd; return 0; }
+
+
 
 
 /*====================------------------------------------====================*/
@@ -180,145 +331,61 @@ LOC_purge          (void)
 /*====================------------------------------------====================*/
 static void      o___UPDATES_________________o (void) {;}
 
-int              /* [------] verify a location by name -----------------------*/
-LOC_find_name           (char  *a_name)
-{
-   /*---(locals)-----------+-----------+-*/
-   char        rce         = -10;
-   char        rc          =   0;
-   int         x_len       = 0;             /* generic string length          */
-   int         x_found     = -1;            /* generic locator                */
-   int         i           = 0;             /* iterator -- location           */
-   /*---(header)-------------------------*/
-   DEBUG_DIRS   yLOG_senter  (__FUNCTION__);
-   /*---(prepare)------------------------*/
-   s_cloc = -1;
-   /*---(defense))-----------------------*/
-   rc = LOC_check_name (a_name);
-   --rce;  if (rc < 0) {
-      DEBUG_DIRS   yLOG_sexitr  (__FUNCTION__, rce);
-      return rce;
-   }
-   DEBUG_DIRS   yLOG_snote   (a_name);
-   x_len = strlen (a_name);
-   DEBUG_DIRS   yLOG_sint    (x_len);
-   --rce;  if (x_len  == 0   ) {
-      DEBUG_DIRS   yLOG_snote   ("can not be blank");
-      DEBUG_DIRS   yLOG_sexitr  (__FUNCTION__, rce);
-      return rce;
-   }
-   /*---(cycle)--------------------------*/
-   for (i = 0; i < s_nloc; ++i) {
-      /*---(filter)----------------------*/
-      if (s_locs [i].len                   != x_len)   continue;
-      if (strcmp (s_locs [i].path, a_name) != 0    )   continue;
-      /*---(save)------------------------*/
-      x_found = i;
-      break;
-   }
-   DEBUG_DIRS   yLOG_sint    (x_found);
-   --rce;  if (x_found < 0) {
-      DEBUG_DIRS   yLOG_snote   ("cound not find");
-      DEBUG_DIRS   yLOG_sexitr  (__FUNCTION__, rce);
-      return rce;
-   }
-   DEBUG_DIRS   yLOG_snote   ("FOUND");
-   /*---(complete)-----------------------*/
-   DEBUG_DIRS   yLOG_sexit   (__FUNCTION__);
-   return x_found;
-}
-
 int              /* [------] append a location to the list -------------------*/
 LOC_push           (char  *a_path, char a_source, char *a_desc)
 {
-   DEBUG_DIRS   printf ("   appending location: ");
    /*---(locals)-----------+-----------+-*/
-   int         found       = -1;            /* generic locator                */
-   int         len         = 0;             /* generic string length          */
-   DIR        *dir         = NULL;          /* directory pointer              */
    char        rce         = -10;           /* return code for errors         */
-   char        x_valid     []          = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_./";
-   char        x_extra     []          = "-";
-   int         i           = 0;             /* iterator -- location           */
-   /*---(defenses)-----------------------*/
+   int         x_found     = -1;            /* generic locator                */
+   /*---(bagin)--------------------------*/
+   DEBUG_DIRS  yLOG_enter   (__FUNCTION__);
+   /*---(check for existing)-------------*/
+   x_found = LOC_find_path (a_path);
+   DEBUG_DIRS  yLOG_value   ("x_found"   , x_found);
+   --rce;  if (x_found < -1) {
+      DEBUG_DIRS   yLOG_note    ("bad path");
+      DEBUG_DIRS   yLOG_exitr   (__FUNCTION__, rce);
+      return rce;
+   }
+   /*---(check for existing)-------------*/
+   --rce;  if (x_found >= 0) {
+      DEBUG_DIRS   yLOG_note    ("already exists");
+      DEBUG_DIRS   yLOG_exitr   (__FUNCTION__, rce);
+      return rce;
+   }
+   /*---(check for too many)-------------*/
    --rce;
    if (s_nloc >= MAX_LOCATIONS) {
-      DEBUG_DIRS   printf ("location structure full, SKIPPING\n");
+      DEBUG_DIRS   yLOG_note    ("location structure full");
+      DEBUG_DIRS   yLOG_exitr   (__FUNCTION__, rce);
       return rce;
    }
-   --rce;
-   if (a_path == NULL) {
-      DEBUG_DIRS   printf ("location name is null, SKIPPING\n");
-      return -7;
-   }
-   found = LOC_find_name (a_path);
-   --rce;
-   if (found < -1) {
-      DEBUG_DIRS   printf ("bad name or length, SKIPPING\n");
+   /*---(check source)-------------------*/
+   --rce;  if (strchr (valid_src, a_source) == NULL) {
+      DEBUG_DIRS   yLOG_note    ("bad source type");
+      DEBUG_DIRS   yLOG_exitr   (__FUNCTION__, rce);
       return rce;
    }
-   DEBUG_DIRS   printf ("%-20.20s, ", a_path);
-   if (found >= 0 && s_locs [found].source != '#')  {
-      DEBUG_DIRS   printf ("already exists as %d, done\n", found);
-      return found;
-   }
-   len = strlen (a_path);
-   --rce;
-   if (len >= STR_MAX) {
-      DEBUG_DIRS   printf ("name too long (%d vs. %d)\n", len, STR_MAX);
-      return rce;
-   }
-   --rce;
-   if (len <  4) {
-      DEBUG_DIRS   printf ("name too short (%d vs. %d)\n", len, 4);
-      return rce;
-   }
-   --rce;
-   if (strchr (valid_src, a_source) == NULL) {
-      DEBUG_DIRS   printf ("bad location type (%c vs %s), SKIPPING\n", a_source, valid_src);
-      return rce;
-   }
-   /*---(test against real location)-----*/
-   dir = opendir(a_path);
-   --rce;
-   if (dir == NULL) {
-      DEBUG_DIRS    printf ("skipping, not a real directory\n");
-      closedir (dir);
-      return rce;
-   }
-   closedir (dir);
    /*---(append)-------------------------*/
-   if (found == -1)  found = s_nloc;
-   s_locs [found].source   = a_source;
-   strncpy (s_locs [found].path, a_path, STR_MAX);
-   if (a_desc != NULL)  strncpy (s_locs [found].desc, a_desc, STR_REG);
-   else                 strncpy (s_locs [found].desc, "n/a" , STR_REG);
-   s_locs [found].len      = len;
-   s_locs [found].ncmd     = 0;
-   /*---(error-flags)--------------------*/
-   s_locs [found].f_concern  = '-';
-   for (i = 0; i < len; ++i) {
-      /*---(test basic)------------------*/
-      if (strchr (x_valid, s_locs [found].path [i]) != NULL)  continue;
-      /*---(test extra)------------------*/
-      if (strchr (x_extra, s_locs [found].path [i]) != NULL) {
-         s_locs [found].f_concern = '+';
-         continue;
-      }
-      /*---(othre is bad)----------------*/
-      s_locs [found].f_concern = '#';
-      break;
-   }  /*---(done)------------------------*/
+   if (x_found == -1)  x_found = s_nloc;
+   s_locs [x_found].source   = a_source;
+   strncpy (s_locs [x_found].path, a_path, STR_MAX);
+   if (a_desc != NULL)  strncpy (s_locs [x_found].desc, a_desc, STR_REG);
+   else                 strncpy (s_locs [x_found].desc, "n/a" , STR_REG);
+   s_locs [x_found].len      = strlen (a_path);
+   s_locs [x_found].ncmd     = 0;
+   /*---(name concerns)------------------*/
+   s_locs [x_found].f_concern  = LOC_clean_path (a_path);
    /*---(focus)--------------------------*/
-   if (  s_locs [found].len == my.focus_len &&
-         strcmp (s_locs [found].path, my.focus) == 0) {
-      s_locs [found].active = 'y';
+   if (  s_locs [x_found].len == my.focus_len &&
+         strcmp (s_locs [x_found].path, my.focus) == 0) {
+      s_locs [x_found].active = 'y';
    }
    /*---(update)-------------------------*/
-   DEBUG_DIRS   printf ("added as %d, done\n", found);
+   DEBUG_DIRS   printf ("added as %d, done\n", x_found);
    ++s_nloc;
    /*---(complete)-----------------------*/
-   return found;
+   return x_found;
 }
 
 char             /* [------] clear a single location entry -------------------*/
@@ -484,56 +551,6 @@ LOC_change         (int a_loc)
    }
    return 0;
 }
-
-char             /*-> return first directory -------------[ ------ [ ------ ]-*/
-LOC_open           (void)
-{
-   if (s_nloc >= MAX_LOCATIONS) {
-      return -1;
-   }
-   s_cloc = s_nloc;
-   return s_nloc;
-   return 0;
-}
-
-char             /*-> return first directory -------------[ ------ [ ------ ]-*/
-LOC_head           (void)
-{
-   s_cloc = 0;
-   if (s_nloc == 0) {
-      s_cloc = -1;
-      return -1;
-   }
-   return 0;
-}
-
-char             /*-> return first directory -------------[ ------ [ ------ ]-*/
-LOC_next           (void)
-{
-   if (s_nloc == 0) {
-      s_cloc = -1;
-      return -1;
-   }
-   ++s_cloc;
-   if (s_cloc >= s_nloc) {
-      s_cloc = 0;
-      return -2;
-   }
-   return 0;
-}
-
-char*            /*-> return current rectory -------------[ ------ [ ------ ]-*/
-LOC_getpath        (void)   { if (s_cloc <  0) return ""; return s_locs [s_cloc].path; }
-
-char             /*-> return current rectory -------------[ ------ [ ------ ]-*/
-LOC_getsource      (void)   { if (s_cloc <  0) return '?'; return s_locs [s_cloc].source; }
-
-int              /*-> return count of locations ----------[ ------ [ ------ ]-*/
-LOC_getcount       (void)   { return s_nloc; }
-
-char             /*-> return count of locations ----------[ ------ [ ------ ]-*/
-LOC_addcmd         (void)   { if (s_cloc < 0)  return -1; ++s_locs[s_cloc].ncmd; return 0; }
-
 
 
 /*====================------------------------------------====================*/
