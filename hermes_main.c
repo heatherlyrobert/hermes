@@ -41,9 +41,11 @@ main               (int argc, char *argv[])
    /*> CMD_list     ('i');                                                            <*/
    /*> CMD_list     ('a');                                                            <*/
 
-   CMD_world    ();
+   /*> CMD_world    ();                                                               <*/
 
-   CMD_writeall ();
+   /*> CMD_writeall ();                                                               <*/
+
+   FILES_gather ();
 
    DEBUG_TOPS   yLOG_exit    (__FUNCTION__);
    PROG_end     ();

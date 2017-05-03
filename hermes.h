@@ -209,8 +209,8 @@
 
 
 /* rapidly evolving version number to aid with visual change confirmation     */
-#define     VER_NUM   "0.6m"
-#define     VER_TXT   "added location cursor testing on empty location table"
+#define     VER_NUM   "0.7a"
+#define     VER_TXT   "built framework that reads entries in /usr/db/pkg"
 
 
 /*---(struct typedefs)-------------------*/
@@ -575,6 +575,8 @@ char        CMD_writeall       (void);
 char*       CMD_unit           (char *a_question, int a_num);
 
 
+
+char        FILES_gather       (void);
 
 char     *ySTR_trim          (char *a_source, char a_mode);
 #define    ySTR_NONE      'n'
