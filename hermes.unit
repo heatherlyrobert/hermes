@@ -176,6 +176,47 @@ SCRP          v21  (hermes_loc) location cursor management                    
      exec     v21  purge the location table             LOC_purge                                                                                     i_equal     0                                                                       -                       
      get      v21  check the location count             LOC_unit              "location_count"       , 0                                              s_equal     location empty   : no locations exist                                   -                       
 
+   GROUP      v21  test cursors on empty location database                      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -   - - - - -   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  
+
+   COND       check on initial cursor set                                  ----------------------------------------------------------------------  ----------  ----------------------------------------------------------------------  -  -------------------- 
+     get      v21  check the location count             LOC_unit              "location_count"       , 0                                              s_equal     location empty   : no locations exist                                   -                       
+
+   COND       find the initial location                                    ----------------------------------------------------------------------  ----------  ----------------------------------------------------------------------  -  -------------------- 
+     exec     request a specific index             LOC_curs_index        0                                                                       i_lesser    0                                                                       -                       
+     get      v21  check the location count             LOC_unit              "location_count"       , 0                                              s_equal     location empty   : no locations exist                                   -                       
+     exec     request the path                     LOC_get_path                                                                                  s_equal                                                                             -                       
+     exec     request the source                   LOC_get_source                                                                                i_equal     '?'                                                                     -                       
+     exec     request the command count            LOC_get_commands                                                                              i_equal     0                                                                       -                       
+     exec     request the desc                     LOC_get_desc                                                                                  s_equal                                                                             -                       
+
+   COND       test other direct indexes                                    ----------------------------------------------------------------------  ----------  ----------------------------------------------------------------------  -  -------------------- 
+     exec     request a specific index             LOC_curs_index        2                                                                       i_lesser    0                                                                       -                       
+     exec     request a specific index             LOC_curs_index        -5                                                                      i_lesser    0                                                                       -                       
+     exec     request a specific index             LOC_curs_index        3                                                                       i_lesser    0                                                                       -                       
+     exec     request a specific index             LOC_curs_index        4                                                                       i_lesser    0                                                                       -                       
+     exec     request a specific index             LOC_curs_index        100                                                                     i_lesser    0                                                                       -                       
+     get      v21  check the location count             LOC_unit              "location_count"       , 0                                              s_equal     location empty   : no locations exist                                   -                       
+     exec     request the path                     LOC_get_path                                                                                  s_equal                                                                             -                       
+     exec     request the source                   LOC_get_source                                                                                i_equal     '?'                                                                     -                       
+     exec     request the command count            LOC_get_commands                                                                              i_equal     0                                                                       -                       
+     exec     request the desc                     LOC_get_desc                                                                                  s_equal                                                                             -                       
+
+   COND       test relative finds                                          ----------------------------------------------------------------------  ----------  ----------------------------------------------------------------------  -  -------------------- 
+     exec     request the first                    LOC_curs_head                                                                                 i_lesser    0                                                                       -                       
+     exec     request the next                     LOC_curs_next                                                                                 i_lesser    0                                                                       -                       
+     exec     request the next                     LOC_curs_next                                                                                 i_lesser    0                                                                       -                       
+     exec     request the path                     LOC_get_path                                                                                  s_equal                                                                             -                       
+     exec     request the source                   LOC_get_source                                                                                i_equal     '?'                                                                     -                       
+     exec     request the command count            LOC_get_commands                                                                              i_equal     0                                                                       -                       
+     exec     request the desc                     LOC_get_desc                                                                                  s_equal                                                                             -                       
+     get      v21  check the location count             LOC_unit              "location_count"       , 0                                              s_equal     location empty   : no locations exist                                   -                       
+     exec     request the path                     LOC_get_path                                                                                  s_equal                                                                             -                       
+     exec     request the source                   LOC_get_source                                                                                i_equal     '?'                                                                     -                       
+     exec     request the command count            LOC_get_commands                                                                              i_equal     0                                                                       -                       
+     exec     request the desc                     LOC_get_desc                                                                                  s_equal                                                                             -                       
+
+   GROUP      v21  start with direct finds                                      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -   - - - - -   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  
+
    COND       add base locations                                           ----------------------------------------------------------------------  ----------  ----------------------------------------------------------------------  -  -------------------- 
      exec     call the append function             LOC_push              "/sbin"                , 'a', "test1"                                   i_equal     0                                                                       -                       
      exec     call the append function             LOC_push              "/bin"                 , 'c', "test2"                                   i_equal     1                                                                       -                       
@@ -185,8 +226,6 @@ SCRP          v21  (hermes_loc) location cursor management                    
      get      verify the location command count    LOC_unit              "location_ncmd"        , 3                                              s_equal     location links   :  3 /usr/sbin                   0                     -                       
      get      verify the last added location       LOC_unit              "location_last"        , 0                                              s_equal     location last    : ( 3) /usr/sbin                                       -                       
      exec     request the count                    LOC_get_count                                                                                 i_equal     4                                                                       -                       
-
-   GROUP      v21  start with direct finds                                      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -   - - - - -   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  
 
    COND       check on initial cursor set                                  ----------------------------------------------------------------------  ----------  ----------------------------------------------------------------------  -  -------------------- 
      get      check the cursor location            LOC_unit              "location_curr"        , 0                                              s_equal     location curr    : -1 not set                                           -                       
@@ -263,12 +302,65 @@ SCRP          v21  (hermes_loc) location cursor management                    
      exec     request the command count            LOC_get_commands                                                                              i_equal     0                                                                       -                       
      exec     request the desc                     LOC_get_desc                                                                                  s_equal                                                                             -                       
 
-
-
-
    COND       v21  wrap-up                                                      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -   ((01.001))  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  
      exec     v21  purge the location table             LOC_purge                                                                                     i_equal     0                                                                       -                       
      get      v21  check the location count             LOC_unit              "location_count"       , 0                                              s_equal     location empty   : no locations exist                                   -                       
+     exec     v21  teardown                             PROG_end                                                                                      i_equal     0                                                                       -                       
+
+
+
+#23456789-12  123  123456789-123456789-123456789-12345  123456789-123456789-  123456789-123456789-123456789-123456789-123456789-123456789-123456789-  123456789-  123456789-123456789-123456789-123456789-123456789-123456789-123456789-  -  123456789-123456789- 
+#==(verb)===  ver  ===========(description)===========  =====(function)=====  ========================(arguments)===================================  ==(test)==  ==========================(results)===================================  t  ========(var)======= 
+SCRP          v21  (hermes_util) validate support utilities                     UTIL_parse_full                                                         ((01.---))  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  
+
+   COND       v21  initialize the script                                        - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -   ((01.001))  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  
+     exec     v21  start testing setup                  PROG_testquiet                                                                                i_equal     0                                                                       -                       
+     code     v21  create a string                      - - - - - - - - - -   char  *x_full [1000];                                                                                                                                          
+     code     v21  create a string                      - - - - - - - - - -   char  *x_path [1000];                                                                                                                                          
+     code     v21  create a string                      - - - - - - - - - -   char  *x_name [1000];                                                                                                                                          
+
+   COND       check a null string                                          ----------------------------------------------------------------------  ----------  ----------------------------------------------------------------------  -  -------------------- 
+     exec     request a full parse                 UTIL_parse_full       NULL  , x_path, x_name                                                  i_lesser    0                                                                       -                       
+     echo     v21  check the path                       - - - - - - - - - -   x_path                                                                  s_equal                                                                            
+     echo     v21  check the path                       - - - - - - - - - -   x_name                                                                  s_equal                                                                            
+
+   COND       check a empty string                                         ----------------------------------------------------------------------  ----------  ----------------------------------------------------------------------  -  -------------------- 
+     code     v21  initialize the full string           - - - - - - - - - -   strlcpy (x_full, ""                                               , 1000);                                                                                     
+     exec     request a full parse                 UTIL_parse_full       x_full, x_path, x_name                                                  i_lesser    0                                                                       -                       
+     echo     v21  check the path                       - - - - - - - - - -   x_path                                                                  s_equal                                                                            
+     echo     v21  check the path                       - - - - - - - - - -   x_name                                                                  s_equal                                                                            
+
+   COND       check a simple directory                                     ----------------------------------------------------------------------  ----------  ----------------------------------------------------------------------  -  -------------------- 
+     code     v21  initialize the full string           - - - - - - - - - -   strlcpy (x_full, "/bin/true"                                      , 1000);                                                                                     
+     exec     request a full parse                 UTIL_parse_full       x_full, x_path, x_name                                                  i_equal     0                                                                       -                       
+     echo     v21  check the path                       - - - - - - - - - -   x_path                                                                  s_equal     /bin                                                                   
+     echo     v21  check the path                       - - - - - - - - - -   x_name                                                                  s_equal     true                                                                   
+
+   COND       check just a command name                                    ----------------------------------------------------------------------  ----------  ----------------------------------------------------------------------  -  -------------------- 
+     code     v21  initialize the full string           - - - - - - - - - -   strlcpy (x_full, "khronos"                                        , 1000);                                                                                     
+     exec     request a full parse                 UTIL_parse_full       x_full, x_path, x_name                                                  i_lesser    0                                                                       -                       
+     echo     v21  check the path                       - - - - - - - - - -   x_path                                                                  s_equal                                                                            
+     echo     v21  check the path                       - - - - - - - - - -   x_name                                                                  s_equal                                                                            
+
+   COND       check a longer path                                          ----------------------------------------------------------------------  ----------  ----------------------------------------------------------------------  -  -------------------- 
+     code     v21  initialize the full string           - - - - - - - - - -   strlcpy (x_full, "/usr/local/bin/golem"                           , 1000);                                                                                     
+     exec     request a full parse                 UTIL_parse_full       x_full, x_path, x_name                                                  i_equal     0                                                                       -                       
+     echo     v21  check the path                       - - - - - - - - - -   x_path                                                                  s_equal     /usr/local/bin                                                         
+     echo     v21  check the path                       - - - - - - - - - -   x_name                                                                  s_equal     golem                                                                  
+
+   COND       check a non-existant path                                    ----------------------------------------------------------------------  ----------  ----------------------------------------------------------------------  -  -------------------- 
+     code     v21  initialize the full string           - - - - - - - - - -   strlcpy (x_full, "/usr/system/testing"                            , 1000);                                                                                     
+     exec     request a full parse                 UTIL_parse_full       x_full, x_path, x_name                                                  i_lesser    0                                                                       -                       
+     echo     v21  check the path                       - - - - - - - - - -   x_path                                                                  s_equal                                                                            
+     echo     v21  check the path                       - - - - - - - - - -   x_name                                                                  s_equal                                                                            
+
+   COND       check a weird double slash (check parsing)                   ----------------------------------------------------------------------  ----------  ----------------------------------------------------------------------  -  -------------------- 
+     code     v21  initialize the full string           - - - - - - - - - -   strlcpy (x_full, "//test"                                         , 1000);                                                                                     
+     exec     request a full parse                 UTIL_parse_full       x_full, x_path, x_name                                                  i_lesser    0                                                                       -                       
+     echo     v21  check the path                       - - - - - - - - - -   x_path                                                                  s_equal                                                                            
+     echo     v21  check the path                       - - - - - - - - - -   x_name                                                                  s_equal                                                                            
+
+   COND       v21  wrap-up                                                      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -   ((01.001))  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  
      exec     v21  teardown                             PROG_end                                                                                      i_equal     0                                                                       -                       
 
 

@@ -209,8 +209,8 @@
 
 
 /* rapidly evolving version number to aid with visual change confirmation     */
-#define     VER_NUM   "0.6l"
-#define     VER_TXT   "completed location cursor testing successfully"
+#define     VER_NUM   "0.6m"
+#define     VER_TXT   "added location cursor testing on empty location table"
 
 
 /*---(struct typedefs)-------------------*/
@@ -478,6 +478,7 @@ char        PROG_end           (void);
 char*       str_ttrim          (char *a_cstring);
 char*       str_trim           (char *a_cstring);
 char        str_wtrim          (char *a_cstring, char *a_white);
+char        UTIL_parse_full    (char *a_full, char *a_path, char *a_name);
 /*---(records)---------*/
 int         recd_valid         (char *a_recd, int   *a_len);
 /*---(parsing)---------*/

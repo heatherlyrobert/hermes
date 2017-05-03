@@ -349,5 +349,45 @@ parse_long         (char *a_recd, char **a_place, long a_min, long a_max, long *
    return 0;
 }
 
+char             /*-> parse full into path/name ----------[ ------ [ ------ ]-*/
+UTIL_parse_full    (char *a_full, char *a_path, char *a_name)
+{
+   /*---(locals)-----------+-----------+-*/
+   char        rce         = -10;
+   char        rc          =   0;
+   int         x_len       = 0;             /* generic string length          */
+   char        s           [1000];
+   char       *p           = NULL;
+   /*---(prepare)---------------------*/
+   if (a_path != NULL)  strlcpy (a_path, "", 1000);
+   if (a_name != NULL)  strlcpy (a_name, "", 1000);
+   /*---(defense)---------------------*/
+   --rce;  if (a_full == NULL) {
+      return rce;
+   }
+   x_len = strlen (a_full);
+   --rce;  if (x_len <= 4) {
+      return rce;
+   }
+   /*---(full)------------------------*/
+   strlcpy (s, a_full, 1000);
+   p = strrchr (s, '/');
+   --rce;  if (p == NULL)  {
+      return rce;
+   }
+   /*---(location)--------------------*/
+   *p = '\0';
+   rc  = LOC_find_path (s);
+   --rce;  if (rc < 0)  {
+      return rce;
+   }
+   /*---(save it)---------------------*/
+   if (a_name != NULL)  strlcpy (a_name, p + 1, 1000);
+   if (a_path != NULL)  strlcpy (a_path, s    , 1000);
+   /*---(complete)-----------------------*/
+   return 0;
+}
+
+
 
 /*===============================[[ end-code ]]===============================*/
