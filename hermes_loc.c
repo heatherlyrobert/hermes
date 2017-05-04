@@ -218,8 +218,10 @@ LOC_find_path           (char  *a_path)
    /*---(cycle)--------------------------*/
    for (i = 0; i < s_nloc; ++i) {
       /*---(filter)----------------------*/
-      if (s_locs [i].len                   != x_len)   continue;
-      if (strcmp (s_locs [i].path, a_path) != 0    )   continue;
+      if (strncmp (s_locs [i].path, a_path, s_locs [i].len) != 0    )   continue;
+      if (s_locs [i].len != x_len) {
+         if (a_path [s_locs [i].len] != '/') continue;
+      }
       /*---(save)------------------------*/
       x_found = i;
       break;
@@ -235,6 +237,17 @@ LOC_find_path           (char  *a_path)
    /*---(complete)-----------------------*/
    DEBUG_DIRS   yLOG_exit    (__FUNCTION__);
    return x_found;
+}
+
+char
+LOC_remove_path    (int a_loc, char *a_path)
+{
+   char        x_suffix    [200];
+   if (a_path == NULL)  return -1;
+   strlcpy (x_suffix, a_path, 200);
+   LOC_curs_index (a_loc);
+   strlcpy (a_path, x_suffix + s_locs [s_cloc].len + 1, 100);
+   return 0;
 }
 
 

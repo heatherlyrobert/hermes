@@ -31,7 +31,7 @@
 tCMD        s_cmds      [CMD_MAX];       /* main command structure (unsorted) */
 int         icmd        [CMD_MAX];       /* index for commands                */
 int         ncmd        = 0;             /* count of commands                 */
-static char valid_src   [10] = "-+#";    /* valid source types                */
+static char valid_src   [10] = "-+#i";   /* valid source types                */
 
 
 
@@ -264,6 +264,14 @@ CMD_push           (char *a_name, char a_src)
    return curr;
 }
 
+char             /* [------] assign a sub-dir to a command -------------------*/
+CMD_subdir         (int a_curr, char *a_subdir)
+{
+   if (a_subdir == NULL)  return -1;
+   strlcpy (s_cmds [a_curr].subdir, a_subdir, 200);
+   return 0;
+}
+
 /*> int              /+ [------] save the command name ---------------------------+/   <* 
  *> CMD_append         (                                                               <* 
  *>       int         a_num,                    /+ command index number           +/   <* 
@@ -353,17 +361,18 @@ CMD_wipe           (tCMD *a_cmd)
    a_cmd->suid        = '-';
    a_cmd->gid         =  0;
    a_cmd->sgid        = '-';
-   a_cmd->mode [0]    = '\0';
+   a_cmd->mode   [0]  = '\0';
    a_cmd->size        =  0;
    /*---(contents)--------------------*/
    a_cmd->bytes       =  0;
    a_cmd->smiss       = '-';
-   a_cmd->hash [0]    = '\0';
+   a_cmd->hash   [0]  = '\0';
    /*---(linking)---------------------*/
    a_cmd->i_loc       = -1;
    a_cmd->i_pkg       = -1;
    /*---(working)---------------------*/
-   a_cmd->name [0]    = '\0';
+   a_cmd->subdir [0]  = '\0';
+   a_cmd->name   [0]  = '\0';
    a_cmd->concern     = '-';
    a_cmd->toolong     = '-';
    a_cmd->len         =  0;

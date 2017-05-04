@@ -209,8 +209,8 @@
 
 
 /* rapidly evolving version number to aid with visual change confirmation     */
-#define     VER_NUM   "0.7a"
-#define     VER_TXT   "built framework that reads entries in /usr/db/pkg"
+#define     VER_NUM   "0.7b"
+#define     VER_TXT   "captures all commands from /var/db/pkg ... CONTENTS files"
 
 
 /*---(struct typedefs)-------------------*/
@@ -296,6 +296,7 @@ struct      cCOMMAND {
    int         i_loc;
    int         i_pkg;
    /*---(working)---------------------*/
+   char        subdir      [LCNAME];
    char        name        [LCNAME];
    char        concern;
    int         toolong;
@@ -500,7 +501,8 @@ char        LOC_get_source      (void);
 int         LOC_get_comands     (void);
 char*       LOC_get_desc        (void);
 
-int         LOC_find_path           (char  *a_name);
+int         LOC_find_path       (char  *a_name);
+char        LOC_remove_path     (int a_loc, char *a_path);
 
 char        LOC_valid          (int    a_loc);
 char        LOC_purge          (void);
@@ -550,6 +552,7 @@ char        CMD_index          (void);
 /*---updates-----------*/
 char        CMD_checkname      (char   *a_name);
 int         CMD_push           (char   *a_name, char a_source);
+char        CMD_subdir         (int a_curr, char *a_subdir);
 int         CMD_append         (int     a_num, int a_loc, char *a_name);
 int         CMD_find           (char    *a_name);
 char        CMD_wipe           (tCMD   *a_cmd);

@@ -29,15 +29,15 @@ main               (int argc, char *argv[])
    PKG_world    ();
    /*> PKG_readdb   ();                                                               <*/
 
-   PKG_index    ();
+   /*> PKG_index    ();                                                               <*/
    /*> PKG_list     ('s');                                                            <*/
-   PKG_list     ('i');
+   /*> PKG_list     ('i');                                                            <*/
    PKG_writedb  ();
 
    CMD_gather   ('n');
 
-   CMD_index    ();
-   CMD_list     ('s');
+   /*> CMD_index    ();                                                               <* 
+    *> CMD_list     ('s');                                                            <*/
    /*> CMD_list     ('i');                                                            <*/
    /*> CMD_list     ('a');                                                            <*/
 
@@ -46,6 +46,11 @@ main               (int argc, char *argv[])
    /*> CMD_writeall ();                                                               <*/
 
    FILES_gather ();
+
+   PKG_index    ();
+   PKG_list     ('i');
+   /*> CMD_index    ();                                                               <*/
+   CMD_list     ('s');
 
    DEBUG_TOPS   yLOG_exit    (__FUNCTION__);
    PROG_end     ();

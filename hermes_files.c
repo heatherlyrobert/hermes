@@ -10,6 +10,15 @@ static FILE       *s_file      = NULL;          /* file pointer                 
 static char        s_dirs      [2000] = "";
 
 
+typedef    struct cFILES  tFILES;
+struct cFILES {
+   int         loc;
+   int         pkg;
+   char        cmd         [100];
+};
+tFILES      s_files     [10000];
+int         s_nfile     = 0;
+
 
 char             /*-> open files database ----------------[ ------ [ ------ ]-*/
 FILES_dirstr       (void)
@@ -55,13 +64,72 @@ FILES_db_close     (void)
 }
 
 char
-FILES_contents          (char *a_dir)
+FILES_package           (char *a_full, char *a_name, char *a_ver)
 {
    /*---(locals)-----------+-----------+-*/
-   char        rc          =    0;
    char        rce         =  -10;
-   FILE       *x_contents  = NULL;
-   /*---(complete)-----------------------*/
+   int         i           =    0;
+   int         x_len       =    0;
+   /*---(defense)------------------------*/
+   --rce;  if (a_full == NULL)  return rce;
+   --rce;  if (a_name == NULL)  return rce;
+   --rce;  if (a_ver  == NULL)  return rce;
+   /*---(find beg of ver)----------------*/
+   strlcpy (a_name, a_full, 100);
+   x_len = strlen (a_name);
+   for (i = 0; i < x_len; ++i) {
+      if (a_name [i] != '-')     continue;
+      if (strchr ("0123456789", a_name [i + 1]) == NULL)   continue;
+      a_name [i] = '\0';
+      /*> strcpy (a_ver, a_name [i + 1]);                                             <*/
+      return 1;
+   }
+   return 0;
+}
+
+char
+FILES_commands          (char *a_path, int a_pkg)
+{
+   /*---(locals)-----------+-----------+-*/
+   char        rce         =  -10;
+   char        rc          =    0;
+   FILE       *x_file      = NULL;
+   char        x_recd      [2000];
+   char       *p           = NULL;          /* strtok_r current pointer       */
+   char       *q           = " ";           /* strtok_r delimeters            */
+   char       *r           = NULL;          /* strtok_r context variable      */
+   int         x_loc       =    0;
+   char        x_path      [200];
+   char        x_subdir    [200];
+   char        x_cmd       [200];
+   x_file = fopen (a_path, "r");
+   --rce;  if (x_file == NULL) {
+      return rce;
+   }
+   while (1) {
+      /*---(read)---------------------*/
+      if (NULL == fgets (x_recd, 1000, x_file)) break;
+      if (feof (x_file)) break;
+      p = strtok_r  (x_recd, q, &r);
+      if (strcmp ("obj", p) != 0) continue;
+      p = strtok_r  (NULL  , q, &r);
+      if (p == NULL)              continue;
+      UTIL_parse_full (p, x_path, NULL);
+      x_loc = LOC_find_path (x_path);
+      if (x_loc < 0)  {
+         /*> printf ("      %s, location %s returned %2d, SKIPPING\n", p, x_path, x_loc);   <*/
+         continue;
+      }
+      strlcpy (x_subdir, x_path, 200);
+      rc    = LOC_remove_path (x_loc, x_subdir);
+      if (rc    < 0)  {
+         /*> printf ("      location %s remove path returned %2d, SKIPPING\n", x_cmd, x_loc);   <*/
+         continue;
+      }
+      printf ("      %-50.50s   %-50.50s\n", p, LOC_get_path ());
+      CMD_push (p, 'i');
+   }
+   fclose (x_file);
    return 0;
 }
 
@@ -77,8 +145,13 @@ FILES_gather            (void)
    int         x_ncat      =    0;          /* count of categories            */
    DIR        *x_packages  = NULL;          /* directory pointer              */
    tDIRENT    *x_pkg       = NULL;          /* directory entry                */
+   char        x_pkgdir    [200];
    int         x_npkg      =    0;          /* count of packages              */
+   int         x_cpkg      =    0;          /* current package                */
    int         x_count     =    0;
+   char        x_name      [100] = "";
+   char        x_ver       [100] = "";
+   char        s           [200];
    /*---(header)-------------------------*/
    DEBUG_DIRS   yLOG_enter   (__FUNCTION__);
    /*---(open root dir)------------------*/
@@ -120,7 +193,14 @@ FILES_gather            (void)
          /*---(handle)----------------------*/
          ++x_npkg;
          ++x_count;
-         printf ("   %02d.%s\n", x_npkg, x_pkg->d_name);
+         FILES_package (x_pkg->d_name, x_name, x_ver);
+         sprintf (s, "%s/%s", x_cat->d_name, x_name);
+         sprintf (x_pkgdir, "%s/%s/%s", x_catdir, x_pkg->d_name, "CONTENTS");
+         PKG_push (s, 'i', ' ', "(base install)");
+         x_cpkg = PKG_find (s);
+         printf  ("   %02d.%-30.30s   %3d %-50.50s   %-100.100s\n", x_npkg, x_pkg->d_name, x_cpkg, s, x_pkgdir);
+         if (x_cpkg < 0) continue;
+         FILES_commands  (x_pkgdir, x_cpkg);
       }
       closedir (x_packages);
    }

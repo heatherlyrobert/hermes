@@ -160,6 +160,18 @@ SCRP          v21  (hermes_loc) basic location management                     
      get      verify the location command count    LOC_unit              "location_ncmd"        , 3                                              s_equal     location links   :  3 /usr/sbin                   0                     -                       
      get      verify the last added location       LOC_unit              "location_last"        , 0                                              s_equal     location last    : ( 3) /usr/sbin                                       -                       
 
+   GROUP      v21  checking sub-directory finds                                 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -   - - - - -   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  
+
+   COND       add a library location                                       ----------------------------------------------------------------------  ----------  ----------------------------------------------------------------------  -  -------------------- 
+     exec     call the append function             LOC_push              "/lib64"               , 'a', ""                                        i_equal     4                                                                       -                       
+     get      check the location count             LOC_unit              "location_count"       , 0                                              s_equal     location count   : 5                                                    -                       
+     get      verify the location command count    LOC_unit              "location_ncmd"        , 4                                              s_equal     location links   :  4 /lib64                      0                     -                       
+     get      verify the last added location       LOC_unit              "location_last"        , 0                                              s_equal     location last    : ( 4) /lib64                                          -                       
+
+   COND       test location sub-directory finding                          ----------------------------------------------------------------------  ----------  ----------------------------------------------------------------------  -  -------------------- 
+     exec     find a location                      LOC_find_path         "/lib64/modules"                                                        i_greater   0                                                                       -                       
+     exec     find a location                      LOC_find_path         "/lib64/testing"                                                        i_lesser    0                                                                       -                       
+
    COND       v21  wrap-up                                                      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -   ((01.001))  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  
      exec     v21  purge the location table             LOC_purge                                                                                     i_equal     0                                                                       -                       
      get      v21  check the location count             LOC_unit              "location_count"       , 0                                              s_equal     location empty   : no locations exist                                   -                       

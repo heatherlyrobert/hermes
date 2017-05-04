@@ -4,7 +4,7 @@
 tPKG        pkgs        [PKG_MAX];        /* main package data structure         */
 int         ipkg        [PKG_MAX];        /* index for packages                  */
 int         npkg        = 0;
-static char valid_src   [10] = "-cw+#";   /* valid source types                */
+static char valid_src   [10] = "-cwi+#";   /* valid source types                */
 
 
 
@@ -324,7 +324,7 @@ PKG_push           (char  *a_full, char  a_source, char a_priority, char *a_desc
    if (found == -1)  found = npkg;
    strncpy (pkgs [found].full, a_full, LPFULL);
    strcpy  (s, a_full);
-   if (a_source == 'c' || a_source == 'w' || a_source == '+') {
+   if (strchr ("cw+i", a_source) != NULL) {
       p = strtok_r  (s, q, &r);
       --rce;     /* ---------------------*/
       if (p == NULL)  {
@@ -365,7 +365,7 @@ PKG_push           (char  *a_full, char  a_source, char a_priority, char *a_desc
    }
    closedir (dir);
    /*---(priority)-----------------------*/
-   if (a_source == 'c') {
+   if (strchr ("ci", a_source) != NULL) {
       if (a_priority == '\0')  pkgs [found].priority = ' ';
       else                     pkgs [found].priority = a_priority;
    }
@@ -586,8 +586,10 @@ PKG_list           (char a_order)
       if (pkgs [curr].ncmd < 1)      strcpy  (s, "  -");
       else                           sprintf (s, "%3d", pkgs [curr].ncmd);
       x_area = pkgs [curr].area;
-      if (x_area <  0)               sprintf  (t, "%s",     "99.unassigned");
-      else                           sprintf  (t, "%02d.%s", x_area, s_areas [x_area].name);
+      if (x_area <  0) {
+         if (pkgs [curr].source == 'i') sprintf  (t, "%s",     "98.base");
+         else                           sprintf  (t, "%s",     "99.unassigned");
+      } else                            sprintf  (t, "%02d.%s", x_area, s_areas [x_area].name);
       printf ("  %4d %4d  %c %c %c %c  %-20.20s %-30.30s %-40.40s   %3.3s    %c     %c    %-40.40s\n",
             x_seq, x_index, pkgs [curr].source, pkgs [curr].portage ,
             pkgs [curr].world , pkgs [curr].active,
