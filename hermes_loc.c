@@ -34,7 +34,7 @@
  *    path     :  fully qualified directory path
  *
  */
-#define     MAX_LOCATIONS     100
+#define     MAX_LOCATIONS    2000
 #define     LEN_PATH           50
 typedef     struct cLOC  tLOC;
 struct      cLOC {
@@ -55,7 +55,7 @@ int         s_cloc      = -1;            /* current location in use           */
 
 
 
-static char valid_src   [10] = "cad";    /* valid source types                */
+static char valid_src   [10] = "cadi";    /* valid source types                */
 /*  c = from configuration file /etc/themis.conf
  *  a = from command line argument
  *  d = from command database
@@ -189,7 +189,7 @@ LOC_clean_path      (char *a_path)
 static void      o___FINDERS_________________o (void) {;}
 
 int              /*-> locate a location by path ----------[ ------ [ ------ ]-*/
-LOC_find_path           (char  *a_path)
+LOC_find_path           (char  *a_path, char a_type)
 {
    /*---(locals)-----------+-----------+-*/
    char        rce         = -10;
@@ -215,12 +215,21 @@ LOC_find_path           (char  *a_path)
       DEBUG_DIRS   yLOG_exitr   (__FUNCTION__, rce);
       return rce;
    }
+   DEBUG_DIRS   yLOG_char    ("a_type"    , a_type);
+   --rce;  if (strchr ("sa", a_type) == NULL) {
+      DEBUG_DIRS   yLOG_note    ("incorrect search type");
+      DEBUG_DIRS   yLOG_exitr   (__FUNCTION__, rce);
+      return rce;
+   }
    /*---(cycle)--------------------------*/
    for (i = 0; i < s_nloc; ++i) {
       /*---(filter)----------------------*/
-      if (strncmp (s_locs [i].path, a_path, s_locs [i].len) != 0    )   continue;
-      if (s_locs [i].len != x_len) {
-         if (a_path [s_locs [i].len] != '/') continue;
+      if (a_type == 'a' && strcmp  (s_locs [i].path, a_path) != 0    )   continue;
+      if (a_type == 's' && strncmp (s_locs [i].path, a_path, s_locs [i].len) != 0    ) continue;
+      if (a_type == 's') {
+         if (s_locs [i].len != x_len) {
+            if (a_path [s_locs [i].len] != '/') continue;
+         }
       }
       /*---(save)------------------------*/
       x_found = i;
@@ -379,7 +388,7 @@ LOC_push           (char  *a_path, char a_source, char *a_desc)
    /*---(bagin)--------------------------*/
    DEBUG_DIRS  yLOG_enter   (__FUNCTION__);
    /*---(check for existing)-------------*/
-   x_found = LOC_find_path (a_path);
+   x_found = LOC_find_path (a_path, 'a');
    DEBUG_DIRS  yLOG_value   ("x_found"   , x_found);
    --rce;  if (x_found < -1) {
       DEBUG_DIRS   yLOG_note    ("bad path");
@@ -545,11 +554,11 @@ LOC_list           (void)
    printf ("\n");
    printf ("HERMES-DIACTOROS -- location report                                                            %3d of %3d slots used\n", s_nloc, MAX_LOCATIONS);
    printf ("\n");
-   printf ("  seq# indx  s a  ---path--------------------------------- len  -c-  ncmd   ---dsec---------------------------------\n");
+   printf ("  seq# indx  s a  ---path----------------------------------------------------- len  -c-  ncmd   ---dsec---------------------------------\n");
    /*---(cycle location)-----------------*/
    for (i = 0; i < s_nloc; ++i) {
       /*> if ((i % 5) == 0)   printf ("\n");                                          <*/
-      printf ("  %4d %4d  %c %c  %-40.40s %3d   %c   %4d   %-40.40s\n", i, i,
+      printf ("  %4d %4d  %c %c  %-60.60s %3d   %c   %4d   %-40.40s\n", i, i,
             s_locs [i].source , s_locs [i].active   , s_locs [i].path,
             s_locs [i].len    , s_locs [i].f_concern, 
             s_locs [i].ncmd   , s_locs [i].desc);

@@ -115,19 +115,21 @@ FILES_commands          (char *a_path, int a_pkg)
       p = strtok_r  (NULL  , q, &r);
       if (p == NULL)              continue;
       UTIL_parse_full (p, x_path, NULL);
-      x_loc = LOC_find_path (x_path);
+      x_loc = LOC_find_path (x_path, 'a');
       if (x_loc < 0)  {
-         /*> printf ("      %s, location %s returned %2d, SKIPPING\n", p, x_path, x_loc);   <*/
-         continue;
+         x_loc = LOC_find_path (x_path, 's');
+         if (x_loc < 0)   continue;
+         x_loc = LOC_push (x_path, 'i', "(base install)");
       }
-      strlcpy (x_subdir, x_path, 200);
-      rc    = LOC_remove_path (x_loc, x_subdir);
-      if (rc    < 0)  {
-         /*> printf ("      location %s remove path returned %2d, SKIPPING\n", x_cmd, x_loc);   <*/
-         continue;
-      }
-      printf ("      %-50.50s   %-50.50s\n", p, LOC_get_path ());
+      /*> strlcpy (x_subdir, x_path, 200);                                                                <* 
+       *> rc    = LOC_remove_path (x_loc, x_subdir);                                                      <* 
+       *> if (rc    < 0)  {                                                                               <* 
+       *>    /+> printf ("      location %s remove path returned %2d, SKIPPING\n", x_cmd, x_loc);   <+/   <* 
+       *>    continue;                                                                                    <* 
+       *> }                                                                                               <*/
+      /*> printf ("      %-50.50s   %-50.50s\n", p, LOC_get_path ());                 <*/
       CMD_push (p, 'i');
+      /*> rc = CMD_analyze (x_total, x_path, den->d_name, s_cmds + ncmd, '-');        <*/
    }
    fclose (x_file);
    return 0;
@@ -172,7 +174,7 @@ FILES_gather            (void)
       if (x_cat->d_name [0] == '.')                  continue;
       /*---(open root dir)------------------*/
       DEBUG_DIRS   yLOG_info    ("category"  , x_cat->d_name);
-      printf ("%02d.%s\n", x_ncat, x_cat->d_name);
+      /*> printf ("%02d.%s\n", x_ncat, x_cat->d_name);                                <*/
       sprintf (x_catdir, "%s/%s", DIR_PORTAGE, x_cat->d_name);
       x_packages = opendir (x_catdir);
       DEBUG_DIRS   yLOG_point   ("x_packages", x_packages);
@@ -198,13 +200,13 @@ FILES_gather            (void)
          sprintf (x_pkgdir, "%s/%s/%s", x_catdir, x_pkg->d_name, "CONTENTS");
          PKG_push (s, 'i', ' ', "(base install)");
          x_cpkg = PKG_find (s);
-         printf  ("   %02d.%-30.30s   %3d %-50.50s   %-100.100s\n", x_npkg, x_pkg->d_name, x_cpkg, s, x_pkgdir);
+         /*> printf  ("   %02d.%-30.30s   %3d %-50.50s   %-100.100s\n", x_npkg, x_pkg->d_name, x_cpkg, s, x_pkgdir);   <*/
          if (x_cpkg < 0) continue;
          FILES_commands  (x_pkgdir, x_cpkg);
       }
       closedir (x_packages);
    }
-   printf ("read %d packages\n", x_count);
+   /*> printf ("read %d packages\n", x_count);                                        <*/
    /*---(close root dir)-----------------*/
    DEBUG_DIRS   yLOG_note    ("closing root dir");
    closedir (x_root);

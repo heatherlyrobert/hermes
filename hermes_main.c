@@ -25,32 +25,29 @@ main               (int argc, char *argv[])
    }
    /*---(main)---------------------------*/
    DEBUG_TOPS   yLOG_enter   (__FUNCTION__);
-   AREA_list    ();
-   PKG_world    ();
-   /*> PKG_readdb   ();                                                               <*/
 
-   /*> PKG_index    ();                                                               <*/
-   /*> PKG_list     ('s');                                                            <*/
-   /*> PKG_list     ('i');                                                            <*/
+   AREA_list    ();
+
+   PKG_world    ();
    PKG_writedb  ();
 
    CMD_gather   ('n');
+   FILES_gather ();
 
-   /*> CMD_index    ();                                                               <* 
-    *> CMD_list     ('s');                                                            <*/
-   /*> CMD_list     ('i');                                                            <*/
-   /*> CMD_list     ('a');                                                            <*/
+   LOC_list     ();
+
+   PKG_index    ();
+   PKG_list     ('i');
+   CMD_crack_gnome     ();
+   CMD_list     ('i');
+
 
    /*> CMD_world    ();                                                               <*/
 
    /*> CMD_writeall ();                                                               <*/
 
-   FILES_gather ();
 
-   PKG_index    ();
-   PKG_list     ('i');
-   /*> CMD_index    ();                                                               <*/
-   CMD_list     ('s');
+
 
    DEBUG_TOPS   yLOG_exit    (__FUNCTION__);
    PROG_end     ();

@@ -209,8 +209,8 @@
 
 
 /* rapidly evolving version number to aid with visual change confirmation     */
-#define     VER_NUM   "0.7b"
-#define     VER_TXT   "captures all commands from /var/db/pkg ... CONTENTS files"
+#define     VER_NUM   "0.7c"
+#define     VER_TXT   "upgraded command gnome sort to teleporting crack gnome ;))"
 
 
 /*---(struct typedefs)-------------------*/
@@ -501,7 +501,7 @@ char        LOC_get_source      (void);
 int         LOC_get_comands     (void);
 char*       LOC_get_desc        (void);
 
-int         LOC_find_path       (char  *a_name);
+int         LOC_find_path       (char  *a_name, char a_type);
 char        LOC_remove_path     (int a_loc, char *a_path);
 
 char        LOC_valid          (int    a_loc);

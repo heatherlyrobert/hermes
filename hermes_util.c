@@ -377,7 +377,7 @@ UTIL_parse_full    (char *a_full, char *a_path, char *a_name)
    }
    /*---(location)--------------------*/
    *p = '\0';
-   rc  = LOC_find_path (s);
+   rc  = LOC_find_path (s, 's');
    --rce;  if (rc < 0)  {
       return rce;
    }
