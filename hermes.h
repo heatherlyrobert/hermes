@@ -209,8 +209,8 @@
 
 
 /* rapidly evolving version number to aid with visual change confirmation     */
-#define     VER_NUM   "0.7d"
-#define     VER_TXT   "fixed command source type mistake"
+#define     VER_NUM   "0.7e"
+#define     VER_TXT   "clean up headers on command report"
 
 
 /*---(struct typedefs)-------------------*/

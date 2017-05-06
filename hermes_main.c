@@ -33,14 +33,14 @@ main               (int argc, char *argv[])
    PKG_writedb         ();
 
    CMD_gather          ('n');
-   /*> FILES_gather ();                                                               <*/
+   FILES_gather ();
 
    CMD_crack_gnome     ();
 
    LOC_list            ();
    PKG_list            ('s');
    CMD_dump            ();
-   CMD_list            ('a');
+   CMD_list            ('i');
 
 
    /*> CMD_world    ();                                                               <*/

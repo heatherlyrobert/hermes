@@ -966,9 +966,11 @@ CMD_header         (int  a_page, int  a_loc, char a_order)
 {
    char        s           [500];           /* generic string                 */
    printf  ("\n\n");
-   sprintf (s, "%-150.150s %50.50s", "HERMES-DIACTOROS (messenger) integrity assurance for executables and shared libraries", LOC_get_path ());
+   sprintf (s, "%-150.150s %42.42spage %3d", "HERMES-DIACTOROS (messenger) integrity assurance for executables and shared libraries", " ", a_page);
    printf  ("%s\n", s);
-   printf  ("executable reporting %s\n", (a_order == 's') ? "in original sequence" : "sorted by location/name");
+   sprintf (s, "executable reporting %-129.129s %50.50s", (a_order == 's') ? "in original sequence" : "sorted by location/name", " ");
+   printf  ("%s\n", s);
+   printf  ("%s\n", LOC_get_path ());
    printf  ("\n");
    /*> sprintf (s, "HERMES-DIACTOROS -- command executable report, page %3d, location %2d, %s ==========================================================================================================================================================================================================================================================================================================================================================================================================================", a_page, a_loc, locs [a_loc].path );   <*/
    /*> printf  ("%-273.273s\n\n", s);                                                 <*/
