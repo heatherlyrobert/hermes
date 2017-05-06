@@ -209,8 +209,8 @@
 
 
 /* rapidly evolving version number to aid with visual change confirmation     */
-#define     VER_NUM   "0.7c"
-#define     VER_TXT   "upgraded command gnome sort to teleporting crack gnome ;))"
+#define     VER_NUM   "0.7d"
+#define     VER_TXT   "fixed command source type mistake"
 
 
 /*---(struct typedefs)-------------------*/
@@ -548,7 +548,7 @@ char*       PKG_unit           (char *a_question, int a_num);
 /*===[[ HERMES_CMD.C    ]]=====================================*/
 /*---fulltable---------*/
 char        CMD_purge          (void);
-char        CMD_index          (void);
+/*> char        CMD_index          (void);                                            <*/
 /*---updates-----------*/
 char        CMD_checkname      (char   *a_name);
 int         CMD_push           (char   *a_name, char a_source);
@@ -567,8 +567,10 @@ char        CMD_footer         (int     a_page , int  a_lines);
 char        CMD_show           (int     a_count, int  a_index, int  a_num,  tCMD *a_cmd);
 char        CMD_list           (char    a_order);
 char        CMD_list_NEW       (void);
+char        CMD_dump           (void);
 /*---gathering---------*/
 char        CMD_gather         (char    a_check);
+char        CMD_files          (char *a_path, char *a_name);
 char        CMD_world          (void);
 char        CMD_package        (void);
 /*---reporting---------*/

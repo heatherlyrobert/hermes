@@ -26,20 +26,21 @@ main               (int argc, char *argv[])
    /*---(main)---------------------------*/
    DEBUG_TOPS   yLOG_enter   (__FUNCTION__);
 
-   AREA_list    ();
+   AREA_list           ();
 
-   PKG_world    ();
-   PKG_writedb  ();
+   PKG_world           ();
+   PKG_index           ();
+   PKG_writedb         ();
 
-   CMD_gather   ('n');
-   FILES_gather ();
+   CMD_gather          ('n');
+   /*> FILES_gather ();                                                               <*/
 
-   LOC_list     ();
-
-   PKG_index    ();
-   PKG_list     ('i');
    CMD_crack_gnome     ();
-   CMD_list     ('i');
+
+   LOC_list            ();
+   PKG_list            ('s');
+   CMD_dump            ();
+   CMD_list            ('a');
 
 
    /*> CMD_world    ();                                                               <*/
@@ -59,7 +60,6 @@ main               (int argc, char *argv[])
    CMD_gather   ('n');
 
    PKG_index    ();
-   CMD_index    ();
 
    /*> CMD_world    ();                                                               <*/
    /*> CMD_package  ();                                                               <*/
@@ -91,14 +91,12 @@ main               (int argc, char *argv[])
     *>    RUN_READ     printf ("read the command databae\n");                         <* 
     *>    database_read   ();                                                         <* 
     *>    PKG_index       ();                                                         <* 
-    *>    CMD_index       ();                                                         <* 
     *>    RUN_READ     printf ("\n");                                                 <* 
     *> }                                                                              <*/
    /*---(read command database)----------*/
    /*> RUN_COMMAND  {                                                                 <* 
     *>    DEBUG_CMDS   printf ("gathering all commands on path\n");                   <* 
     *>    CMD_gather      ('y');                                                      <* 
-    *>    CMD_index       ();                                                         <* 
     *>    DEBUG_CMDS   printf ("\n");                                                 <* 
     *> }                                                                              <*/
    /*---(matching)-----------------------*/

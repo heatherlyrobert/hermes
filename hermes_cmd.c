@@ -31,8 +31,15 @@
 tCMD        s_cmds      [CMD_MAX];       /* main command structure (unsorted) */
 int         icmd        [CMD_MAX];       /* index for commands                */
 int         ncmd        = 0;             /* count of commands                 */
-static char valid_src   [10] = "-+#i";   /* valid source types                */
-
+static char valid_src   [10] = "-+#ig";   /* valid source types                */
+/*  command sources
+ *     g = gathered by walking locations
+ *     i = installed, gentoo package directories /var/db/pkg/...
+ *
+ *
+ *
+ *
+ */
 
 
 /*====================------------------------------------====================*/
@@ -113,6 +120,8 @@ CMD_crack_gnome    (void)
    /*---(counters)---------*/
    int         x_comps     =  0;            /* number of comparisons          */
    int         x_moves     =  0;            /* number of moves                */
+   /*---(clear index)--------------------*/
+   /*> for (i = 0; i < ncmd; ++i)  icmd [i] = i;                                      <*/
    /*---(sort)---------------------------*/
    DEBUG_SORT   printf("   start : %d commands\n", ncmd);
    while (x_gnome < ncmd) {
@@ -195,65 +204,65 @@ CMD_crack_gnome    (void)
  *>    return 0;                                                                                                                                                                                             <* 
  *> }                                                                                                                                                                                                        <*/
 
-char             /* [------] teleporting gnome sort --------------------------*/
-CMD_index          (void)
-{
-   DEBUG_SORT   printf("sorting command records (indexed teleporting gnome)...\n");
-   /*---(locals)-----------+-----------+-*/
-   /*---(cursors)----------*/
-   int         i           =  1;            /* current position               */
-   int         x_one       =  1;            /* position one                   */
-   int         x_two       =  1;            /* position two                   */
-   int         x_tele      = -1;            /* teleportation point            */
-   int         x_temp      =  0;            /* temp storage for moves         */
-   /*---(comparing)--------*/
-   char        s           [200];
-   char        t           [200];
-   int         rci         =  0;            /* integer return code            */
-   /*---(counters)---------*/
-   int         comps       =  0;            /* number of comparisons          */
-   int         moves       =  0;            /* number of moves                */
-   /*---(sort)---------------------------*/
-   DEBUG_SORT   printf("   start : %d commands\n", ncmd);
-   while (i < ncmd) {
-      x_one = icmd [i - 1];
-      x_two = icmd [i    ];
-      /*---(header)----------------------*/
-      DEBUG_SORT   printf("   %-4d  %-4d  <%-45.45s>    %-4d  %-4d  <%-45.45s>    ", i - 1, x_one, s_cmds [x_one].name, i    , x_two, s_cmds [x_two].name);
-      /*---(compare)---------------------*/
-      ++comps;
-      sprintf (s, "%-45.45s", s_cmds [x_one].name);
-      sprintf (t, "%-45.45s", s_cmds [x_two].name);
-      rci = strcmp (s, t);
-      DEBUG_SORT   printf("%2d    ", rci);
-      /*---(correct order)---------------*/
-      if ((i == 0) || (rci <= 0)) {
-         if (x_tele >= 0)  { i = x_tele; x_tele = -1; }
-         else            ++i;
-         DEBUG_SORT   printf("good    %-4d    %-4d    SKIPPING\n");
-         continue;
-      }
-      /*---(swap)------------------------*/
-      DEBUG_SORT   printf("swap    ");
-      ++moves;
-      x_temp       = icmd [i];
-      icmd [i]     = icmd [i - 1];
-      icmd [i - 1] = x_temp;
-      /*---(teleport)--------------------*/
-      if (x_tele < 0)  x_tele = i;              /* only update on first move      */
-      if (i > 1) --i;
-      DEBUG_SORT   printf("%-4d    %-4d    swapped\n");
-      /*---(done)------------------------*/
-   }
-   long      n2     = (long)   ncmd * ncmd;
-   float     ratio  = ((float) moves / n2) * 100;
-   float     action = ((float) moves / comps) * 100;
-   DEBUG_SORT   printf("   moves : %d items, %d comp(s), %d move(s)\n", ncmd, comps, moves);
-   DEBUG_SORT   printf("   stats : N2 = %ld, action (move/N2) = %2.0f%%, efficiency (move/comp) = %2.0f%%\n", n2, ratio, action);
-   DEBUG_SORT   printf("\n");
-   /*---(complete)------------------------------*/
-   return 0;
-}
+/*> char             /+ [------] teleporting gnome sort --------------------------+/                                                                              <* 
+ *> CMD_index          (void)                                                                                                                                     <* 
+ *> {                                                                                                                                                             <* 
+ *>    DEBUG_SORT   printf("sorting command records (indexed teleporting gnome)...\n");                                                                           <* 
+ *>    /+---(locals)-----------+-----------+-+/                                                                                                                   <* 
+ *>    /+---(cursors)----------+/                                                                                                                                 <* 
+ *>    int         i           =  1;            /+ current position               +/                                                                              <* 
+ *>    int         x_one       =  1;            /+ position one                   +/                                                                              <* 
+ *>    int         x_two       =  1;            /+ position two                   +/                                                                              <* 
+ *>    int         x_tele      = -1;            /+ teleportation point            +/                                                                              <* 
+ *>    int         x_temp      =  0;            /+ temp storage for moves         +/                                                                              <* 
+ *>    /+---(comparing)--------+/                                                                                                                                 <* 
+ *>    char        s           [200];                                                                                                                             <* 
+ *>    char        t           [200];                                                                                                                             <* 
+ *>    int         rci         =  0;            /+ integer return code            +/                                                                              <* 
+ *>    /+---(counters)---------+/                                                                                                                                 <* 
+ *>    int         comps       =  0;            /+ number of comparisons          +/                                                                              <* 
+ *>    int         moves       =  0;            /+ number of moves                +/                                                                              <* 
+ *>    /+---(sort)---------------------------+/                                                                                                                   <* 
+ *>    DEBUG_SORT   printf("   start : %d commands\n", ncmd);                                                                                                     <* 
+ *>    while (i < ncmd) {                                                                                                                                         <* 
+ *>       x_one = icmd [i - 1];                                                                                                                                   <* 
+ *>       x_two = icmd [i    ];                                                                                                                                   <* 
+ *>       /+---(header)----------------------+/                                                                                                                   <* 
+ *>       DEBUG_SORT   printf("   %-4d  %-4d  <%-45.45s>    %-4d  %-4d  <%-45.45s>    ", i - 1, x_one, s_cmds [x_one].name, i    , x_two, s_cmds [x_two].name);   <* 
+ *>       /+---(compare)---------------------+/                                                                                                                   <* 
+ *>       ++comps;                                                                                                                                                <* 
+ *>       sprintf (s, "%-45.45s", s_cmds [x_one].name);                                                                                                           <* 
+ *>       sprintf (t, "%-45.45s", s_cmds [x_two].name);                                                                                                           <* 
+ *>       rci = strcmp (s, t);                                                                                                                                    <* 
+ *>       DEBUG_SORT   printf("%2d    ", rci);                                                                                                                    <* 
+ *>       /+---(correct order)---------------+/                                                                                                                   <* 
+ *>       if ((i == 0) || (rci <= 0)) {                                                                                                                           <* 
+ *>          if (x_tele >= 0)  { i = x_tele; x_tele = -1; }                                                                                                       <* 
+ *>          else            ++i;                                                                                                                                 <* 
+ *>          DEBUG_SORT   printf("good    %-4d    %-4d    SKIPPING\n");                                                                                           <* 
+ *>          continue;                                                                                                                                            <* 
+ *>       }                                                                                                                                                       <* 
+ *>       /+---(swap)------------------------+/                                                                                                                   <* 
+ *>       DEBUG_SORT   printf("swap    ");                                                                                                                        <* 
+ *>       ++moves;                                                                                                                                                <* 
+ *>       x_temp       = icmd [i];                                                                                                                                <* 
+ *>       icmd [i]     = icmd [i - 1];                                                                                                                            <* 
+ *>       icmd [i - 1] = x_temp;                                                                                                                                  <* 
+ *>       /+---(teleport)--------------------+/                                                                                                                   <* 
+ *>       if (x_tele < 0)  x_tele = i;              /+ only update on first move      +/                                                                          <* 
+ *>       if (i > 1) --i;                                                                                                                                         <* 
+ *>       DEBUG_SORT   printf("%-4d    %-4d    swapped\n");                                                                                                       <* 
+ *>       /+---(done)------------------------+/                                                                                                                   <* 
+ *>    }                                                                                                                                                          <* 
+ *>    long      n2     = (long)   ncmd * ncmd;                                                                                                                   <* 
+ *>    float     ratio  = ((float) moves / n2) * 100;                                                                                                             <* 
+ *>    float     action = ((float) moves / comps) * 100;                                                                                                          <* 
+ *>    DEBUG_SORT   printf("   moves : %d items, %d comp(s), %d move(s)\n", ncmd, comps, moves);                                                                  <* 
+ *>    DEBUG_SORT   printf("   stats : N2 = %ld, action (move/N2) = %2.0f%%, efficiency (move/comp) = %2.0f%%\n", n2, ratio, action);                             <* 
+ *>    DEBUG_SORT   printf("\n");                                                                                                                                 <* 
+ *>    /+---(complete)------------------------------+/                                                                                                            <* 
+ *>    return 0;                                                                                                                                                  <* 
+ *> }                                                                                                                                                             <*/
 
 
 
@@ -963,8 +972,8 @@ CMD_header         (int  a_page, int  a_loc, char a_order)
    printf  ("\n");
    /*> sprintf (s, "HERMES-DIACTOROS -- command executable report, page %3d, location %2d, %s ==========================================================================================================================================================================================================================================================================================================================================================================================================================", a_page, a_loc, locs [a_loc].path );   <*/
    /*> printf  ("%-273.273s\n\n", s);                                                 <*/
-   printf  ("  seqno index  s a  name                   len   t filetime   uid    gid    ugo m size      bytes     sha1 hash                                                   pkg# src\n");
-   printf  ("  ----- -----  - -  - -------------------- - --- - ---------- - ---- - ---- --- - --------- --------- ----------------------------------------------------------- ---- ---\n");
+   printf  ("  seqno index  s a  name                   len   t filetime   uid    gid    ugo m size      bytes     sha1 hash                                                   pkg# src loc#\n");
+   printf  ("  ----- -----  - -  - -------------------- - --- - ---------- - ---- - ---- --- - --------- --------- ----------------------------------------------------------- ---- --- ----\n");
    return 0;
 }
 
@@ -975,7 +984,7 @@ CMD_footer         (int  a_page, int  a_lines)
    if (a_page == 1)  return 0;
    for (i = a_lines; i <= (9 * 6); ++i)   printf ("\n");
    /*> printf  ("  ---- ----  - -  - -------------------- - --- ----------------------------------- - --- - ---------- - ---- - ---- --- - --------- --------- ----------------------------------------------------------- ---- --- ---------------------------------------------\n");   <*/
-   printf  ("  ----- -----  - -  - -------------------- - --- - ---------- - ---- - ---- --- - --------- --------- ----------------------------------------------------------- ---- ---\n");
+   printf  ("  ----- -----  - -  - -------------------- - --- - ---------- - ---- - ---- --- - --------- --------- ----------------------------------------------------------- ---- --- ----\n");
    printf  ("             - database    - only good chars      - good                                          - reg file   - norm - norm     - size match                     - unchecked        \n");
    printf  ("             + new entry   + extended chars       + long name                                     l symlink    * suid * sgid     # size diff                      w world file       \n");
    printf  ("             # conflict    # bad chars                                                                                                                            + non-world ebuild \n");
@@ -999,14 +1008,15 @@ CMD_show           (int a_seq, int a_index, int a_num, tCMD *a_cmd)
    if (a_cmd->filetime <= time (NULL))   sprintf (r, "%-10d", a_cmd->filetime);
    else                                  strcpy  (r, "(bad-time)");
    /*---(output line)--------------*/
-   printf ("  %5d %5d  %c %c  %c %-20.20s %c %3d %c %-10.10s %c %4d %c %4d %-3.3s %c %9d %9d %-60.60s%4d  %c  \n" ,
+   printf ("  %5d %5d  %c %c  %c %-20.20s %c %3d %c %-10.10s %c %4d %c %4d %-3.3s %c %9d %9d %-60.60s%4d  %c  %4d\n" ,
          a_seq           , a_index        , a_cmd->source  , a_cmd->active  , a_cmd->concern ,
          s               , a_cmd->toolong , a_cmd->len     ,
          a_cmd->ftype   ,
          r               ,
          a_cmd->suid     , a_cmd->uid     , a_cmd->sgid    , a_cmd->gid     , a_cmd->mode    ,
          a_cmd->smiss    , a_cmd->size    , a_cmd->bytes   , a_cmd->hash    ,
-         a_cmd->i_pkg    , (a_cmd->i_pkg   >= 0) ? pkgs [a_cmd->i_pkg].source : '-' );
+         a_cmd->i_pkg    , (a_cmd->i_pkg   >= 0) ? pkgs [a_cmd->i_pkg].source : '-',
+         a_cmd->i_loc    );
    /*---(complete)-----------------------*/
    return 0;
 }
@@ -1085,6 +1095,19 @@ CMD_list           (char a_order)
    return 0;
 }
 
+char
+CMD_dump           (void)
+{
+   int i = 0;
+   int k = 0;
+   int x_index;
+   printf ("HERMES command dump, %d total commands\n", ncmd);
+   for (i = 0; i < ncmd; ++i) {
+      for (k = 0; k < ncmd; ++k)  if (icmd[k] == i)  x_index = k;
+      CMD_show (i, x_index, i, s_cmds + i);
+   }
+   return 0;
+}
 
 
 /*====================------------------------------------====================*/
@@ -1117,7 +1140,7 @@ CMD_compare        (tCMD *a_found, tCMD *a_exist)
 }
 
 char
-CMD_analyze        (int a_count, char *a_path, char *a_name, tCMD *a_cmd, char a_check)
+CMD_analyze        (int a_count, char *a_path, char *a_name, tCMD *a_cmd, char a_source, char a_check)
 {
    /*---(locals)-----------+-----------+-*/
    int         x_curr      = 0;                  /* index of existing entry   */
@@ -1187,7 +1210,7 @@ CMD_analyze        (int a_count, char *a_path, char *a_name, tCMD *a_cmd, char a
    /*> ++locs [a_cmd->i_loc].ncmd;                                                    <*/
    LOC_addcmd ();
    DEBUG_CMDS   yLOG_value   ("loc_num"   , a_cmd->i_loc);
-   a_cmd->source = '-';
+   a_cmd->source = a_source; 
    DEBUG_CMDS   yLOG_char    ("source"    , a_cmd->source);
    /*---(report)-------------------*/
    DEBUG_CMDS   CMD_show (a_count, 0, 0, a_cmd);
@@ -1300,7 +1323,7 @@ CMD_gather         (char a_check)
          else if (rci >=  0) {
             SHOW_GATHER  printf ("found, check requested\n");
             DEBUG_CMDS   yLOG_note    ("command already exists, checking on");
-            CMD_analyze (x_total, x_path, den->d_name, &x_cmd, 'y');
+            CMD_analyze (x_total, x_path, den->d_name, &x_cmd, 'g', 'y');
          }
          /*---(new command)--------------*/
          else {
@@ -1308,7 +1331,7 @@ CMD_gather         (char a_check)
             DEBUG_CMDS   yLOG_note    ("new command");
             DEBUG_CMDS   yLOG_point   ("pointer"   , s_cmds + ncmd);
             DEBUG_CMDS   yLOG_info    ("name"      , (s_cmds + ncmd)->name);
-            rc = CMD_analyze (x_total, x_path, den->d_name, s_cmds + ncmd, '-');
+            rc = CMD_analyze (x_total, x_path, den->d_name, s_cmds + ncmd, 'g',  '-');
             DEBUG_CMDS   yLOG_info    ("name"      , (s_cmds + ncmd)->name);
             DEBUG_CMDS   yLOG_value   ("rc"        , rc);
             DEBUG_CMDS   yLOG_value   ("ncmd"      , ncmd);
@@ -1324,6 +1347,17 @@ CMD_gather         (char a_check)
    /*---(complete)-----------------------*/
    SHOW_GATHER  printf ("   ---complete---------------------");
    DEBUG_CMDS   yLOG_exit    (__FUNCTION__);
+   return 0;
+}
+
+char
+CMD_files          (char *a_path, char *a_name)
+{
+   char  rc = 0;
+   rc = CMD_analyze (0, a_path, a_name, s_cmds + ncmd, 'i', '-');
+   if (rc < 0)  return -1; 
+   icmd [ncmd] = ncmd;
+   ++ncmd;
    return 0;
 }
 

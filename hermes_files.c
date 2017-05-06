@@ -114,7 +114,7 @@ FILES_commands          (char *a_path, int a_pkg)
       if (strcmp ("obj", p) != 0) continue;
       p = strtok_r  (NULL  , q, &r);
       if (p == NULL)              continue;
-      UTIL_parse_full (p, x_path, NULL);
+      UTIL_parse_full (p, x_path, x_cmd);
       x_loc = LOC_find_path (x_path, 'a');
       if (x_loc < 0)  {
          x_loc = LOC_find_path (x_path, 's');
@@ -128,8 +128,8 @@ FILES_commands          (char *a_path, int a_pkg)
        *>    continue;                                                                                    <* 
        *> }                                                                                               <*/
       /*> printf ("      %-50.50s   %-50.50s\n", p, LOC_get_path ());                 <*/
-      CMD_push (p, 'i');
-      /*> rc = CMD_analyze (x_total, x_path, den->d_name, s_cmds + ncmd, '-');        <*/
+      /*> CMD_push (p, 'i');                                                          <*/
+      CMD_files (x_path, x_cmd);
    }
    fclose (x_file);
    return 0;
