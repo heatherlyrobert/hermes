@@ -341,7 +341,7 @@ LOC_get_desc        (void)   { if (s_cloc <  0) return "" ; return s_locs [s_clo
 static void      o___SETTERS_________________o (void) {;}
 
 char             /*-> return count of locations ----------[ ------ [ ------ ]-*/
-LOC_addcmd         (void)   { if (s_cloc < 0)  return -1; ++s_locs[s_cloc].ncmd; return 0; }
+LOC_cmd_add        (void)   { if (s_cloc < 0)  return -1; ++s_locs[s_cloc].ncmd; return 0; }
 
 
 

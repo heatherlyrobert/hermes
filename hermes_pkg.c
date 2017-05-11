@@ -389,6 +389,13 @@ PKG_push           (char  *a_full, char  a_source, char a_priority, char *a_desc
    return found;
 }
 
+char
+PKG_cmd_add        (int a_pkg)
+{
+   ++(pkgs [a_pkg].ncmd);
+   return 0;
+}
+
 int              /* [------] find a particular package entry -----------------*/
 PKG_find           (char *a_name)
 {

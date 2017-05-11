@@ -209,8 +209,8 @@
 
 
 /* rapidly evolving version number to aid with visual change confirmation     */
-#define     VER_NUM   "0.7e"
-#define     VER_TXT   "clean up headers on command report"
+#define     VER_NUM   "0.7f"
+#define     VER_TXT   "was missing executables with hyphens, etc; fixed"
 
 
 /*---(struct typedefs)-------------------*/
@@ -516,7 +516,7 @@ char*       LOC_unit           (char  *a_question, int a_num);
 char        LOC_curs_index      (int    a_loc);
 char        LOC_curs_next      (void);
 char        LOC_next           (void);
-char        LOC_addcmd         (void);
+char        LOC_cmd_add        (void);
 
 
 /*---(hermes_pkg)-----------------------------------------*/
@@ -537,6 +537,7 @@ char        PKG_unlink         (int    a_cmd);
 char        PKG_list           (char   a_order);
 /*---gathering---------*/
 char        PKG_world          (void);
+char        PKG_cmd_add        (int a_pkg);
 /*---database----------*/
 char        PKG_readdb         (void);
 char        PKG_writedb        (void);

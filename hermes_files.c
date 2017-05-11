@@ -93,6 +93,7 @@ FILES_commands          (char *a_path, int a_pkg)
    /*---(locals)-----------+-----------+-*/
    char        rce         =  -10;
    char        rc          =    0;
+   int         rci         =    0;
    FILE       *x_file      = NULL;
    char        x_recd      [2000];
    char       *p           = NULL;          /* strtok_r current pointer       */
@@ -121,15 +122,14 @@ FILES_commands          (char *a_path, int a_pkg)
          if (x_loc < 0)   continue;
          x_loc = LOC_push (x_path, 'i', "(base install)");
       }
-      /*> strlcpy (x_subdir, x_path, 200);                                                                <* 
-       *> rc    = LOC_remove_path (x_loc, x_subdir);                                                      <* 
-       *> if (rc    < 0)  {                                                                               <* 
-       *>    /+> printf ("      location %s remove path returned %2d, SKIPPING\n", x_cmd, x_loc);   <+/   <* 
-       *>    continue;                                                                                    <* 
-       *> }                                                                                               <*/
-      /*> printf ("      %-50.50s   %-50.50s\n", p, LOC_get_path ());                 <*/
-      /*> CMD_push (p, 'i');                                                          <*/
-      CMD_files (x_path, x_cmd);
+      rci = CMD_find (p);
+      if (rci >= 0) continue;
+      rc = CMD_files      (x_path, x_cmd);
+      if (rc >= 0) {
+         LOC_curs_index (x_loc);
+         LOC_cmd_add    ();
+         PKG_cmd_add    (a_pkg);
+      }
    }
    fclose (x_file);
    return 0;

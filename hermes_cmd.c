@@ -939,12 +939,12 @@ CMD_chars          (tCMD *a_cmd)
       /*---(test extra)------------------*/
       if (strchr (extra, a_cmd->name [i]) != NULL) {
          a_cmd->concern = '+';
-         rcc = -3;
+         /*> rcc = -3;                                                                <*/
          continue;
       }
       /*---(othre is bad)----------------*/
       a_cmd->concern = '#';
-      rcc = -4;
+      /*> rcc = -4;                                                                   <*/
       break;
    }  /*---(done)------------------------*/
    DEBUG_CMDS   yLOG_snote   ("concern");
@@ -1210,7 +1210,8 @@ CMD_analyze        (int a_count, char *a_path, char *a_name, tCMD *a_cmd, char a
       return a_cmd->i_loc;
    }
    /*> ++locs [a_cmd->i_loc].ncmd;                                                    <*/
-   LOC_addcmd ();
+   LOC_curs_index (a_cmd->i_loc);
+   LOC_cmd_add ();
    DEBUG_CMDS   yLOG_value   ("loc_num"   , a_cmd->i_loc);
    a_cmd->source = a_source; 
    DEBUG_CMDS   yLOG_char    ("source"    , a_cmd->source);

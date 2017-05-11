@@ -26,19 +26,19 @@ main               (int argc, char *argv[])
    /*---(main)---------------------------*/
    DEBUG_TOPS   yLOG_enter   (__FUNCTION__);
 
-   AREA_list           ();
 
    PKG_world           ();
-   PKG_index           ();
    PKG_writedb         ();
 
    CMD_gather          ('n');
    FILES_gather ();
 
+   PKG_index           ();
    CMD_crack_gnome     ();
 
+   AREA_list           ();
    LOC_list            ();
-   PKG_list            ('s');
+   PKG_list            ('i');
    CMD_dump            ();
    CMD_list            ('i');
 
