@@ -535,8 +535,8 @@ PKG_header         (int a_page, char a_order)
    printf ("package reporting %s\n", (a_order == 's') ? "in original sequence" : "sorted by cat/name");
    printf ("\n");
    /*> printf ("HERMES-DIACTOROS -- ebuild package report, page %3d                                                                                              %4d of %4d slots used\n\n", a_page, npkg, PKG_MAX);   <*/
-   printf ("  seq# indx  s p w a  cat                  name                           desc                                       cmd   pri   upd   area           \n");
-   printf ("  ---- ----  - - - -  -------------------- ------------------------------ ----------------------------------------   ---   ---   ---   -----------------------------------\n");
+   printf ("  seq# indx  s p w a  cat                  name                           desc                                       cmd   pri   upd   area                              lookupkey\n");
+   printf ("  ---- ----  - - - -  -------------------- ------------------------------ ----------------------------------------   ---   ---   ---   ------------------------------    ---------\n");
    return 0;
 }
 
@@ -544,8 +544,8 @@ char             /* [------] display the package inventory -------------------*/
 PKG_footer         (void)
 {
    printf ("\n");
-   printf ("  ---- ----  - - - -  -------------------- ------------------------------ ----------------------------------------   ---   ---   ---   -----------------------------------\n");
-   printf ("  source   = where the package comes from, i.e., c=conf file, w=world-ebuild file, +=pre-loaded, #=local, -=unknown\n");
+   printf ("  ---- ----  - - - -  -------------------- ------------------------------ ----------------------------------------   ---   ---   ---   ------------------------------    ---------\n");
+   printf ("  source   = where the package comes from, i.e., c=conf file, w=world-ebuild, i=installed (/var/db/pkg)\n");
    printf ("  command  = number of actual commands installed/updated by this package\n");
    printf ("  priority = criticality for updates, i.e., T=top, +=watch, other means as possible\n");
    printf ("  updated  = \n");
@@ -597,13 +597,13 @@ PKG_list           (char a_order)
          if (pkgs [curr].source == 'i') sprintf  (t, "%s",     "98.base");
          else                           sprintf  (t, "%s",     "99.unassigned");
       } else                            sprintf  (t, "%02d.%s", x_area, s_areas [x_area].name);
-      printf ("  %4d %4d  %c %c %c %c  %-20.20s %-30.30s %-40.40s   %3.3s    %c     %c    %-40.40s\n",
+      printf ("  %4d %4d  %c %c %c %c  %-20.20s %-30.30s %-40.40s   %3.3s    %c     %c    %-30.30s    [pkg%04d]\n",
             x_seq, x_index, pkgs [curr].source, pkgs [curr].portage ,
             pkgs [curr].world , pkgs [curr].active,
             pkgs [curr].cat     , pkgs [curr].name    , pkgs [curr].desc    ,
             s                      ,
             pkgs [curr].priority, pkgs [curr].update  ,
-            t);
+            t, x_seq);
       ++x_line;
    }
    /*---(footer)-------------------------*/

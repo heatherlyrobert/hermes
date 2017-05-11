@@ -1353,14 +1353,22 @@ CMD_gather         (char a_check)
    return 0;
 }
 
-char
+int
 CMD_files          (char *a_path, char *a_name)
 {
    char  rc = 0;
    rc = CMD_analyze (0, a_path, a_name, s_cmds + ncmd, 'i', '-');
-   if (rc < 0)  return -1; 
+   if (rc < 0) return -1; 
    icmd [ncmd] = ncmd;
    ++ncmd;
+   return ncmd - 1;
+}
+
+char
+CMD_pkgref         (int a_cmd, int a_pkg)
+{
+   s_cmds [a_cmd].i_pkg = a_pkg;
+   PKG_cmd_add (a_pkg);
    return 0;
 }
 

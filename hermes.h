@@ -209,8 +209,8 @@
 
 
 /* rapidly evolving version number to aid with visual change confirmation     */
-#define     VER_NUM   "0.7f"
-#define     VER_TXT   "was missing executables with hyphens, etc; fixed"
+#define     VER_NUM   "0.7g"
+#define     VER_TXT   "clean up package report, add lookup ref for speed"
 
 
 /*---(struct typedefs)-------------------*/
@@ -571,7 +571,8 @@ char        CMD_list_NEW       (void);
 char        CMD_dump           (void);
 /*---gathering---------*/
 char        CMD_gather         (char    a_check);
-char        CMD_files          (char *a_path, char *a_name);
+int         CMD_files          (char *a_path, char *a_name);
+char        CMD_pkgref         (int a_cmd, int a_pkg);
 char        CMD_world          (void);
 char        CMD_package        (void);
 /*---reporting---------*/
