@@ -209,8 +209,8 @@
 
 
 /* rapidly evolving version number to aid with visual change confirmation     */
-#define     VER_NUM   "0.7g"
-#define     VER_TXT   "clean up package report, add lookup ref for speed"
+#define     VER_NUM   "0.7h"
+#define     VER_TXT   "clean up locations report, add lookup ref for speed"
 
 
 /*---(struct typedefs)-------------------*/
@@ -510,6 +510,7 @@ int         LOC_push           (char  *a_name, char a_type, char *a_desc);
 char        LOC_wipe           (int    a_curr);
 char        LOC_link           (int    a_loc, int a_cmd);
 char        LOC_unlink         (int    a_cmd);
+char        LOC_index          (void);
 char        LOC_list           (void);
 char*       LOC_unit           (char  *a_question, int a_num);
 

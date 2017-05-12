@@ -34,8 +34,8 @@
  *    path     :  fully qualified directory path
  *
  */
-#define     MAX_LOCATIONS    2000
-#define     LEN_PATH           50
+#define     MAX_LOC          2000
+#define     LEN_PATH          200
 typedef     struct cLOC  tLOC;
 struct      cLOC {
    /*---(base)---------------------------*/
@@ -49,7 +49,8 @@ struct      cLOC {
    /*---(error-flags)--------------------*/
    char        f_concern;              /* flag for path name issues           */
 }; /*---(done)---------------------------*/
-tLOC        s_locs      [MAX_LOCATIONS]; /* location data structure           */
+tLOC        s_locs      [MAX_LOC];     /* location data structure           */
+int         s_iloc      [MAX_LOC];     /* index for locations                 */
 int         s_nloc      = 0;             /* total number of locations         */
 int         s_cloc      = -1;            /* current location in use           */
 
@@ -82,7 +83,7 @@ LOC_check_index     (int a_loc)
       DEBUG_DIRS   yLOG_sexitr  (__FUNCTION__, rce);
       return rce;
    }
-   --rce;  if (a_loc  >= MAX_LOCATIONS)  {
+   --rce;  if (a_loc  >= MAX_LOC)  {
       DEBUG_DIRS   yLOG_snote   ("over maximum allowed");
       DEBUG_DIRS   yLOG_sexitr  (__FUNCTION__, rce);
       return rce;
@@ -102,9 +103,11 @@ char             /*-> validate a location name -----------[ ------ [ ------ ]-*/
 LOC_check_path      (char *a_path)
 {
    /*---(locals)-----------+-----------+-*/
-   char        rce         = -10;      /* return code for errors              */
-   int         x_len       =   0;
+   char        rce         =  -10;      /* return code for errors              */
+   int         rci         =    0;
+   int         x_len       =    0;
    DIR        *x_dir       = NULL;          /* directory pointer              */
+   tSTAT       st;                          /* file stats                     */
    /*---(header)-------------------------*/
    DEBUG_DIRS   yLOG_senter  (__FUNCTION__);
    DEBUG_DIRS   yLOG_spoint  (a_path);
@@ -123,6 +126,7 @@ LOC_check_path      (char *a_path)
       return rce;
    }
    --rce;  if (x_len >= LEN_PATH) {
+      printf ("LOC TOO LONG <%s>\n", a_path);
       DEBUG_DIRS   yLOG_snote   ("path too long");
       DEBUG_DIRS   yLOG_sexitr  (__FUNCTION__, rce);
       return rce;
@@ -133,15 +137,21 @@ LOC_check_path      (char *a_path)
       DEBUG_DIRS   yLOG_sexitr  (__FUNCTION__, rce);
       return rce;
    }
-   /*---(test against real location)-----*/
-   x_dir = opendir (a_path);
-   --rce;  if (x_dir == NULL) {
-      closedir (x_dir);
-      DEBUG_DIRS   yLOG_snote   ("does not exist");
-      DEBUG_DIRS   yLOG_sexitr  (__FUNCTION__, rce);
+   /*---(get the file information)-------*/
+   rci = lstat (a_path, &st);
+   DEBUG_DIRS   yLOG_value   ("lstat_rc"  , rci);
+   /*---(defense : real file)------------*/
+   --rce; if (rci < 0) {
+      DEBUG_DIRS   yLOG_note    ("lstat can not find file, exiting");
+      DEBUG_DIRS   yLOG_exit    (__FUNCTION__);
       return rce;
    }
-   closedir (x_dir);
+   /*---(type)---------------------------*/
+   --rce;  if (! S_ISDIR (st.st_mode)) {
+      DEBUG_DIRS   yLOG_note    ("not a real dir");
+      DEBUG_DIRS   yLOG_exit    (__FUNCTION__);
+      return rce;
+   }
    DEBUG_DIRS   yLOG_snote   ("dir exists");
    /*---(complete)-----------------------*/
    DEBUG_DIRS   yLOG_snote   ("validated");
@@ -358,9 +368,9 @@ LOC_purge          (void)
    int         i           = 0;             /* iterator -- location           */
    /*---(bagin)--------------------------*/
    DEBUG_DIRS  yLOG_enter   (__FUNCTION__);
-   DEBUG_DIRS  yLOG_value   ("slots"     , MAX_LOCATIONS);
+   DEBUG_DIRS  yLOG_value   ("slots"     , MAX_LOC);
    /*---(cycle)--------------------------*/
-   for (i = 0; i < MAX_LOCATIONS; ++i) {
+   for (i = 0; i < MAX_LOC; ++i) {
       LOC_wipe (i);
    }
    DEBUG_DIRS  yLOG_note    ("initialized all slots");
@@ -403,7 +413,7 @@ LOC_push           (char  *a_path, char a_source, char *a_desc)
    }
    /*---(check for too many)-------------*/
    --rce;
-   if (s_nloc >= MAX_LOCATIONS) {
+   if (s_nloc >= MAX_LOC) {
       DEBUG_DIRS   yLOG_note    ("location structure full");
       DEBUG_DIRS   yLOG_exitr   (__FUNCTION__, rce);
       return rce;
@@ -442,7 +452,7 @@ char             /* [------] clear a single location entry -------------------*/
 LOC_wipe           (int a_loc)
 {
    /*---(defenses)-----------------------*/
-   if (a_loc >= MAX_LOCATIONS)   return -1;
+   if (a_loc >= MAX_LOC)   return -1;
    /*---(database)-----------------------*/
    s_locs [a_loc].active         = my.def_loc;
    s_locs [a_loc].source         = '?';
@@ -544,33 +554,125 @@ LOC_unlink         (int a_cmd)
 /*====================------------------------------------====================*/
 static void      o___REPORTING_______________o (void) {;}
 
+char             /* [------] teleporting gnome sort --------------------------*/
+LOC_index          (void)
+{
+   DEBUG_SORT   printf("sorting location records (indexed teleporting gnome)...\n");
+   /*---(locals)-----------+-----------+-*/
+   int         i           =  1;            /* current position               */
+   int         one         =  1;            /* position one                   */
+   int         two         =  1;            /* position two                   */
+   char        s           [200];
+   char        t           [200];
+   int         rci         =  0;            /* integer return code            */
+   int         temp        =  0;            /* temp storage for moves         */
+   int         tele        = -1;            /* teleportation point            */
+   int         comps       =  0;            /* number of comparisons          */
+   int         moves       =  0;            /* number of moves                */
+   /*---(sort)---------------------------*/
+   DEBUG_SORT   printf("   start : %d packages\n", s_nloc);
+   /*---(clear)--------------------------*/
+   for (i = 0; i < s_nloc; ++i)  s_iloc [i] = i;
+   /*---(sort)---------------------------*/
+   i = 1;
+   while (i < s_nloc) {
+      one = s_iloc [i - 1];
+      two = s_iloc [i    ];
+      /*---(header)--------------------------------*/
+      DEBUG_SORT   printf("   %-4d  %-4d  <%-40.40s>    %-4d  %-4d  <%-40.40s>    ", i - 1, one, s_locs [one].path, i    , two, s_locs [two].path);
+      /*---(compare)-------------------------------*/
+      ++comps;
+      rci = strcmp (s_locs [one].path, s_locs [two].path);
+      DEBUG_SORT   printf("%2d    ", rci);
+      if ((i == 0) || (rci <= 0)) {
+         if (tele >= 0)  { i = tele; tele = -1; }
+         else            ++i;
+         DEBUG_SORT   printf("good    %-4d    %-4d    SKIPPING\n");
+         continue;
+      }
+      /*---(sorted order)--------------------------*/
+      DEBUG_SORT   printf("swap    ");
+      /*---(swap)----------------------------------*/
+      ++moves;
+      temp           = s_iloc [i];
+      s_iloc [i]     = s_iloc [i - 1];
+      s_iloc [i - 1] = temp;
+      /*---(update)--------------------------------*/
+      if (tele < 0)  tele = i;              /* only update on first move      */
+      if (i > 1) --i;
+      DEBUG_SORT   printf("%-4d    %-4d    swapped\n");
+   }
+   long      n2     = (long)   s_nloc * s_nloc;
+   float     ratio  = ((float) moves / n2) * 100;
+   float     action = ((float) moves / comps) * 100;
+   DEBUG_SORT   printf("   moves : %d items, %d comp(s), %d move(s)\n", s_nloc, comps, moves);
+   DEBUG_SORT   printf("   stats : N2 = %ld, action (move/N2) = %2.0f%%, efficiency (move/comp) = %2.0f%%\n", n2, ratio, action);
+   DEBUG_SORT   printf("\n");
+   /*---(complete)------------------------------*/
+   return 0;
+}
+
 char             /* [------] report location results -------------------------*/
 LOC_list           (void)
 {
    /*---(locals)-----------+-----------+-*/
    int         i           = 0;             /* iterator -- location           */
+   int         c           = 0;             /* count of lines shown           */
+   int         x_page      = 0;
    int         x_cmds      = 0;
+   int         x_max       = 0;
+   int         x_maxwith   = 0;
+   int         x_curr      = 0;
+   int         x_skip      = 0;
+   char        x_long      = ' ';
+   char       *x_header    = "  seq# indx  s a  ---path------------------------------------------------------ len  -c-  ncmd   ---dsec---------------------------------  lookupkey";
+   char        s           [300];
    /*---(header)-------------------------*/
    printf ("\n");
-   printf ("HERMES-DIACTOROS -- location report                                                            %3d of %3d slots used\n", s_nloc, MAX_LOCATIONS);
-   printf ("\n");
-   printf ("  seq# indx  s a  ---path----------------------------------------------------- len  -c-  ncmd   ---dsec---------------------------------\n");
    /*---(cycle location)-----------------*/
    for (i = 0; i < s_nloc; ++i) {
-      /*> if ((i % 5) == 0)   printf ("\n");                                          <*/
-      printf ("  %4d %4d  %c %c  %-60.60s %3d   %c   %4d   %-40.40s\n", i, i,
-            s_locs [i].source , s_locs [i].active   , s_locs [i].path,
-            s_locs [i].len    , s_locs [i].f_concern, 
-            s_locs [i].ncmd   , s_locs [i].desc);
-      x_cmds += s_locs [i].ncmd;
+      x_curr = s_iloc [i];
+      if (s_locs [x_curr].len > x_max)  x_max = s_locs [x_curr].len;
+      if (s_locs [x_curr].ncmd <= 0) {
+         ++x_skip;
+         continue;
+      }
+      if ((c % 45) == 0) {
+         if (c > 0) {
+            printf ("\n%s\n", x_header);
+            printf ("\n");
+            printf ("      key :: s/sources   are  'c' = from config file  ,  'i' = /var/db/pkg       ,  'd' = from command db   ::\n");
+            printf ("          :: c/concerns  are  '-' = path is great     ,  '+' = extra chars used  ,  '#' = bad chars used    ::\n");
+         }
+         ++x_page;
+         sprintf (s, "%-138.138s  page %3d", "HERMES-DIACTOROS (messenger) integrity assurance for executables and shared libraries", x_page);
+         printf  ("\n%s\n", s);
+         printf  ("location reporting sorted by location/name\n");
+         printf ("\n%s\n", x_header);
+      }
+      if ((c %  5) == 0)  printf ("\n");
+      if (s_locs [x_curr].len > 60) x_long = '>';
+      else                          x_long = ' ';
+      printf ("  %4d %4d  %c %c  %-60.60s%c %3d   %c   %4d   %-40.40s  [loc%04d]\n", x_curr, i,
+            s_locs [x_curr].source , s_locs [x_curr].active   ,
+            s_locs [x_curr].path   , x_long,
+            s_locs [x_curr].len    , s_locs [x_curr].f_concern, 
+            s_locs [x_curr].ncmd   , s_locs [x_curr].desc,
+            x_curr);
+      if (s_locs [x_curr].len > x_maxwith)  x_maxwith = s_locs [x_curr].len;
+      x_cmds += s_locs [x_curr].ncmd;
+      ++c;
    }
    /*---(footer)-------------------------*/
+   printf ("\n%s\n", x_header);
    printf ("\n");
-   printf ("   end of locations ------------------------------------------------------------------------------------------------\n");
-   printf ("      key :: s/sources   are  'c' = from config file  ,  'a' = command line add  ,  'd' = from command db         ::\n");
-   printf ("          :: c/concerns  are  '-' = path is great     ,  '+' = extra chars used  ,  '#' = bad chars used          ::\n");
+   printf ("   GRAND TOTAL of %d commands stored in %d directory locations\n", x_cmds, c);
    printf ("\n");
-   printf ("   GRAND TOTAL of %d commands stored in %d directory locations\n", x_cmds, s_nloc);
+   printf ("ncmd                  = %d\n", ncmd);
+   printf ("total locations       = %d\n", s_nloc);
+   printf ("skipped               = %d\n", x_skip);
+   printf ("max len               = %d\n", x_max);
+   printf ("max len with commands = %d\n", x_maxwith);
    printf ("\n\n");
    /*---(complete)-----------------------*/
    return 0;

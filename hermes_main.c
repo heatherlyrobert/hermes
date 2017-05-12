@@ -33,19 +33,20 @@ main               (int argc, char *argv[])
    CMD_gather          ('n');
    FILES_gather ();
 
+   LOC_index           ();
    PKG_index           ();
    CMD_crack_gnome     ();
 
    AREA_list           ();
    LOC_list            ();
    PKG_list            ('i');
-   CMD_dump            ();
+   /*> CMD_dump            ();                                                        <*/
    CMD_list            ('i');
 
 
    /*> CMD_world    ();                                                               <*/
 
-   /*> CMD_writeall ();                                                               <*/
+   CMD_writeall ();
 
 
 

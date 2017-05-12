@@ -974,8 +974,8 @@ CMD_header         (int  a_page, int  a_loc, char a_order)
    printf  ("\n");
    /*> sprintf (s, "HERMES-DIACTOROS -- command executable report, page %3d, location %2d, %s ==========================================================================================================================================================================================================================================================================================================================================================================================================================", a_page, a_loc, locs [a_loc].path );   <*/
    /*> printf  ("%-273.273s\n\n", s);                                                 <*/
-   printf  ("  seqno index  s a  name                   len   t filetime   uid    gid    ugo m size      bytes     sha1 hash                                                   pkg# src loc#\n");
-   printf  ("  ----- -----  - -  - -------------------- - --- - ---------- - ---- - ---- --- - --------- --------- ----------------------------------------------------------- ---- --- ----\n");
+   printf  ("  seqno index  s a  name                   len   t filetime   uid    gid    ugo m size      bytes     sha1 hash                                                     package   location\n");
+   printf  ("  ----- -----  - -  - -------------------- - --- - ---------- - ---- - ---- --- - --------- --------- -----------------------------------------------------------  ---------  ---------\n");
    return 0;
 }
 
@@ -986,7 +986,7 @@ CMD_footer         (int  a_page, int  a_lines)
    if (a_page == 1)  return 0;
    for (i = a_lines; i <= (9 * 6); ++i)   printf ("\n");
    /*> printf  ("  ---- ----  - -  - -------------------- - --- ----------------------------------- - --- - ---------- - ---- - ---- --- - --------- --------- ----------------------------------------------------------- ---- --- ---------------------------------------------\n");   <*/
-   printf  ("  ----- -----  - -  - -------------------- - --- - ---------- - ---- - ---- --- - --------- --------- ----------------------------------------------------------- ---- --- ----\n");
+   printf  ("  ----- -----  - -  - -------------------- - --- - ---------- - ---- - ---- --- - --------- --------- -----------------------------------------------------------  ---------  ---------\n");
    printf  ("             - database    - only good chars      - good                                          - reg file   - norm - norm     - size match                     - unchecked        \n");
    printf  ("             + new entry   + extended chars       + long name                                     l symlink    * suid * sgid     # size diff                      w world file       \n");
    printf  ("             # conflict    # bad chars                                                                                                                            + non-world ebuild \n");
@@ -1002,6 +1002,8 @@ CMD_show           (int a_seq, int a_index, int a_num, tCMD *a_cmd)
    char        r           [500];           /* generic string                 */
    char        s           [500];           /* generic string                 */
    char        t           [500];           /* generic string                 */
+   char        p           [500];           /* generic string                 */
+   char        l           [500];           /* generic string                 */
    /*---(name formatting)----------*/
    sprintf (s, "%-20.20s", a_cmd->name);
    if (a_cmd->len  > 20)   s [19] = '>';
@@ -1009,16 +1011,20 @@ CMD_show           (int a_seq, int a_index, int a_num, tCMD *a_cmd)
    if (a_cmd->flen > 35)   t [34] = '>';
    if (a_cmd->filetime <= time (NULL))   sprintf (r, "%-10d", a_cmd->filetime);
    else                                  strcpy  (r, "(bad-time)");
+   if (a_cmd->i_pkg >= 0)                sprintf (p, "pkg%04d", a_cmd->i_pkg);
+   else                                  strcpy  (p, "-------");
+   if (a_cmd->i_loc >= 0)                sprintf (l, "loc%04d", a_cmd->i_loc);
+   else                                  strcpy  (l, "-------");
    /*---(output line)--------------*/
-   printf ("  %5d %5d  %c %c  %c %-20.20s %c %3d %c %-10.10s %c %4d %c %4d %-3.3s %c %9d %9d %-60.60s%4d  %c  %4d\n" ,
+   /*---(output line)--------------*/
+   printf ("  %5d %5d  %c %c  %c %-20.20s %c %3d %c %-10.10s %c %4d %c %4d %-3.3s %c %9d %9d %-60.60s [%-7.7s]  [%-7.7s]\n" ,
          a_seq           , a_index        , a_cmd->source  , a_cmd->active  , a_cmd->concern ,
          s               , a_cmd->toolong , a_cmd->len     ,
-         a_cmd->ftype   ,
+         a_cmd->ftype    ,
          r               ,
          a_cmd->suid     , a_cmd->uid     , a_cmd->sgid    , a_cmd->gid     , a_cmd->mode    ,
          a_cmd->smiss    , a_cmd->size    , a_cmd->bytes   , a_cmd->hash    ,
-         a_cmd->i_pkg    , (a_cmd->i_pkg   >= 0) ? pkgs [a_cmd->i_pkg].source : '-',
-         a_cmd->i_loc    );
+         p               , l               );
    /*---(complete)-----------------------*/
    return 0;
 }
