@@ -1012,9 +1012,9 @@ CMD_show           (int a_seq, int a_index, int a_num, tCMD *a_cmd)
    if (a_cmd->filetime <= time (NULL))   sprintf (r, "%-10d", a_cmd->filetime);
    else                                  strcpy  (r, "(bad-time)");
    if (a_cmd->i_pkg >= 0)                sprintf (p, "pkg%04d", a_cmd->i_pkg);
-   else                                  strcpy  (p, "-------");
+   else                                  strcpy  (p, "pkg----");
    if (a_cmd->i_loc >= 0)                sprintf (l, "loc%04d", a_cmd->i_loc);
-   else                                  strcpy  (l, "-------");
+   else                                  strcpy  (l, "loc----");
    /*---(output line)--------------*/
    /*---(output line)--------------*/
    printf ("  %5d %5d  %c %c  %c %-20.20s %c %3d %c %-10.10s %c %4d %c %4d %-3.3s %c %9d %9d %-60.60s [%-7.7s]  [%-7.7s]\n" ,

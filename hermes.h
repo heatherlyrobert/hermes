@@ -209,8 +209,8 @@
 
 
 /* rapidly evolving version number to aid with visual change confirmation     */
-#define     VER_NUM   "0.7h"
-#define     VER_TXT   "clean up locations report, add lookup ref for speed"
+#define     VER_NUM   "0.7i"
+#define     VER_TXT   "add recognition of symlinks into /var/db/pkg parsing"
 
 
 /*---(struct typedefs)-------------------*/

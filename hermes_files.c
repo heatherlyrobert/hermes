@@ -111,10 +111,13 @@ FILES_commands          (char *a_path, int a_pkg)
       /*---(read)---------------------*/
       if (NULL == fgets (x_recd, 1000, x_file)) break;
       if (feof (x_file)) break;
+      /*---(filter on type)-----------*/
       p = strtok_r  (x_recd, q, &r);
-      if (strcmp ("obj", p) != 0) continue;
+      if (strcmp ("obj", p) != 0 && strcmp ("sym", p) != 0) continue;
+      /*---(full name)----------------*/
       p = strtok_r  (NULL  , q, &r);
       if (p == NULL)              continue;
+      /*---(check the location)-------*/
       UTIL_parse_full (p, x_path, x_cmd);
       x_loc = LOC_find_path (x_path, 'a');
       if (x_loc < 0)  {
@@ -122,6 +125,7 @@ FILES_commands          (char *a_path, int a_pkg)
          if (x_loc < 0)   continue;
          x_loc = LOC_push (x_path, 'i', "(base install)");
       }
+      /*---(check the command)--------*/
       rci = CMD_find (p);
       if (rci < 0) {
          rci = CMD_files      (x_path, x_cmd);
