@@ -329,19 +329,25 @@ LOC_curs_next      (void)
 static void      o___GETTERS_________________o (void) {;}
 
 int              /*-> return count of locations ----------[ ------ [ ------ ]-*/
-LOC_get_count       (void)   { return s_nloc; }
+LOC_get_count       (void)        { return s_nloc; }
 
 char*            /*-> return current rectory -------------[ ------ [ ------ ]-*/
-LOC_get_path        (void)   { if (s_cloc <  0) return "" ; return s_locs [s_cloc].path;   }
+LOC_curr_path       (void)        { if (s_cloc <  0) return "" ; return s_locs [s_cloc].path;   }
+
+char*            /*-> return current rectory -------------[ ------ [ ------ ]-*/
+LOC_get_path        (int a_loc)   { if (a_loc < 0 || a_loc >= s_nloc) return "" ; return s_locs [a_loc].path;   }
 
 char             /*-> return current rectory -------------[ ------ [ ------ ]-*/
-LOC_get_source      (void)   { if (s_cloc <  0) return '?'; return s_locs [s_cloc].source; }
+LOC_source          (int a_loc)   { if (a_loc < 0 || a_loc >= s_nloc) return "" ; return s_locs [a_loc].source; }
+
+char             /*-> return current rectory -------------[ ------ [ ------ ]-*/
+LOC_curr_source      (void)   { if (s_cloc <  0) return '?'; return s_locs [s_cloc].source; }
 
 int              /*-> return current rectory -------------[ ------ [ ------ ]-*/
-LOC_get_commands    (void)   { if (s_cloc <  0) return 0  ; return s_locs [s_cloc].ncmd;   }
+LOC_curr_commands   (void)   { if (s_cloc <  0) return 0  ; return s_locs [s_cloc].ncmd;   }
 
 char*            /*-> return current rectory -------------[ ------ [ ------ ]-*/
-LOC_get_desc        (void)   { if (s_cloc <  0) return "" ; return s_locs [s_cloc].desc;   }
+LOC_curr_desc        (void)   { if (s_cloc <  0) return "" ; return s_locs [s_cloc].desc;   }
 
 
 
