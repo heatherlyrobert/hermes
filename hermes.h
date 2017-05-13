@@ -181,6 +181,7 @@
 #include    <stdio.h>
 #include    <stdlib.h>            /* exit, system, ...                        */
 #include    <string.h>            /* strcat, strcpy, strlen, ...              */
+#include    <unistd.h>            /* readlink, ...                            */
 
 
 /*---(filesystems)--------------*/
@@ -209,8 +210,8 @@
 
 
 /* rapidly evolving version number to aid with visual change confirmation     */
-#define     VER_NUM   "0.7i"
-#define     VER_TXT   "add recognition of symlinks into /var/db/pkg parsing"
+#define     VER_NUM   "0.7j"
+#define     VER_TXT   "simple symlink checking for executables"
 
 
 /*---(struct typedefs)-------------------*/
@@ -272,6 +273,7 @@ extern      int         npkg;                    /* package count           */
 #define     LCFULL        200
 #define     LCMODE          5
 #define     LCHASH        100
+#define     LEN_LINK      500
 typedef     struct cCOMMAND  tCMD;
 struct      cCOMMAND {
    /*---(base)------------------------*/
@@ -292,6 +294,8 @@ struct      cCOMMAND {
    int         bytes;
    int         smiss;
    char        hash        [LCHASH];
+   char        sym_name    [LEN_LINK];
+   char        sym_note;
    /*---(update)----------------------*/
    int         i_loc;
    int         i_pkg;
@@ -579,6 +583,7 @@ char        CMD_package        (void);
 /*---reporting---------*/
 char        CMD_readdb         (void);
 char        CMD_writeall       (void);
+char        CMD_savelinks      (void);
 /*---unittest----------*/
 char*       CMD_unit           (char *a_question, int a_num);
 

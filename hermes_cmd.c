@@ -508,6 +508,8 @@ CMD_wipe           (tCMD *a_cmd)
    a_cmd->bytes       =  0;
    a_cmd->smiss       = '-';
    a_cmd->hash   [0]  = '\0';
+   a_cmd->sym_name [0]= '\0';
+   a_cmd->sym_note    = '-';
    /*---(linking)---------------------*/
    a_cmd->i_loc       = -1;
    a_cmd->i_pkg       = -1;
@@ -1005,8 +1007,8 @@ CMD_show           (int a_seq, int a_index, int a_num, tCMD *a_cmd)
    char        p           [500];           /* generic string                 */
    char        l           [500];           /* generic string                 */
    /*---(name formatting)----------*/
-   sprintf (s, "%-20.20s", a_cmd->name);
-   if (a_cmd->len  > 20)   s [19] = '>';
+   sprintf (s, "%-40.40s", a_cmd->name);
+   if (a_cmd->len  > 40)   s [39] = '>';
    sprintf (t, "%-35.35s", a_cmd->full);
    if (a_cmd->flen > 35)   t [34] = '>';
    if (a_cmd->filetime <= time (NULL))   sprintf (r, "%-10d", a_cmd->filetime);
@@ -1017,14 +1019,15 @@ CMD_show           (int a_seq, int a_index, int a_num, tCMD *a_cmd)
    else                                  strcpy  (l, "loc----");
    /*---(output line)--------------*/
    /*---(output line)--------------*/
-   printf ("  %5d %5d  %c %c  %c %-20.20s %c %3d %c %-10.10s %c %4d %c %4d %-3.3s %c %9d %9d %-60.60s [%-7.7s]  [%-7.7s]\n" ,
+   printf ("  %5d %5d  %c %c  %c %-40.40s %c %3d %c %-10.10s %c %4d %c %4d %-3.3s %c %9d %9d %-60.60s %c %-100.100s  [%-7.7s]  [%-7.7s]\n" ,
          a_seq           , a_index        , a_cmd->source  , a_cmd->active  , a_cmd->concern ,
          s               , a_cmd->toolong , a_cmd->len     ,
          a_cmd->ftype    ,
          r               ,
          a_cmd->suid     , a_cmd->uid     , a_cmd->sgid    , a_cmd->gid     , a_cmd->mode    ,
          a_cmd->smiss    , a_cmd->size    , a_cmd->bytes   , a_cmd->hash    ,
-         p               , l               );
+         a_cmd->sym_note , a_cmd->sym_name,
+         p               , l              );
    /*---(complete)-----------------------*/
    return 0;
 }
@@ -1793,6 +1796,43 @@ CMD_readdb         (void)
    }
    /*---(wrapup)-------------------------*/
    fclose (f);
+   /*---(complete)-----------------------*/
+   return 0;
+}
+
+char             /* [------] output a sorted list ----------------------------*/
+CMD_savelinks      (void)
+{
+   /*---(locals)-----------+-----------+-*/
+   char        rce         =  -10;
+   char        rc          =    0;
+   int         i           = 0;             /* iterator -- package            */
+   tSTAT       st;                          /* file stats                     */
+   char        x_link      [LEN_LINK];      /* link to real file              */
+   int         x_real      =   1;
+   /*---(cycle commands)--------------*/
+   for (i = 0; i < ncmd; ++i) {
+      /*---(filter)-------------------*/
+      if (s_cmds [i].ftype != 'l')   continue;
+      /*---(get link)-----------------*/
+      rc = readlink (s_cmds [i].full, x_link, 500);
+      if (rc < 0) {
+         s_cmds [i].sym_note = '?';
+         continue;
+      }
+      x_link [rc] = '\0';
+      if (strlen (x_link) <= 0) {
+         s_cmds [i].sym_note = '0';
+         continue;
+      }
+      strlcpy (s_cmds [i].sym_name, x_link, LEN_LINK);
+      /*---(find real cmd)------------*/
+      x_real = CMD_find (x_link);
+      if (x_real < 0) {
+         s_cmds [i].sym_note = '#';
+         continue;
+      }
+   }
    /*---(complete)-----------------------*/
    return 0;
 }

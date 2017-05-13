@@ -31,7 +31,8 @@ main               (int argc, char *argv[])
    PKG_writedb         ();
 
    CMD_gather          ('n');
-   FILES_gather ();
+   FILES_gather        ();
+   CMD_savelinks       ();
 
    LOC_index           ();
    PKG_index           ();
