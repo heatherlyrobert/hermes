@@ -614,9 +614,11 @@ char             /* [------] report location results -------------------------*/
 LOC_list           (void)
 {
    /*---(locals)-----------+-----------+-*/
+   int         x_pass      = 0;             /* iterator -- location           */
    int         i           = 0;             /* iterator -- location           */
    int         c           = 0;             /* count of lines shown           */
    int         x_page      = 0;
+   int         x_pages     = 0;
    int         x_cmds      = 0;
    int         x_max       = 0;
    int         x_maxwith   = 0;
@@ -628,38 +630,48 @@ LOC_list           (void)
    /*---(header)-------------------------*/
    printf ("\n");
    /*---(cycle location)-----------------*/
-   for (i = 0; i < s_nloc; ++i) {
-      x_curr = s_iloc [i];
-      if (s_locs [x_curr].len > x_max)  x_max = s_locs [x_curr].len;
-      if (s_locs [x_curr].ncmd <= 0) {
-         ++x_skip;
-         continue;
-      }
-      if ((c % 45) == 0) {
-         if (c > 0) {
-            printf ("\n%s\n", x_header);
-            printf ("\n");
-            printf ("      key :: s/sources   are  'c' = from config file  ,  'i' = /var/db/pkg       ,  'd' = from command db   ::\n");
-            printf ("          :: c/concerns  are  '-' = path is great     ,  '+' = extra chars used  ,  '#' = bad chars used    ::\n");
+   for (x_pass = 0; x_pass < 2; ++x_pass) {
+      x_page = 0;
+      c      = 0;
+      for (i = 0; i < s_nloc; ++i) {
+         x_curr = s_iloc [i];
+         if (s_locs [x_curr].len > x_max)  x_max = s_locs [x_curr].len;
+         if (s_locs [x_curr].ncmd <= 0) {
+            ++x_skip;
+            continue;
          }
-         ++x_page;
-         sprintf (s, "%-138.138s  page %3d", "HERMES-DIACTOROS (messenger) integrity assurance for executables and shared libraries", x_page);
-         printf  ("\n%s\n", s);
-         printf  ("location reporting sorted by location/name\n");
-         printf ("\n%s\n", x_header);
+         if ((c % 45) == 0) {
+            ++x_page;
+            if (x_pass > 0) {
+               if (c > 0) {
+                  printf ("\n%s\n", x_header);
+                  printf ("\n");
+                  printf ("      key :: s/sources   are  'c' = from config file  ,  'i' = /var/db/pkg       ,  'd' = from command db   ::\n");
+                  printf ("          :: c/concerns  are  '-' = path is great     ,  '+' = extra chars used  ,  '#' = bad chars used    ::\n");
+                  printf  ("\n\n");
+               }
+               sprintf (s, "%-131.131s  page %3d of %3d", "HERMES-DIACTOROS (messenger) integrity assurance for executables and shared libraries", x_page, x_pages);
+               printf  ("\n%s\n", s);
+               printf  ("location reporting sorted by location/name\n");
+               printf  ("\n%s\n", x_header);
+            }
+         }
+         if (x_pass > 0 && (c %  5) == 0)  printf ("\n");
+         if (x_pass > 0) {
+            if (s_locs [x_curr].len > 60) x_long = '>';
+            else                          x_long = ' ';
+            printf ("  %4d %4d  %c %c  %-60.60s%c %3d   %c   %4d   %-40.40s  [loc%04d]\n", x_curr, i,
+                  s_locs [x_curr].source , s_locs [x_curr].active   ,
+                  s_locs [x_curr].path   , x_long,
+                  s_locs [x_curr].len    , s_locs [x_curr].f_concern, 
+                  s_locs [x_curr].ncmd   , s_locs [x_curr].desc,
+                  x_curr);
+            if (s_locs [x_curr].len > x_maxwith)  x_maxwith = s_locs [x_curr].len;
+            x_cmds += s_locs [x_curr].ncmd;
+         }
+         ++c;
       }
-      if ((c %  5) == 0)  printf ("\n");
-      if (s_locs [x_curr].len > 60) x_long = '>';
-      else                          x_long = ' ';
-      printf ("  %4d %4d  %c %c  %-60.60s%c %3d   %c   %4d   %-40.40s  [loc%04d]\n", x_curr, i,
-            s_locs [x_curr].source , s_locs [x_curr].active   ,
-            s_locs [x_curr].path   , x_long,
-            s_locs [x_curr].len    , s_locs [x_curr].f_concern, 
-            s_locs [x_curr].ncmd   , s_locs [x_curr].desc,
-            x_curr);
-      if (s_locs [x_curr].len > x_maxwith)  x_maxwith = s_locs [x_curr].len;
-      x_cmds += s_locs [x_curr].ncmd;
-      ++c;
+      x_pages = x_page;
    }
    /*---(footer)-------------------------*/
    printf ("\n%s\n", x_header);

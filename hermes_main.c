@@ -38,11 +38,11 @@ main               (int argc, char *argv[])
    PKG_index           ();
    CMD_crack_gnome     ();
 
-   AREA_list           ();
-   LOC_list            ();
-   PKG_list            ('i');
+   /*> AREA_list           ();                                                        <*/
+   LOCS_LIST   LOC_list  ();
+   /*> PKG_list            ('i');                                                     <*/
    /*> CMD_dump            ();                                                        <*/
-   CMD_list            ('i');
+   /*> CMD_list            ('i');                                                     <*/
 
 
    /*> CMD_world    ();                                                               <*/

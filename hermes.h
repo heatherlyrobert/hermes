@@ -210,8 +210,8 @@
 
 
 /* rapidly evolving version number to aid with visual change confirmation     */
-#define     VER_NUM   "0.7l"
-#define     VER_TXT   "standardize all function naming in hermes_loc"
+#define     VER_NUM   "0.7m"
+#define     VER_TXT   "make location reporting option driven"
 
 
 /*---(struct typedefs)-------------------*/
@@ -334,78 +334,6 @@ extern      int         curg;
 
 
 
-/*===[[ DEBUGGING SETUP ]]====================================================*/
-/* this is my latest standard format, vars, and urgents                       */
-/* v3.0b : added signal handling                                (2014-feb-01) */
-/*> typedef  struct cDEBUG  tDEBUG;                                                    <* 
- *> struct cDEBUG                                                                      <* 
- *> {                                                                                  <* 
- *>    /+---(notes)---------------------------------------------------------------+/   <* 
- *>    /+ f = full urgents turns on all standard urgents                          +/   <* 
- *>    /+ k = kitchen sink and turns everything, i mean everything on             +/   <* 
- *>    /+ q = quiet turns all urgents off including the log itself                +/   <* 
- *>    /+---(overall)------------------------+/  /+ abcdefghi_klm_opq_stu__x__    +/   <* 
- *>    int         logger;                 /+ -) pointer to the logger            +/   <* 
- *>    char        tops;                   /+ t) broad structure and context      +/   <* 
- *>    char        summ;                   /+ s) statistics and analytical output +/   <* 
- *>    /+---(startup/shutdown)---------------+/                                        <* 
- *>    char        args;                   /+ a) command line args and urgents    +/   <* 
- *>    char        conf;                   /+ c) configuration handling           +/   <* 
- *>    char        prog;                   /+ p) program setup and teardown       +/   <* 
- *>    /+---(file processing)----------------+/                                        <* 
- *>    char        inpt;                   /+ i) text and data file input         +/   <* 
- *>    char        outp;                   /+ o) text and data file output        +/   <* 
- *>    /+---(event handling)-----------------+/                                        <* 
- *>    char        loop;                   /+ l) main program event loop          +/   <* 
- *>    char        user;                   /+ u) user input and handling          +/   <* 
- *>    char        apis;                   /+ m) interprocess communication       +/   <* 
- *>    char        sign;                   /+ x) os signal handling               +/   <* 
- *>    char        scrp;                   /+ b) scripts and batch operations     +/   <* 
- *>    char        hist;                   /+ h) history, undo, redo              +/   <* 
- *>    /+---(program)------------------------+/                                        <* 
- *>    char        graf;                   /+ g) grahpics, drawing, and display   +/   <* 
- *>    char        data;                   /+ d) complex data structure handling  +/   <* 
- *>    char        envi;                   /+ e) environment processing           +/   <* 
- *>    /+---(specific)-----------------------+/                                        <* 
- *>    char        locs;                   /+ processing of locations             +/   <* 
- *>    char        world;                  /+ processing of world file            +/   <* 
- *>    char        pkgs;                   /+ processing of packages              +/   <* 
- *>    char        cmds;                   /+ processing system commands          +/   <* 
- *>    char        match;                  /+ matching world to commands          +/   <* 
- *>    char        db;                     /+ reading command database            +/   <* 
- *>    char        sort;                   /+ follow sorting                      +/   <* 
- *> };                                                                                 <* 
- *> tDEBUG      debug;                                                                 <*/
-
-/*> #define     DEBUG_TOPS          if (debug.tops      == 'y')                       <* 
- *> #define     DEBUG_SUMM          if (debug.summ      == 'y')                       <* 
- *> #define     DEBUG_ARGS          if (debug.args      == 'y')                       <* 
- *> #define     DEBUG_CONF          if (debug.conf      == 'y')                       <* 
- *> #define     DEBUG_PROG          if (debug.prog      == 'y')                       <* 
- *> #define     DEBUG_INPT          if (debug.inpt      == 'y')                       <* 
- *> #define     DEBUG_OUTP          if (debug.outp      == 'y')                       <* 
- *> #define     DEBUG_LOOP          if (debug.loop      == 'y')                       <* 
- *> #define     DEBUG_USER          if (debug.user      == 'y')                       <* 
- *> #define     DEBUG_APIS          if (debug.apis      == 'y')                       <* 
- *> #define     DEBUG_SIGN          if (debug.sign      == 'y')                       <* 
- *> #define     DEBUG_SCRP          if (debug.scrp      == 'y')                       <* 
- *> #define     DEBUG_HIST          if (debug.hist      == 'y')                       <* 
- *> #define     DEBUG_GRAF          if (debug.graf      == 'y')                       <* 
- *> #define     DEBUG_DATA          if (debug.data      == 'y')                       <* 
- *> #define     DEBUG_ENVI          if (debug.envi      == 'y')                       <*/
-
-/*> #define     DEBUG_WORLD         if (debug.world     == 'y')                       <*/
-
-/*> #define     DEBUG_DIRS          if (debug.locs      == 'y')                       <* 
- *> #define     DEBUG_DIRS     if (debug.locs      == 'y')                            <*/
-/*> #define     DEBUG_PKGS          if (debug.pkgs      == 'y')                       <*/
-/*> #define     DEBUG_PKGS      if (debug.pkgs      == 'y')                           <*/
-/*> #define     DEBUG_CMDS          if (debug.cmds      == 'y')                       <*/
-/*> #define     DEBUG_MATCH         if (debug.match     == 'y')                       <*/
-/*> #define     DEBUG_CACHE      if (debug.db        == 'y')                          <*/
-/*> #define     DEBUG_SORT          if (debug.sort      == 'y')                       <*/
-
-
 
 typedef  struct cGLOBAL  tGLOBAL;
 struct cGLOBAL {
@@ -429,6 +357,7 @@ struct cGLOBAL {
    char        packageall;             /* processing of packages (force)      */
    /*---(strout reports)-----------------*/
    char        list_locs;
+   char        dump_locs;
    char        list_pkgs;
    char        list_cmds;
    char        show_gather;
@@ -441,6 +370,9 @@ struct cGLOBAL {
    /*---(done)---------------------------*/
 };
 extern      tGLOBAL     my;
+
+#define     LOCS_LIST        if (my.list_locs == 'y')
+#define     LOCS_DUMP        if (my.dump_locs == 'y')
 
 #define     RUN_CONF         my.conf
 #define     RUN_READ         my.db_read
