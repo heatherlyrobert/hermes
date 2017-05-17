@@ -100,6 +100,7 @@ FILES_commands          (char *a_path, int a_pkg)
    char       *q           = " ";           /* strtok_r delimeters            */
    char       *r           = NULL;          /* strtok_r context variable      */
    int         x_loc       =    0;
+   int         x_save      =    0;
    char        x_path      [200];
    char        x_subdir    [200];
    char        x_cmd       [200];
@@ -123,7 +124,9 @@ FILES_commands          (char *a_path, int a_pkg)
       if (x_loc < 0)  {
          x_loc = LOC_find_path (x_path, 's');
          if (x_loc < 0)   continue;
+         x_save = x_loc;
          x_loc = LOC_create (x_path, 'i', "(base install)");
+         LOC_set_cat   (x_loc, x_save);
       }
       /*---(check the command)--------*/
       rci = CMD_find (p);

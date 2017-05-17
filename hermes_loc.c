@@ -34,6 +34,7 @@ struct      cLOC {
    char        source;                 /* what method created this entry      */
    char        path        [STR_MAX];  /* directory path                      */
    char        desc        [STR_REG];  /* free-form description               */
+   char        cat;                    /* category of location                */
    /*---(working)------------------------*/
    int         len;                    /* length of path string               */
    int         ncmd;                   /* number of commands in location      */
@@ -240,6 +241,7 @@ LOC__wipe          (int a_loc)
    s_locs [a_loc].source         = '?';
    s_locs [a_loc].path [0]       = '\0';
    s_locs [a_loc].desc [0]       = '\0';
+   s_locs [a_loc].cat            = '-';
    /*---(working)------------------------*/
    s_locs [a_loc].len            =  0;
    s_locs [a_loc].ncmd           =  0;
@@ -261,6 +263,22 @@ LOC_get_path       (int a_loc)   { if (a_loc < 0 || a_loc >= s_nloc) return "" ;
 
 char             /*-> return count of locations ----------[ ------ [ ------ ]-*/
 LOC_add_cmd        (int a_loc)   { if (a_loc < 0 || a_loc >= s_nloc) return -1; ++s_locs [a_loc].ncmd; return 0; }
+
+char             /*-> return current rectory -------------[ ------ [ ------ ]-*/
+LOC_set_cat        (int a_loc, int a_save)
+{
+   int         x_len       = 0;
+   if (a_loc  < 0 || a_loc  >= s_nloc) return -1;
+   if (a_save < 0 || a_save >= s_nloc) return -2;
+   x_len = s_locs [a_save].len;
+   if (strncmp (s_locs [a_loc].path + x_len, "/python", 7) == 0)
+      s_locs [a_loc].cat  = 'y';
+   if (strncmp (s_locs [a_loc].path + x_len, "/perl"  , 5) == 0)
+      s_locs [a_loc].cat  = 'e';
+   if (strncmp (s_locs [a_loc].path + x_len, "/ruby"  , 5) == 0)
+      s_locs [a_loc].cat  = 'u';
+   return 0;
+}
 
 
 
@@ -433,10 +451,12 @@ LOC_find_path           (char  *a_path, char a_type)
    }
    /*---(cycle)--------------------------*/
    for (i = 0; i < s_nloc; ++i) {
-      /*---(filter)----------------------*/
+      /*---(filter absolutes)------------*/
       if (a_type == 'a' && strcmp  (s_locs [i].path, a_path) != 0    )   continue;
-      if (a_type == 's' && strncmp (s_locs [i].path, a_path, s_locs [i].len) != 0    ) continue;
+      /*---(filter subdirs)--------------*/
       if (a_type == 's') {
+         if (s_locs [i].source != 'c')                                   continue;
+         if (strncmp (s_locs [i].path, a_path, s_locs [i].len) != 0    ) continue;
          if (s_locs [i].len != x_len) {
             if (a_path [s_locs [i].len] != '/') continue;
          }
@@ -625,14 +645,18 @@ LOC_list           (void)
    int         x_curr      = 0;
    int         x_skip      = 0;
    char        x_long      = ' ';
-   char       *x_header    = "  seq# indx  s a  ---path------------------------------------------------------ len  -c-  ncmd   ---dsec---------------------------------  lookupkey";
+   char       *x_header    = "  seq# indx  s a  ---path------------------------------------------------------ len  -c-  cat  ncmd   ---dsec---------------------------------  lookupkey";
+   int         x_cats      [26];
    char        s           [300];
+   int         x_other     = 0;
    /*---(header)-------------------------*/
    printf ("\n");
    /*---(cycle location)-----------------*/
    for (x_pass = 0; x_pass < 2; ++x_pass) {
       x_page = 0;
       c      = 0;
+      x_skip = 0;
+      for (i = 0; i < 26; ++i)  x_cats [i] = 0;
       for (i = 0; i < s_nloc; ++i) {
          x_curr = s_iloc [i];
          if (s_locs [x_curr].len > x_max)  x_max = s_locs [x_curr].len;
@@ -660,16 +684,20 @@ LOC_list           (void)
          if (x_pass > 0) {
             if (s_locs [x_curr].len > 60) x_long = '>';
             else                          x_long = ' ';
-            printf ("  %4d %4d  %c %c  %-60.60s%c %3d   %c   %4d   %-40.40s  [loc%04d]\n", x_curr, i,
+            printf ("  %4d %4d  %c %c  %-60.60s%c %3d   %c    %c   %4d   %-40.40s  [loc%04d]\n", x_curr, i,
                   s_locs [x_curr].source , s_locs [x_curr].active   ,
                   s_locs [x_curr].path   , x_long,
                   s_locs [x_curr].len    , s_locs [x_curr].f_concern, 
+                  s_locs [x_curr].cat    ,
                   s_locs [x_curr].ncmd   , s_locs [x_curr].desc,
                   x_curr);
             if (s_locs [x_curr].len > x_maxwith)  x_maxwith = s_locs [x_curr].len;
             x_cmds += s_locs [x_curr].ncmd;
          }
          ++c;
+         if (s_locs [x_curr].cat >= 'a' && s_locs [x_curr].cat <= 'z') {
+            ++x_cats [s_locs [x_curr].cat - 'a'];
+         }
       }
       x_pages = x_page;
    }
@@ -683,6 +711,16 @@ LOC_list           (void)
    printf ("skipped               = %d\n", x_skip);
    printf ("max len               = %d\n", x_max);
    printf ("max len with commands = %d\n", x_maxwith);
+   printf ("\n");
+   printf ("shown = %3d\n", c);
+   x_other = c;
+   for (i = 0; i < 26; ++i) {
+      if (x_cats [i] > 0) {
+         x_other -= x_cats [i];
+         printf ("cat %c = %3d (%6.2f)\n", i + 'a', x_cats [i], ((float) x_cats [i]) / ((float) c));
+      }
+   }
+   printf ("other = %3d (%6.2f)\n", x_other, ((float) x_other) / ((float) c));
    printf ("\n\n");
    /*---(complete)-----------------------*/
    return 0;
