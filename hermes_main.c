@@ -34,7 +34,7 @@ main               (int argc, char *argv[])
    FILES_gather        ();
    CMD_savelinks       ();
 
-   LOC_index           ();
+   LOC_sort            ();
    PKG_index           ();
    CMD_crack_gnome     ();
 

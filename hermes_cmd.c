@@ -1047,7 +1047,7 @@ CMD_list           (char a_order)
    int         x_seq       = 0;
    int         x_index     = 0;
    /*---(output)-------------------------*/
-   if (a_order != 'a') x_loc = LOC_get_count ();
+   if (a_order != 'a') x_loc = LOC_count ();
    for (j = 0; j < x_loc; ++j) {
       /*---(prepare)---------------------*/
       count = 0;
@@ -1219,8 +1219,7 @@ CMD_analyze        (int a_count, char *a_path, char *a_name, tCMD *a_cmd, char a
       return a_cmd->i_loc;
    }
    /*> ++locs [a_cmd->i_loc].ncmd;                                                    <*/
-   LOC_curs_index (a_cmd->i_loc);
-   LOC_cmd_add ();
+   LOC_add_cmd    (a_cmd->i_loc);
    DEBUG_CMDS   yLOG_value   ("loc_num"   , a_cmd->i_loc);
    a_cmd->source = a_source; 
    DEBUG_CMDS   yLOG_char    ("source"    , a_cmd->source);
@@ -1259,7 +1258,7 @@ CMD_gather         (char a_check)
    DEBUG_CMDS   yLOG_enter   (__FUNCTION__);
    SHOW_GATHER  printf ("HERMES-DIACTOROS -- gather process reporting... focus on %s\n", my.focus);
    /*---(locations)----------------------*/
-   for (i = 0; i < LOC_get_count (); ++i) {
+   for (i = 0; i < LOC_count (); ++i) {
       LOC_curs_index (i);
       strlcpy (x_path, LOC_curr_path (), 200);
       DEBUG_CMDS   yLOG_info    ("loc"       , x_path);
@@ -1428,7 +1427,7 @@ CMD_world          (void)
          /*> printf ("          %4d   %-45.45s", j, recd);                            <*/
          /*---(match to location)--------*/
          found = -1;
-         for (k = 0; k < LOC_get_count (); ++k) {
+         for (k = 0; k < LOC_count (); ++k) {
             LOC_curs_index (k);
             strlcpy (x_path, LOC_curr_path (), 200);
             if (strcmp (x_path, recd)  != 0)   continue;
@@ -1710,7 +1709,7 @@ CMD_readdb         (void)
       /*---(location)--------------------*/
       rci = LOC_find_path (s, 'a');
       if (rci < 0)  {
-         rci = LOC_push (s, 'd', "");
+         rci = LOC_create (s, 'd', "");
          /*> DEBUG_CACHE   printf ("location %s not found, SKIPPING\n", s);        <*/
          /*> continue;                                                                <*/
       }

@@ -154,7 +154,7 @@ PROG_init          (void)
    strcpy (my.pkg_db, "/var/lib/hermes/hermes.packages");
    strcpy (my.cmd_db, "/var/lib/hermes/hermes.commands");
    /*---(initialize data structures)-----*/
-   LOC_purge       ();
+   LOC_init        ();
    PKG_purge       ();
    CMD_purge       ();
    /*---(complete)-----------------------*/
@@ -216,7 +216,7 @@ PROG_args          (int argc, char *argv[])
       }
       /*---(----------------)------------*/
       /*> else if (strcmp (a, "--loc"               ) == 0) {                         <* 
-       *>    if (i + 1 < argc)  LOC_push (argv[++i], 'a', "");                        <* 
+       *>    if (i + 1 < argc)  LOC_create (argv[++i], 'a', "");                        <* 
        *> }                                                                           <* 
        *> else if (strcmp (a, "--alt_cmd"           ) == 0) {                         <* 
        *>    if (i + 1 < argc)  strcpy (my.cmd_db, argv[++i]);                        <* 
@@ -311,9 +311,9 @@ PROG_conf          (void)
       /*---(act)-------------------------*/
       rc = 0;
       switch (x_verb[0]) {
-      case 'a' : rc = AREA_push (x_field [0]);                      break;
-      case 'p' : rc = PKG_push  (x_field [0], 'c', x_field [1][0], x_field [2]);    break;
-      case 'l' : rc = LOC_push  (x_field [0], 'c', x_field [2]);    break;
+      case 'a' : rc = AREA_push   (x_field [0]);                      break;
+      case 'p' : rc = PKG_push    (x_field [0], 'c', x_field [1][0], x_field [2]);    break;
+      case 'l' : rc = LOC_create  (x_field [0], 'c', x_field [2]);    break;
       default  : break;
       }
       /*---(done)------------------------*/

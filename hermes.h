@@ -210,8 +210,8 @@
 
 
 /* rapidly evolving version number to aid with visual change confirmation     */
-#define     VER_NUM   "0.7k"
-#define     VER_TXT   "fix location function naming for cursors and accessors"
+#define     VER_NUM   "0.7l"
+#define     VER_TXT   "standardize all function naming in hermes_loc"
 
 
 /*---(struct typedefs)-------------------*/
@@ -495,39 +495,45 @@ char        parse_long         (char *a_recd, char **a_place, long a_min, long a
 
 
 /*---(hermes_loc)-----------------------------------------*/
-/*---(utility)----------------*/
+/*---(program)----------------*/
+char        LOC_init           (void);
+char        LOC__purge         (void);
+char        LOC_wrap           (void);
+int         LOC_count          (void);
+/*---(ordering)---------------*/
+char        LOC_sort           (void);
+/*---(single)-----------------*/
+int         LOC_create         (char  *a_name, char a_type, char *a_desc);
+char        LOC__wipe          (int    a_loc);
+/*---(accessors)--------------*/
+char*       LOC_get_path       (int    a_loc);
+char        LOC_add_cmd        (int    a_loc);
+/*---(helpers)----------------*/
 char        LOC_check_path     (char  *a_path);
 char        LOC_clean_path     (char  *a_path);
-char        LOC_check_index    (int    a_loc);
-/*---(accessors)--------------*/
-int         LOC_get_count      (void);
-char*       LOC_get_path       (int    a_loc);
-char        LOC_get_source     (int    a_loc);
-int         LOC_get_commands   (int    a_loc);
-char*       LOC_get_desc       (int    a_loc);
-
-int         LOC_find_path      (char  *a_name, char a_type);
-char        LOC_remove_path    (int a_loc, char *a_path);
-
 char        LOC_valid          (int    a_loc);
-char        LOC_purge          (void);
-int         LOC_push           (char  *a_name, char a_type, char *a_desc);
-char        LOC_wipe           (int    a_curr);
-char        LOC_link           (int    a_loc, int a_cmd);
-char        LOC_unlink         (int    a_cmd);
-char        LOC_index          (void);
-char        LOC_list           (void);
-char*       LOC_unit           (char  *a_question, int a_num);
-/*---(cursor)-----------------*/
+/*---(filtering)--------------*/
+int         LOC_find_path      (char  *a_name, char a_type);
+/*---(cursors)----------------*/
 char        LOC_curs_index     (int    a_loc);
+char        LOC_curs_head      (void);
 char        LOC_curs_next      (void);
 char*       LOC_curr_path      (void);
 char        LOC_curr_source    (void);
 int         LOC_curr_commands  (void);
 char*       LOC_curr_desc      (void);
+/*---(structure)--------------*/
+char        LOC_link           (int    a_loc, int a_cmd);
+char        LOC_unlink         (int    a_cmd);
+/*---(reporting)--------------*/
+char        LOC_list           (void);
+/*---(unit testing)-----------*/
+char*       LOC_unit           (char  *a_question, int a_num);
+/*---(done)-------------------*/
 
 
-char        LOC_cmd_add        (void);
+
+
 
 
 /*---(hermes_pkg)-----------------------------------------*/

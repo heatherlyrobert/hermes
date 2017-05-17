@@ -123,15 +123,14 @@ FILES_commands          (char *a_path, int a_pkg)
       if (x_loc < 0)  {
          x_loc = LOC_find_path (x_path, 's');
          if (x_loc < 0)   continue;
-         x_loc = LOC_push (x_path, 'i', "(base install)");
+         x_loc = LOC_create (x_path, 'i', "(base install)");
       }
       /*---(check the command)--------*/
       rci = CMD_find (p);
       if (rci < 0) {
          rci = CMD_files      (x_path, x_cmd);
          if (rci >= 0) {
-            LOC_curs_index (x_loc);
-            LOC_cmd_add    ();
+            LOC_add_cmd    (x_loc);
          }
       }
       if (rci >=0) {
