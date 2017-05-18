@@ -39,7 +39,7 @@ struct      cLOC {
    /*---(working)------------------------*/
    int         len;                    /* length of path string               */
    int         ncmd;                   /* number of commands in location      */
-   int         size;                   /* size of commands in location        */
+   long        size;                   /* size of commands in location        */
    /*---(error-flags)--------------------*/
    char        f_concern;              /* flag for path name issues           */
 }; /*---(done)---------------------------*/
@@ -249,6 +249,7 @@ LOC__wipe          (int a_loc)
    /*---(working)------------------------*/
    s_locs [a_loc].len            =  0;
    s_locs [a_loc].ncmd           =  0;
+   s_locs [a_loc].size           =  0;
    /*---(error-flags)--------------------*/
    s_locs [a_loc].f_concern      = '-';
    /*---(complete)-----------------------*/
@@ -266,7 +267,13 @@ char*            /*-> return current rectory -------------[ ------ [ ------ ]-*/
 LOC_get_path       (int a_loc)   { if (a_loc < 0 || a_loc >= s_nloc) return "" ; return s_locs [a_loc].path;   }
 
 char             /*-> return count of locations ----------[ ------ [ ------ ]-*/
-LOC_add_cmd        (int a_loc)   { if (a_loc < 0 || a_loc >= s_nloc) return -1; ++s_locs [a_loc].ncmd; return 0; }
+LOC_add_cmd        (int a_loc, long a_size)
+{
+   if (a_loc < 0 || a_loc >= s_nloc) return -1;
+   ++s_locs [a_loc].ncmd;
+   s_locs [a_loc].size += a_size;
+   return 0;
+}
 
 char             /*-> identify the type ------------------[ ------ [ ------ ]-*/
 LOC_set_type       (int a_loc)
@@ -670,7 +677,7 @@ LOC_list           (void)
    int         x_curr      = 0;
    int         x_skip      = 0;
    char        x_long      = ' ';
-   char       *x_header    = "  seq# indx  s a  ---path------------------------------------------------------ len  -c-  typ  cat  ncmd   ---dsec---------------------------------  lookupkey";
+   char       *x_header    = "  seq# indx  s a  ---path------------------------------------------------------ len  -c-  typ  cat  ncmd  ---size---   ---desc---------------------------------  lookupkey";
    int         x_cats      [26];
    int         x_totals    [26];
    char        s           [300];
@@ -706,23 +713,25 @@ LOC_list           (void)
                   printf ("          :: c/concerns  are  '-' = path is great     ,  '+' = extra chars used  ,  '#' = bad chars used    ::\n");
                   printf  ("\n\n");
                }
-               sprintf (s, "%-141.141s  page %3d of %3d", "HERMES-DIACTOROS (messenger) integrity assurance for executables and shared libraries", x_page, x_pages);
-               printf  ("\n%s\n", s);
-               printf  ("location reporting sorted by location/name\n");
-               printf  ("\n%s\n", x_header);
+               printf  ("\n");
+               sprintf (s, "%-153.153s  version  [%4s]" , "HERMES-DIACTOROS (messenger) integrity assurance for executables and shared libraries", VER_NUM);
+               printf  ("%s\n", s);
+               sprintf (s, "%-153.153s  page %3d of %3d", "location reporting sorted by location/name", x_page, x_pages);
+               printf  ("%s\n", s);
+               printf ("\n%s\n", x_header);
             }
          }
          if (x_pass > 0 && (c %  5) == 0)  printf ("\n");
          if (x_pass > 0) {
             if (s_locs [x_curr].len > 60) x_long = '>';
             else                          x_long = ' ';
-            printf ("  %4d %4d  %c %c  %-60.60s%c %3d   %c    %c    %c   %4d   %-40.40s  [loc%04d]\n", x_curr, i,
+            printf ("  %4d %4d  %c %c  %-60.60s%c %3d   %c    %c    %c   %4d  %10d   %-40.40s  [loc%04d]\n", x_curr, i,
                   s_locs [x_curr].source , s_locs [x_curr].active   ,
                   s_locs [x_curr].path   , x_long                   ,
                   s_locs [x_curr].len    , s_locs [x_curr].f_concern, 
-                  s_locs [x_curr].type   ,s_locs [x_curr].cat       ,
-                  s_locs [x_curr].ncmd   , s_locs [x_curr].desc     ,
-                  x_curr);
+                  s_locs [x_curr].type   , s_locs [x_curr].cat      ,
+                  s_locs [x_curr].ncmd   , s_locs [x_curr].size     ,
+                  s_locs [x_curr].desc   , x_curr                   );
             if (s_locs [x_curr].len > x_maxwith)  x_maxwith = s_locs [x_curr].len;
             x_cmds += s_locs [x_curr].ncmd;
             if (s_locs [x_curr].cat >= 'a' && s_locs [x_curr].cat <= 'z') {

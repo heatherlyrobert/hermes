@@ -1219,7 +1219,7 @@ CMD_analyze        (int a_count, char *a_path, char *a_name, tCMD *a_cmd, char a
       return a_cmd->i_loc;
    }
    /*> ++locs [a_cmd->i_loc].ncmd;                                                    <*/
-   LOC_add_cmd    (a_cmd->i_loc);
+   LOC_add_cmd    (a_cmd->i_loc, a_cmd->bytes);
    DEBUG_CMDS   yLOG_value   ("loc_num"   , a_cmd->i_loc);
    a_cmd->source = a_source; 
    DEBUG_CMDS   yLOG_char    ("source"    , a_cmd->source);

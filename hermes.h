@@ -210,8 +210,8 @@
 
 
 /* rapidly evolving version number to aid with visual change confirmation     */
-#define     VER_NUM   "0.7o"
-#define     VER_TXT   "added types (lib,exe) to locations to help understand usage"
+#define     VER_NUM   "0.7p"
+#define     VER_TXT   "added command/library sizes to locations"
 
 
 /*---(struct typedefs)-------------------*/
@@ -439,7 +439,7 @@ int         LOC_create         (char  *a_name, char a_type, char *a_desc);
 char        LOC__wipe          (int    a_loc);
 /*---(accessors)--------------*/
 char*       LOC_get_path       (int    a_loc);
-char        LOC_add_cmd        (int    a_loc);
+char        LOC_add_cmd        (int    a_loc, long a_size);
 char        LOC_set_type       (int    a_loc);
 char        LOC_set_cat        (int    a_loc, int a_save);
 /*---(helpers)----------------*/

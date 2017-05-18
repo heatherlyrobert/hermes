@@ -133,7 +133,7 @@ FILES_commands          (char *a_path, int a_pkg)
       if (rci < 0) {
          rci = CMD_files      (x_path, x_cmd);
          if (rci >= 0) {
-            LOC_add_cmd    (x_loc);
+            LOC_add_cmd    (x_loc, s_cmds [x_loc].bytes);
          }
       }
       if (rci >=0) {
