@@ -34,10 +34,12 @@ struct      cLOC {
    char        source;                 /* what method created this entry      */
    char        path        [STR_MAX];  /* directory path                      */
    char        desc        [STR_REG];  /* free-form description               */
+   char        type;                   /* executable vs library               */
    char        cat;                    /* category of location                */
    /*---(working)------------------------*/
    int         len;                    /* length of path string               */
    int         ncmd;                   /* number of commands in location      */
+   int         size;                   /* size of commands in location        */
    /*---(error-flags)--------------------*/
    char        f_concern;              /* flag for path name issues           */
 }; /*---(done)---------------------------*/
@@ -225,6 +227,7 @@ LOC_create         (char  *a_path, char a_source, char *a_desc)
       s_locs [x_found].active = 'y';
    }
    /*---(update)-------------------------*/
+   LOC_set_type (s_nloc);
    ++s_nloc;
    /*---(complete)-----------------------*/
    DEBUG_DIRS  yLOG_exit    (__FUNCTION__);
@@ -241,6 +244,7 @@ LOC__wipe          (int a_loc)
    s_locs [a_loc].source         = '?';
    s_locs [a_loc].path [0]       = '\0';
    s_locs [a_loc].desc [0]       = '\0';
+   s_locs [a_loc].type           = '-';
    s_locs [a_loc].cat            = '-';
    /*---(working)------------------------*/
    s_locs [a_loc].len            =  0;
@@ -264,19 +268,41 @@ LOC_get_path       (int a_loc)   { if (a_loc < 0 || a_loc >= s_nloc) return "" ;
 char             /*-> return count of locations ----------[ ------ [ ------ ]-*/
 LOC_add_cmd        (int a_loc)   { if (a_loc < 0 || a_loc >= s_nloc) return -1; ++s_locs [a_loc].ncmd; return 0; }
 
-char             /*-> return current rectory -------------[ ------ [ ------ ]-*/
+char             /*-> identify the type ------------------[ ------ [ ------ ]-*/
+LOC_set_type       (int a_loc)
+{
+   /*---(locals)-----------+-----------+-*/
+   int         x_len       = 0;
+   /*---(defense)------------------------*/
+   if (a_loc  < 0 || a_loc  >  s_nloc) return -1;
+   /*---(interpretive langs)-------------*/
+   if      (strstr  (s_locs [a_loc].path, "/lib"  ) != NULL)
+      s_locs [a_loc].type = 'l';
+   else
+      s_locs [a_loc].type = 'e';
+   /*---(complete)-----------------------*/
+   return 0;
+}
+
+char             /*-> identify the category --------------[ ------ [ ------ ]-*/
 LOC_set_cat        (int a_loc, int a_save)
 {
+   /*---(locals)-----------+-----------+-*/
    int         x_len       = 0;
+   /*---(defense)------------------------*/
    if (a_loc  < 0 || a_loc  >= s_nloc) return -1;
    if (a_save < 0 || a_save >= s_nloc) return -2;
+   /*---(prepare)------------------------*/
    x_len = s_locs [a_save].len;
-   if (strncmp (s_locs [a_loc].path + x_len, "/python", 7) == 0)
-      s_locs [a_loc].cat  = 'y';
-   if (strncmp (s_locs [a_loc].path + x_len, "/perl"  , 5) == 0)
+   s_locs [a_loc].cat     = 's';
+   /*---(interpretive langs)-------------*/
+   if      (strncmp (s_locs [a_loc].path + x_len, "/python", 7) == 0)
+      s_locs [a_loc].cat  = 'p';
+   else if (strncmp (s_locs [a_loc].path + x_len, "/perl"  , 5) == 0)
       s_locs [a_loc].cat  = 'e';
-   if (strncmp (s_locs [a_loc].path + x_len, "/ruby"  , 5) == 0)
-      s_locs [a_loc].cat  = 'u';
+   else if (strncmp (s_locs [a_loc].path + x_len, "/ruby"  , 5) == 0)
+      s_locs [a_loc].cat  = 'r';
+   /*---(complete)-----------------------*/
    return 0;
 }
 
@@ -639,16 +665,22 @@ LOC_list           (void)
    int         c           = 0;             /* count of lines shown           */
    int         x_page      = 0;
    int         x_pages     = 0;
-   int         x_cmds      = 0;
    int         x_max       = 0;
    int         x_maxwith   = 0;
    int         x_curr      = 0;
    int         x_skip      = 0;
    char        x_long      = ' ';
-   char       *x_header    = "  seq# indx  s a  ---path------------------------------------------------------ len  -c-  cat  ncmd   ---dsec---------------------------------  lookupkey";
+   char       *x_header    = "  seq# indx  s a  ---path------------------------------------------------------ len  -c-  typ  cat  ncmd   ---dsec---------------------------------  lookupkey";
    int         x_cats      [26];
+   int         x_totals    [26];
    char        s           [300];
    int         x_other     = 0;
+   int         x_othercmd  = 0;
+   int         x_lib       = 0;
+   int         x_libcmd    = 0;
+   int         x_exe       = 0;
+   int         x_execmd    = 0;
+   int         x_cmds      = 0;
    /*---(header)-------------------------*/
    printf ("\n");
    /*---(cycle location)-----------------*/
@@ -656,7 +688,7 @@ LOC_list           (void)
       x_page = 0;
       c      = 0;
       x_skip = 0;
-      for (i = 0; i < 26; ++i)  x_cats [i] = 0;
+      for (i = 0; i < 26; ++i)  { x_cats [i] = 0; x_totals [i] = 0; }
       for (i = 0; i < s_nloc; ++i) {
          x_curr = s_iloc [i];
          if (s_locs [x_curr].len > x_max)  x_max = s_locs [x_curr].len;
@@ -674,7 +706,7 @@ LOC_list           (void)
                   printf ("          :: c/concerns  are  '-' = path is great     ,  '+' = extra chars used  ,  '#' = bad chars used    ::\n");
                   printf  ("\n\n");
                }
-               sprintf (s, "%-131.131s  page %3d of %3d", "HERMES-DIACTOROS (messenger) integrity assurance for executables and shared libraries", x_page, x_pages);
+               sprintf (s, "%-141.141s  page %3d of %3d", "HERMES-DIACTOROS (messenger) integrity assurance for executables and shared libraries", x_page, x_pages);
                printf  ("\n%s\n", s);
                printf  ("location reporting sorted by location/name\n");
                printf  ("\n%s\n", x_header);
@@ -684,20 +716,31 @@ LOC_list           (void)
          if (x_pass > 0) {
             if (s_locs [x_curr].len > 60) x_long = '>';
             else                          x_long = ' ';
-            printf ("  %4d %4d  %c %c  %-60.60s%c %3d   %c    %c   %4d   %-40.40s  [loc%04d]\n", x_curr, i,
+            printf ("  %4d %4d  %c %c  %-60.60s%c %3d   %c    %c    %c   %4d   %-40.40s  [loc%04d]\n", x_curr, i,
                   s_locs [x_curr].source , s_locs [x_curr].active   ,
-                  s_locs [x_curr].path   , x_long,
+                  s_locs [x_curr].path   , x_long                   ,
                   s_locs [x_curr].len    , s_locs [x_curr].f_concern, 
-                  s_locs [x_curr].cat    ,
-                  s_locs [x_curr].ncmd   , s_locs [x_curr].desc,
+                  s_locs [x_curr].type   ,s_locs [x_curr].cat       ,
+                  s_locs [x_curr].ncmd   , s_locs [x_curr].desc     ,
                   x_curr);
             if (s_locs [x_curr].len > x_maxwith)  x_maxwith = s_locs [x_curr].len;
             x_cmds += s_locs [x_curr].ncmd;
+            if (s_locs [x_curr].cat >= 'a' && s_locs [x_curr].cat <= 'z') {
+               ++x_cats [s_locs [x_curr].cat - 'a'];
+               x_totals [s_locs [x_curr].cat - 'a'] += s_locs [x_curr].ncmd;
+            } else {
+               ++x_other;
+               x_othercmd += s_locs [x_curr].ncmd;
+            }
+            if (s_locs [x_curr].type == 'l') {
+               ++x_lib;
+               x_libcmd += s_locs [x_curr].ncmd;
+            } else {
+               ++x_exe;
+               x_execmd += s_locs [x_curr].ncmd;
+            }
          }
          ++c;
-         if (s_locs [x_curr].cat >= 'a' && s_locs [x_curr].cat <= 'z') {
-            ++x_cats [s_locs [x_curr].cat - 'a'];
-         }
       }
       x_pages = x_page;
    }
@@ -707,20 +750,30 @@ LOC_list           (void)
    printf ("   GRAND TOTAL of %d commands stored in %d directory locations\n", x_cmds, c);
    printf ("\n");
    printf ("ncmd                  = %d\n", ncmd);
+   printf ("x_cmds                = %d\n", x_cmds);
    printf ("total locations       = %d\n", s_nloc);
    printf ("skipped               = %d\n", x_skip);
    printf ("max len               = %d\n", x_max);
    printf ("max len with commands = %d\n", x_maxwith);
    printf ("\n");
-   printf ("shown = %3d\n", c);
-   x_other = c;
+   printf ("shown = %3d (      )   %4d\n", c, x_cmds);
    for (i = 0; i < 26; ++i) {
       if (x_cats [i] > 0) {
-         x_other -= x_cats [i];
-         printf ("cat %c = %3d (%6.2f)\n", i + 'a', x_cats [i], ((float) x_cats [i]) / ((float) c));
+         printf ("cat %c = %3d (%6.2f)   %4d (%6.2f)\n", i + 'a',
+               x_cats   [i], ((float) x_cats   [i]) / ((float) c   ),
+               x_totals [i], ((float) x_totals [i]) / ((float) x_cmds));
       }
    }
-   printf ("other = %3d (%6.2f)\n", x_other, ((float) x_other) / ((float) c));
+   printf ("other = %3d (%6.2f)   %4d (%6.2f)\n",
+         x_other   , ((float) x_other   ) / ((float) c   ),
+         x_othercmd, ((float) x_othercmd) / ((float) x_cmds));
+   printf ("\n");
+   printf ("exes  = %3d (%6.2f)   %4d (%6.2f)\n",
+         x_exe     , ((float) x_exe     ) / ((float) c   ),
+         x_execmd  , ((float) x_execmd  ) / ((float) x_cmds));
+   printf ("libs  = %3d (%6.2f)   %4d (%6.2f)\n",
+         x_lib     , ((float) x_lib     ) / ((float) c   ),
+         x_libcmd  , ((float) x_libcmd  ) / ((float) x_cmds));
    printf ("\n\n");
    /*---(complete)-----------------------*/
    return 0;

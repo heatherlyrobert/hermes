@@ -313,9 +313,9 @@ PROG_conf          (void)
       /*---(act)-------------------------*/
       rc = 0;
       switch (x_verb[0]) {
+      case 'l' : rc = LOC_create  (x_field [0], 'c', x_field [2]);    break;
       case 'a' : rc = AREA_push   (x_field [0]);                      break;
       case 'p' : rc = PKG_push    (x_field [0], 'c', x_field [1][0], x_field [2]);    break;
-      case 'l' : rc = LOC_create  (x_field [0], 'c', x_field [2]);    break;
       default  : break;
       }
       /*---(done)------------------------*/
