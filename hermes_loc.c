@@ -40,6 +40,7 @@ struct      cLOC {
    int         len;                    /* length of path string               */
    int         ncmd;                   /* number of commands in location      */
    long        size;                   /* size of commands in location        */
+   int         owner;                  /* connected to which main location    */
    /*---(error-flags)--------------------*/
    char        f_concern;              /* flag for path name issues           */
 }; /*---(done)---------------------------*/
@@ -250,6 +251,7 @@ LOC__wipe          (int a_loc)
    s_locs [a_loc].len            =  0;
    s_locs [a_loc].ncmd           =  0;
    s_locs [a_loc].size           =  0;
+   s_locs [a_loc].owner          = -1;
    /*---(error-flags)--------------------*/
    s_locs [a_loc].f_concern      = '-';
    /*---(complete)-----------------------*/
@@ -264,7 +266,11 @@ LOC__wipe          (int a_loc)
 static void      o___ACCESSORS_______________o (void) {;}
 
 char*            /*-> return current rectory -------------[ ------ [ ------ ]-*/
-LOC_get_path       (int a_loc)   { if (a_loc < 0 || a_loc >= s_nloc) return "" ; return s_locs [a_loc].path;   }
+LOC_get_path       (int a_loc)
+{
+   if (a_loc < 0 || a_loc >= s_nloc) return "" ;
+   return s_locs [a_loc].path;
+}
 
 char             /*-> return count of locations ----------[ ------ [ ------ ]-*/
 LOC_add_cmd        (int a_loc, long a_size)
@@ -583,6 +589,30 @@ LOC_curr_desc      (void)        { if (s_cloc <  0) return "" ; return s_locs [s
 static void      o___STRUCTURE_______________o (void) {;}
 
 char             /* [------] link a command to a location --------------------*/
+LOC_treeify        (void)
+{
+   /*---(locals)-----------+-----------+-*/
+   int         i           =   0;           /* iterator for locations         */
+   int         x_curr      =   0;           /* indexed order                  */
+   int         x_owner     =   0;
+   int         x_len       =   0;
+   /*---(walk)---------------------------*/
+   for (i = 0; i < s_nloc; ++i) {
+      /*---(indexed)---------------------*/
+      x_curr = s_iloc [i];
+      /*---(new owner)-------------------*/
+      if (s_locs [x_curr].source == 'c') {
+         x_owner = x_curr;
+         s_locs [x_curr].owner = -1;
+         continue;
+      }
+      s_locs [x_curr].owner = x_owner;
+   }
+   /*---(complete)-----------------------*/
+   return 0;
+}
+
+char             /* [------] link a command to a location --------------------*/
 LOC_link           (int a_loc, int a_cmd)
 {
    /*---(locals)-----------+-----------+-*/
@@ -662,7 +692,6 @@ LOC_unlink         (int a_cmd)
 /*====================------------------------------------====================*/
 static void      o___REPORTING_______________o (void) {;}
 
-
 char             /* [------] report location results -------------------------*/
 LOC_list           (void)
 {
@@ -680,14 +709,19 @@ LOC_list           (void)
    char       *x_header    = "  seq# indx  s a  ---path------------------------------------------------------ len  -c-  typ  cat  ncmd  ---size---   ---desc---------------------------------  lookupkey";
    int         x_cats      [26];
    int         x_totals    [26];
+   long        x_sizes     [26];
    char        s           [300];
-   int         x_other     = 0;
-   int         x_othercmd  = 0;
+   int         x_oth       = 0;
+   int         x_othcmd    = 0;
+   long        x_othsize   = 0;
    int         x_lib       = 0;
    int         x_libcmd    = 0;
+   long        x_libsize   = 0;
    int         x_exe       = 0;
    int         x_execmd    = 0;
+   long        x_exesize   = 0;
    int         x_cmds      = 0;
+   long        x_size      = 0;
    /*---(header)-------------------------*/
    printf ("\n");
    /*---(cycle location)-----------------*/
@@ -695,7 +729,7 @@ LOC_list           (void)
       x_page = 0;
       c      = 0;
       x_skip = 0;
-      for (i = 0; i < 26; ++i)  { x_cats [i] = 0; x_totals [i] = 0; }
+      for (i = 0; i < 26; ++i)  { x_cats [i] = 0; x_totals [i] = 0; x_sizes [i] = 0; }
       for (i = 0; i < s_nloc; ++i) {
          x_curr = s_iloc [i];
          if (s_locs [x_curr].len > x_max)  x_max = s_locs [x_curr].len;
@@ -725,7 +759,8 @@ LOC_list           (void)
          if (x_pass > 0) {
             if (s_locs [x_curr].len > 60) x_long = '>';
             else                          x_long = ' ';
-            printf ("  %4d %4d  %c %c  %-60.60s%c %3d   %c    %c    %c   %4d  %10d   %-40.40s  [loc%04d]\n", x_curr, i,
+            printf ("  %4d %4d %4d  %c %c  %-60.60s%c %3d   %c    %c    %c   %4d  %10d   %-40.40s  [loc%04d]\n",
+                  x_curr, i, s_locs [x_curr].owner,
                   s_locs [x_curr].source , s_locs [x_curr].active   ,
                   s_locs [x_curr].path   , x_long                   ,
                   s_locs [x_curr].len    , s_locs [x_curr].f_concern, 
@@ -734,19 +769,24 @@ LOC_list           (void)
                   s_locs [x_curr].desc   , x_curr                   );
             if (s_locs [x_curr].len > x_maxwith)  x_maxwith = s_locs [x_curr].len;
             x_cmds += s_locs [x_curr].ncmd;
+            x_size += s_locs [x_curr].size;
             if (s_locs [x_curr].cat >= 'a' && s_locs [x_curr].cat <= 'z') {
                ++x_cats [s_locs [x_curr].cat - 'a'];
                x_totals [s_locs [x_curr].cat - 'a'] += s_locs [x_curr].ncmd;
+               x_sizes  [s_locs [x_curr].cat - 'a'] += s_locs [x_curr].size;
             } else {
-               ++x_other;
-               x_othercmd += s_locs [x_curr].ncmd;
+               ++x_oth;
+               x_othcmd   += s_locs [x_curr].ncmd;
+               x_othsize += s_locs [x_curr].size;
             }
             if (s_locs [x_curr].type == 'l') {
                ++x_lib;
                x_libcmd += s_locs [x_curr].ncmd;
+               x_libsize += s_locs [x_curr].size;
             } else {
                ++x_exe;
-               x_execmd += s_locs [x_curr].ncmd;
+               x_execmd  += s_locs [x_curr].ncmd;
+               x_exesize += s_locs [x_curr].size;
             }
          }
          ++c;
@@ -760,32 +800,70 @@ LOC_list           (void)
    printf ("\n");
    printf ("ncmd                  = %d\n", ncmd);
    printf ("x_cmds                = %d\n", x_cmds);
+   printf ("x_size                = %d\n", x_size);
+   printf ("\n");
    printf ("total locations       = %d\n", s_nloc);
    printf ("skipped               = %d\n", x_skip);
+   printf ("\n");
    printf ("max len               = %d\n", x_max);
    printf ("max len with commands = %d\n", x_maxwith);
    printf ("\n");
-   printf ("shown = %3d (      )   %4d\n", c, x_cmds);
+   printf ("shown = %3d (------)   %4d (------)   %12d (------)\n", c, x_cmds, x_size);
+   printf ("\n");
    for (i = 0; i < 26; ++i) {
       if (x_cats [i] > 0) {
-         printf ("cat %c = %3d (%6.2f)   %4d (%6.2f)\n", i + 'a',
+         printf ("cat %c = %3d (%6.2f)   %4d (%6.2f)   %12d (%6.2f)\n", i + 'a',
                x_cats   [i], ((float) x_cats   [i]) / ((float) c   ),
-               x_totals [i], ((float) x_totals [i]) / ((float) x_cmds));
+               x_totals [i], ((float) x_totals [i]) / ((float) x_cmds),
+               x_sizes  [i], ((float) x_sizes  [i]) / ((float) x_size));
       }
    }
-   printf ("other = %3d (%6.2f)   %4d (%6.2f)\n",
-         x_other   , ((float) x_other   ) / ((float) c   ),
-         x_othercmd, ((float) x_othercmd) / ((float) x_cmds));
+   printf ("other = %3d (%6.2f)   %4d (%6.2f)   %12d (%6.2f)\n",
+         x_oth     , ((float) x_oth     ) / ((float) c   ),
+         x_othcmd  , ((float) x_othcmd  ) / ((float) x_cmds),
+         x_othsize , ((float) x_othsize ) / ((float) x_size));
    printf ("\n");
-   printf ("exes  = %3d (%6.2f)   %4d (%6.2f)\n",
+   printf ("exes  = %3d (%6.2f)   %4d (%6.2f)   %12d (%6.2f)\n",
          x_exe     , ((float) x_exe     ) / ((float) c   ),
-         x_execmd  , ((float) x_execmd  ) / ((float) x_cmds));
-   printf ("libs  = %3d (%6.2f)   %4d (%6.2f)\n",
+         x_execmd  , ((float) x_execmd  ) / ((float) x_cmds),
+         x_exesize , ((float) x_exesize ) / ((float) x_size));
+   printf ("libs  = %3d (%6.2f)   %4d (%6.2f)   %12d (%6.2f)\n",
          x_lib     , ((float) x_lib     ) / ((float) c   ),
-         x_libcmd  , ((float) x_libcmd  ) / ((float) x_cmds));
+         x_libcmd  , ((float) x_libcmd  ) / ((float) x_cmds),
+         x_libsize , ((float) x_libsize ) / ((float) x_size));
    printf ("\n\n");
    /*---(complete)-----------------------*/
    return 0;
+}
+
+
+long             /* [------] create a hyleoroi file --------------------------*/
+LOC_hyleoroi       (int a_depth, int a_loc, char x_pass)
+{
+   /*> /+---(locals)-----------+-----------+-+/                                       <* 
+    *> char        rce         =  -10;                                                <* 
+    *> int         i           =    0;                                                <* 
+    *> char        x_base      [LEN_PATH];                                            <* 
+    *> int         x_len       =    0;                                                <* 
+    *> int         x_size      =    0;                                                <* 
+    *> /+---(defense)------------------------+/                                       <* 
+    *> --rce;  if (a_loc < 0)          return rce;                                    <* 
+    *> --rce;  if (a_loc >= s_nloc)    return rce;                                    <* 
+    *> if (s_locs [a_loc].ncmd <= 0)   return 0;                                      <* 
+    *> /+---(write)--------------------------+/                                       <* 
+    *> for (i = 0; i < a_depth; ++i) printf ("   ");                                  <* 
+    *> /+---(walk)---------------------------+/                                       <* 
+    *> x_len  = s_locs [a_loc].len;                                                   <* 
+    *> strlcpy (x_base, s_locs [a_loc].path, LEN_PATH);                               <* 
+    *> x_size = s_locs [a_loc].size;                                                  <* 
+    *> for (i = 0; i < s_nloc; ++i) {                                                 <* 
+    *>    x_curr = s_iloc [i];                                                        <* 
+    *>    if (s_locs [x_curr].len <= x_len)                         continue;         <* 
+    *>    if (strncmp (s_locs [x_curr].path, x_base, x_len) != 0)   continue;         <* 
+    *>    x_size += LOC_hyleoroi (x_curr);                                            <* 
+    *> }                                                                              <* 
+    *> /+---(complete)-----------------------+/                                       <* 
+    *> return 0;                                                                      <*/
 }
 
 

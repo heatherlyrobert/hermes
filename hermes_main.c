@@ -39,6 +39,7 @@ main               (int argc, char *argv[])
    CMD_crack_gnome     ();
 
    /*> AREA_list           ();                                                        <*/
+   LOC_treeify         ();
    LOCS_LIST   LOC_list  ();
    /*> PKG_list            ('i');                                                     <*/
    /*> CMD_dump            ();                                                        <*/

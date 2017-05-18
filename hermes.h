@@ -210,8 +210,8 @@
 
 
 /* rapidly evolving version number to aid with visual change confirmation     */
-#define     VER_NUM   "0.7p"
-#define     VER_TXT   "added command/library sizes to locations"
+#define     VER_NUM   "0.7q"
+#define     VER_TXT   "LOC_treeify added to help heirarchical reporting"
 
 
 /*---(struct typedefs)-------------------*/
@@ -457,6 +457,7 @@ char        LOC_curr_source    (void);
 int         LOC_curr_commands  (void);
 char*       LOC_curr_desc      (void);
 /*---(structure)--------------*/
+char        LOC_treeify        (void);
 char        LOC_link           (int    a_loc, int a_cmd);
 char        LOC_unlink         (int    a_cmd);
 /*---(reporting)--------------*/
