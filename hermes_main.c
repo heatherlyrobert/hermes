@@ -40,7 +40,8 @@ main               (int argc, char *argv[])
 
    /*> AREA_list           ();                                                        <*/
    LOC_treeify         ();
-   LOCS_LIST   LOC_list  ();
+   LOCS_LIST   LOC_list      ();
+   LOCS_TREE   LOC_hyleoroi  ();
    /*> PKG_list            ('i');                                                     <*/
    /*> CMD_dump            ();                                                        <*/
    /*> CMD_list            ('i');                                                     <*/
@@ -68,7 +69,7 @@ main               (int argc, char *argv[])
    /*> CMD_package  ();                                                               <*/
    /*> CMD_writeall ();                                                              <*/
 
-   if (my.list_locs == 'y')  LOC_list     ();
+   if (my.locs_list == 'y')  LOC_list     ();
    if (my.list_pkgs == 'y')  PKG_list     ('s');
    if (my.list_cmds == 'y')  CMD_list     ('s');
 

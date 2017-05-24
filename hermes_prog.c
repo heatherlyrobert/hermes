@@ -145,8 +145,9 @@ PROG_init          (void)
    my.focus_len    =  0;
    my.runtime      = time (NULL);
    /*---(stdout reports)-----------------*/
-   my.list_locs    = '-';
-   my.dump_locs    = '-';
+   my.locs_list    = '-';
+   my.locs_dump    = '-';
+   my.locs_tree    = '-';
    my.list_pkgs    = '-';
    my.list_cmds    = '-';
    my.show_gather  = '-';
@@ -193,8 +194,9 @@ PROG_args          (int argc, char *argv[])
       else if (strcmp (a, "--write"             ) == 0)    my.db_write       = 'y';
       else if (strcmp (a, "--nowrite"           ) == 0)    my.db_write       = 'n';
       /*---(----------------)------------*/
-      else if (strcmp (a, "--locs-list"         ) == 0)    my.list_locs      = 'y';
-      else if (strcmp (a, "--locs-dump"         ) == 0)    my.dump_locs      = 'y';
+      else if (strcmp (a, "--locs-list"         ) == 0)    my.locs_list      = 'y';
+      else if (strcmp (a, "--locs-dump"         ) == 0)    my.locs_dump      = 'y';
+      else if (strcmp (a, "--locs-tree"         ) == 0)    my.locs_tree      = 'y';
       else if (strcmp (a, "--pkgs"              ) == 0)    my.list_pkgs      = 'y';
       else if (strcmp (a, "--cmds"              ) == 0)    my.list_cmds      = 'y';
       else if (strcmp (a, "--show-gather"       ) == 0)    my.show_gather    = 'y';

@@ -210,8 +210,8 @@
 
 
 /* rapidly evolving version number to aid with visual change confirmation     */
-#define     VER_NUM   "0.7q"
-#define     VER_TXT   "LOC_treeify added to help heirarchical reporting"
+#define     VER_NUM   "0.7r"
+#define     VER_TXT   "passes format option to hyleoroi for locations"
 
 
 /*---(struct typedefs)-------------------*/
@@ -356,8 +356,9 @@ struct cGLOBAL {
    char        package; 
    char        packageall;             /* processing of packages (force)      */
    /*---(strout reports)-----------------*/
-   char        list_locs;
-   char        dump_locs;
+   char        locs_list;
+   char        locs_dump;
+   char        locs_tree;
    char        list_pkgs;
    char        list_cmds;
    char        show_gather;
@@ -371,8 +372,9 @@ struct cGLOBAL {
 };
 extern      tGLOBAL     my;
 
-#define     LOCS_LIST        if (my.list_locs == 'y')
-#define     LOCS_DUMP        if (my.dump_locs == 'y')
+#define     LOCS_LIST        if (my.locs_list == 'y')
+#define     LOCS_DUMP        if (my.locs_dump == 'y')
+#define     LOCS_TREE        if (my.locs_tree == 'y')
 
 #define     RUN_CONF         my.conf
 #define     RUN_READ         my.db_read
@@ -462,6 +464,7 @@ char        LOC_link           (int    a_loc, int a_cmd);
 char        LOC_unlink         (int    a_cmd);
 /*---(reporting)--------------*/
 char        LOC_list           (void);
+char        LOC_hyleoroi       (void);
 /*---(unit testing)-----------*/
 char*       LOC_unit           (char  *a_question, int a_num);
 /*---(done)-------------------*/

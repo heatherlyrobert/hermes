@@ -41,6 +41,7 @@ struct      cLOC {
    int         ncmd;                   /* number of commands in location      */
    long        size;                   /* size of commands in location        */
    int         owner;                  /* connected to which main location    */
+   long        total;                  /* size of all commands under loc      */
    /*---(error-flags)--------------------*/
    char        f_concern;              /* flag for path name issues           */
 }; /*---(done)---------------------------*/
@@ -252,6 +253,7 @@ LOC__wipe          (int a_loc)
    s_locs [a_loc].ncmd           =  0;
    s_locs [a_loc].size           =  0;
    s_locs [a_loc].owner          = -1;
+   s_locs [a_loc].total          =  0;
    /*---(error-flags)--------------------*/
    s_locs [a_loc].f_concern      = '-';
    /*---(complete)-----------------------*/
@@ -837,33 +839,60 @@ LOC_list           (void)
 }
 
 
-long             /* [------] create a hyleoroi file --------------------------*/
-LOC_hyleoroi       (int a_depth, int a_loc, char x_pass)
+char             /* [------] create a hyleoroi file --------------------------*/
+LOC_hyleoroi       (void)
 {
-   /*> /+---(locals)-----------+-----------+-+/                                       <* 
-    *> char        rce         =  -10;                                                <* 
-    *> int         i           =    0;                                                <* 
-    *> char        x_base      [LEN_PATH];                                            <* 
-    *> int         x_len       =    0;                                                <* 
-    *> int         x_size      =    0;                                                <* 
-    *> /+---(defense)------------------------+/                                       <* 
-    *> --rce;  if (a_loc < 0)          return rce;                                    <* 
-    *> --rce;  if (a_loc >= s_nloc)    return rce;                                    <* 
-    *> if (s_locs [a_loc].ncmd <= 0)   return 0;                                      <* 
-    *> /+---(write)--------------------------+/                                       <* 
-    *> for (i = 0; i < a_depth; ++i) printf ("   ");                                  <* 
-    *> /+---(walk)---------------------------+/                                       <* 
-    *> x_len  = s_locs [a_loc].len;                                                   <* 
-    *> strlcpy (x_base, s_locs [a_loc].path, LEN_PATH);                               <* 
-    *> x_size = s_locs [a_loc].size;                                                  <* 
-    *> for (i = 0; i < s_nloc; ++i) {                                                 <* 
-    *>    x_curr = s_iloc [i];                                                        <* 
-    *>    if (s_locs [x_curr].len <= x_len)                         continue;         <* 
-    *>    if (strncmp (s_locs [x_curr].path, x_base, x_len) != 0)   continue;         <* 
-    *>    x_size += LOC_hyleoroi (x_curr);                                            <* 
-    *> }                                                                              <* 
-    *> /+---(complete)-----------------------+/                                       <* 
-    *> return 0;                                                                      <*/
+   /*---(locals)-----------+-----------+-*/
+   int         i           =    0;
+   int         x_curr      =    0;
+   int         x_owner     =    0;
+   long        x_total     =    0;
+   char        x_base      [LEN_PATH];
+   int         x_len       =    0;
+   /*---(initialize totals)--------------*/
+   for (i = 0; i < s_nloc; ++i) {
+      x_curr  = s_iloc [i];
+      s_locs [x_curr].total = 0;
+   }
+   /*---(summarize)----------------------*/
+   for (i = s_nloc - 1; i >= 0; --i) {
+      x_curr  = s_iloc [i];
+      x_owner = s_locs [x_curr].owner;
+      if (x_owner == -1) {
+         s_locs [x_curr ].total += s_locs [x_curr].size;
+         x_total                += s_locs [x_curr].total;
+      } else {
+         s_locs [x_curr ].total  = s_locs [x_curr].size;
+         s_locs [x_owner].total += s_locs [x_curr].total;
+      }
+   }
+   /*---(output table)-------------------*/
+   printf ("#!/usr/local/bin/hyleoroi\n");
+   printf ("#   hyleoroi -- tree visualization input file\n");
+   printf ("\n\n\n");
+   printf ("FULL\n");
+   printf ("\n\n\n");
+   printf ("#--context  ---values------------------------------- \n");
+   printf ("source      hermes-diactoros                         \n");
+   printf ("label       executable files and libraries by size   \n");
+   printf ("format      exelocs                                  \n");
+   printf ("\n\n\n");
+   printf ("#--nodes--  lvl  ---name-----------------------------------------------------  ----size----  ---count----  ---description--------------------------------------------------------------------------------------  \n");
+   printf ("node          1  root                                                          %12d  %12d  %-100.100s  \n", x_total, x_total, " ");
+   for (i = 0; i < s_nloc; ++i) {
+      x_curr  = s_iloc [i];
+      if (s_locs [x_curr].total <= 0)  continue;
+      x_owner = s_locs [x_curr].owner;
+      if (x_owner == -1) {
+         printf ("\n");
+         printf ("node          2     %-50.50s         %12d  %12d  %-100.100s  \n", s_locs [x_curr].path, s_locs [x_curr].total, s_locs [x_curr].total, s_locs [x_curr].path);
+      } else {
+         x_len  = s_locs [x_owner].len + 1;
+         printf ("node          3        %-50.50s      %12d  %12d  %-100.100s  \n", s_locs [x_curr].path + x_len, s_locs [x_curr].total, s_locs [x_curr].total, s_locs [x_curr].path);
+      }
+   }
+   /*---(complete)-----------------------*/
+   return 0;
 }
 
 
