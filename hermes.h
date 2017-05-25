@@ -210,8 +210,8 @@
 
 
 /* rapidly evolving version number to aid with visual change confirmation     */
-#define     VER_NUM   "0.7r"
-#define     VER_TXT   "passes format option to hyleoroi for locations"
+#define     VER_NUM   "0.7s"
+#define     VER_TXT   "updated to studly, short, shared make_program makefile"
 
 
 /*---(struct typedefs)-------------------*/
